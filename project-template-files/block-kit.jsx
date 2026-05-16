@@ -1136,6 +1136,8 @@ function ProbsetComposer({ config, storageKey }) {
   const [results, setResults] = useState({});
   const sessionStarted = useRef(false);
 
+  const effectiveKey = storageKey ?? (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('f') : null);
+
   const questionBlocks = blocks
     .map((b, i) => ({ ...b, _idx: i }))
     .filter(b => ["mc", "tf", "int", "fie"].includes(b.type));
@@ -1150,20 +1152,20 @@ function ProbsetComposer({ config, storageKey }) {
   const allAnswered = answeredCount >= questionCount && questionCount > 0;
 
   useEffect(() => {
-    if (storageKey && !sessionStarted.current) {
+    if (effectiveKey && !sessionStarted.current) {
       sessionStarted.current = true;
-      ProgStorage.startSession(storageKey, totalPoints);
+      ProgStorage.startSession(effectiveKey, totalPoints);
       questionBlocks.forEach(b => {
-        ProgStorage.setProblemMeta(storageKey, b._idx, { pointsAvailable: b.pts ?? DIFFICULTY_PTS[b.diff] ?? 3 });
+        ProgStorage.setProblemMeta(effectiveKey, b._idx, { pointsAvailable: b.pts ?? DIFFICULTY_PTS[b.diff] ?? 3 });
       });
     }
-  }, [storageKey, totalPoints]);
+  }, [effectiveKey, totalPoints]);
 
   useEffect(() => {
-    if (allAnswered && storageKey) {
-      ProgStorage.endSession(storageKey);
+    if (allAnswered && effectiveKey) {
+      ProgStorage.endSession(effectiveKey);
     }
-  }, [allAnswered, storageKey]);
+  }, [allAnswered, effectiveKey]);
 
   const handleResult = (blockIdx, pts, result) => {
     setResults(prev => {
@@ -1171,7 +1173,7 @@ function ProbsetComposer({ config, storageKey }) {
       // Keep the first correct answer — don't downgrade
       if (existing?.correct) return prev;
       const next = { ...prev, [blockIdx]: { answered: true, correct: result.correct, attempts: result.attempts, pts, timeSpent: result.timeSpent } };
-      if (storageKey) ProgStorage.updateProblem(storageKey, blockIdx, result);
+      if (effectiveKey) ProgStorage.updateProblem(effectiveKey, blockIdx, result);
       return next;
     });
   };
