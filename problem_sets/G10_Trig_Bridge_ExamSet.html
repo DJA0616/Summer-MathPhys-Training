@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>G10CircuitsPS01</title>
+<title>G10_Trig_Bridge_ExamSet</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
@@ -1665,108 +1665,153 @@ function ProbsetComposer({ config, storageKey }) {
 
 const CONFIG = {
   meta: {
-    title: "Circuits",
-    subtitle: "Ohm's Law · Series & Parallel · Kirchhoff's Laws",
-    topic: "G10 Circuits — Problem Set 01",
+    title: "Exam Set<br /><em>Trigonometry Fundamentals</em>",
+    subtitle: "30 problems · Comprehensive review · Applications · Identities",
+    topic: "G10 Trigonometry Bridge",
+    examMode: true,
   },
   blocks: [
-    { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },
+    // ── EASY (1 dot, 3 pts) ──────────────────────────────
+    { type: "section-header", title: "Easy", subtitle: "Direct application · 3 pts each" },
 
-    { type: "int", diff: "easy", pts: 3,
-      question: "A current of 0.25 A flows through a 48 Ω resistor. What is the voltage across it, in volts?",
-      answer: 12,
-      hint: "V = IR = (0.25)(48) = 12 V." },
+    { type: "mc", diff: "easy",
+      question: "What is sin(0°)?",
+      choices: ["0", "1/2", "√2/2", "1"], correct: 0 },
 
-    { type: "mc", diff: "easy", pts: 3,
-      question: "An aluminum wire (ρ = 2.8×10⁻⁸ Ω·m) has length 5.0 m and cross-sectional area 7.0×10⁻⁸ m². What is its resistance?",
-      choices: ["0.5 Ω", "2.0 Ω", "4.0 Ω", "20 Ω"],
-      correct: 1,
-      explain: "R = ρL/A = (2.8×10⁻⁸)(5.0)/(7.0×10⁻⁸) = 14×10⁻⁸/7.0×10⁻⁸ = 2.0 Ω." },
+    { type: "mc", diff: "easy",
+      question: "What is cos(0°)?",
+      choices: ["0", "1/2", "√2/2", "1"], correct: 3 },
 
-    { type: "mc", diff: "easy", pts: 3,
-      question: "A current of 3 A flows through a 4 Ω resistor. How much power is dissipated as heat?",
-      choices: ["12 W", "24 W", "36 W", "48 W"],
-      correct: 2,
-      explain: "P = I²R = (3)²(4) = 9 × 4 = 36 W. This is Joule heating — the resistor converts 36 J of electrical energy to heat every second." },
+    { type: "mc", diff: "easy",
+      question: "What is tan(0°)?",
+      choices: ["0", "1", "√3", "undefined"], correct: 0 },
 
-    { type: "int", diff: "easy", pts: 3,
-      question: "Resistors of 15 Ω, 25 Ω, and 10 Ω are connected in series. What is the equivalent resistance in ohms?",
-      answer: 50,
-      hint: "Series: R_eq = R₁ + R₂ + R₃ = 15 + 25 + 10 = 50 Ω." },
+    { type: "int", diff: "easy",
+      question: "In right triangle ABC, angle C = 90°, AB = 10 (hypotenuse), BC = 6. What is AC?",
+      answer: 8 },
 
-    { type: "mc", diff: "easy", pts: 3,
-      question: "A 2 A current splits between two parallel resistors: 3 Ω and 6 Ω. What is the current through the 3 Ω resistor?",
-      choices: ["0.67 A", "1.33 A", "1.0 A", "2.0 A"],
-      correct: 1,
-      explain: "Current divider: I₁ = I_total × R₂/(R₁+R₂) = 2 × 6/(3+6) = 2 × 6/9 = 12/9 = 1.33 A. Less resistance → more current. The 3 Ω gets twice the current of the 6 Ω." },
+    { type: "tf", diff: "easy",
+      statement: "sin(30°) = 1/2", correct: true },
 
-    { type: "section-header", title: "Medium", subtitle: "Multi-step reasoning · 7 problems · 28 pts" },
+    { type: "mc", diff: "easy",
+      question: "cos(60°) equals:",
+      choices: ["1/2", "√3/2", "√2/2", "0"], correct: 0 },
 
-    { type: "int", diff: "medium", pts: 4,
-      question: "Find the equivalent resistance between terminals A and B: a 12 Ω resistor in series with a parallel combination of 6 Ω and 3 Ω. Answer in ohms.",
-      answer: 14,
-      hint: "Reduce innermost first: 6||3 = (6×3)/(6+3) = 18/9 = 2 Ω. Then series: 12 + 2 = 14 Ω. Always collapse parallel groups before adding series." },
+    { type: "int", diff: "easy",
+      question: "If sin(θ) = 3/5 and cos(θ) = 4/5, what is 4 × tan(θ)?",
+      answer: 3 },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A 10 Ω and 30 Ω resistor are in series across a 20 V supply. What is the voltage across the 10 Ω resistor?",
-      choices: ["5 V", "10 V", "15 V", "20 V"],
-      correct: 0,
-      explain: "Voltage divider: V₁₀ = (10/(10+30)) × 20 = (10/40) × 20 = 0.25 × 20 = 5 V. The larger resistor drops most of the voltage — 15 V across the 30 Ω." },
+    { type: "tf", diff: "easy",
+      statement: "tan(45°) = 1", correct: true },
 
-    { type: "int", diff: "medium", pts: 4,
-      question: "A 4 Ω and 8 Ω resistor are in series across a 24 V battery. What is the total power dissipated by both resistors, in watts?",
-      answer: 48,
-      hint: "R_eq = 4 + 8 = 12 Ω. I = V/R_eq = 24/12 = 2 A. P_total = I²R_eq = 4 × 12 = 48 W. Or directly: P = V²/R_eq = 576/12 = 48 W." },
+    { type: "mc", diff: "easy",
+      question: "sin(90°) equals:",
+      choices: ["0", "1/2", "√2/2", "1"], correct: 3 },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A battery with EMF ε = 9 V and internal resistance r = 1 Ω is connected to a variable load resistor R. For what value of R is the power delivered to the load maximum?",
-      choices: ["0.5 Ω", "1 Ω", "2 Ω", "9 Ω"],
-      correct: 1,
-      explain: "Maximum power transfer theorem: power to load is maximized when R_load = r_internal = 1 Ω. At this point, P_max = ε²/(4r) = 81/4 = 20.25 W. Half the power is dissipated in the internal resistance." },
+    { type: "int", diff: "easy",
+      question: "A right triangle has one angle of 30°. If the side opposite this angle is 5 cm, what is the hypotenuse in cm?",
+      answer: 10,
+      hint: "sin(30°) = 0.5, so opposite/hypotenuse = 0.5 → hypotenuse = 5/0.5." },
 
-    { type: "int", diff: "medium", pts: 4,
-      question: "Find R_eq between A and B: a 10 Ω resistor in parallel with a series combination of 4 Ω and 6 Ω. Answer in ohms.",
-      answer: 5,
-      hint: "Reduce series first: 4 + 6 = 10 Ω. Then parallel: 10||10 = (10×10)/(10+10) = 100/20 = 5 Ω. Two equal resistors in parallel give half the value." },
+    { type: "tf", diff: "easy",
+      statement: "cos(0°) = sin(90°)", correct: true },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A 20 Ω resistor carries 0.5 A for 2 minutes. How much energy is dissipated as heat?",
-      choices: ["10 J", "600 J", "300 J", "1200 J"],
-      correct: 1,
-      explain: "P = I²R = (0.5)²(20) = 0.25 × 20 = 5 W. t = 2 × 60 = 120 s. E = Pt = 5 × 120 = 600 J. Energy = power × time — remember to convert minutes to seconds." },
+    { type: "mc", diff: "easy",
+      question: "What is sin²(θ) + cos²(θ) equal to?",
+      choices: ["0", "1/2", "1", "2"], correct: 2,
+      explain: "This is the fundamental Pythagorean identity, true for any angle θ." },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "At a junction in a circuit, three wires meet. Wire 1 carries 5 A into the junction, wire 2 carries 3 A into the junction. What is the current in wire 3?",
-      choices: ["8 A into the junction", "8 A out of the junction", "2 A into the junction", "2 A out of the junction"],
-      correct: 1,
-      explain: "KCL: ΣI_in = ΣI_out. Total in = 5 + 3 = 8 A. Wire 3 must carry 8 A out for the junction to balance. Charge cannot accumulate at a node — what goes in must come out." },
+    { type: "int", diff: "easy",
+      question: "tan(45°) = ? (Answer as integer)",
+      answer: 1 },
 
-    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 3 problems · 15 pts" },
+    { type: "tf", diff: "easy",
+      statement: "sin(−θ) = −sin(θ)", correct: true },
 
-    { type: "int", diff: "hard", pts: 5,
-      question: "A 12 V battery supplies 4 A total to two parallel branches. Branch 1 has a single 4 Ω resistor. Branch 2 has a 6 Ω resistor in series with an unknown resistor R. Find R in ohms.",
+    { type: "mc", diff: "easy",
+      question: "cos(90°) equals:",
+      choices: ["0", "1/2", "√2/2", "1"], correct: 0 },
+
+    // ── MEDIUM (2 dots, 4 pts) ────────────────────────────
+    { type: "section-header", title: "Medium", subtitle: "Two-step reasoning · 4 pts each" },
+
+    { type: "mc", diff: "medium",
+      question: "A tree casts a shadow 15 m long when the sun's angle of elevation is 60°. How tall is the tree?",
+      choices: ["8.7 m", "15.0 m", "26.0 m", "30.0 m"], correct: 2,
+      explain: "tan(60°) = height/15 → height = 15 × √3 ≈ 25.98 ≈ 26.0 m." },
+
+    { type: "int", diff: "medium",
+      question: "A ladder 6 m long rests against a wall. If the foot of the ladder is 2 m from the wall, what angle does it make with the ground in degrees? (Round to nearest integer)",
+      answer: 71,
+      hint: "cos(θ) = adjacent/hypotenuse = 2/6 = 1/3. Find θ = arccos(1/3)." },
+
+    { type: "tf", diff: "medium",
+      statement: "sin(θ) = cos(90° − θ)", correct: true },
+
+    { type: "mc", diff: "medium",
+      question: "If sin(θ) = 3/5 and θ is in quadrant II, what is cos(θ)?",
+      choices: ["−4/5", "4/5", "−3/5", "3/5"], correct: 0,
+      explain: "cos²θ = 1 − sin²θ = 1 − 9/25 = 16/25 → cos θ = ±4/5. Cosine is negative in QII, so cos θ = −4/5." },
+
+    { type: "int", diff: "medium",
+      question: "In right triangle DEF, angle E = 90°, DF = 13, DE = 5. What is EF?",
+      answer: 12 },
+
+    { type: "mc", diff: "medium",
+      question: "What is the reference angle for 150°?",
+      choices: ["30°", "60°", "120°", "150°"], correct: 0,
+      explain: "Reference angle = 180° − 150° = 30°." },
+
+    { type: "tf", diff: "medium",
+      statement: "tan(θ) = sin(θ)/cos(θ)", correct: true },
+
+    { type: "int", diff: "medium",
+      question: "From a point 20 m from the base of a tree, the angle of elevation to the top is 45°. What is the height of the tree in m?",
+      answer: 20,
+      hint: "tan(45°) = 1, so height = distance × 1." },
+
+    { type: "mc", diff: "medium",
+      question: "If cos(θ) = 0.6 and θ is in quadrant I, what is sin(θ)?",
+      choices: ["0.4", "0.6", "0.8", "1.0"], correct: 2,
+      explain: "sin θ = √(1 − cos²θ) = √(1 − 0.36) = √0.64 = 0.8." },
+
+    { type: "tf", diff: "medium",
+      statement: "cot(θ) = 1/tan(θ)", correct: true },
+
+    // ── HARD (3 dots, 5 pts) ──────────────────────────────
+    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 5 pts each" },
+
+    { type: "mc", diff: "hard",
+      question: "From the top of a cliff 80 m high, the angle of depression to a boat is 25°. How far is the boat from the base of the cliff?",
+      choices: ["37.3 m", "80.0 m", "171.6 m", "188.4 m"], correct: 2,
+      explain: "Angle of depression = angle of elevation from boat. tan(25°) = 80/d → d = 80/tan(25°) ≈ 80/0.4663 ≈ 171.6 m." },
+
+    { type: "int", diff: "hard",
+      question: "A ramp needs to rise 1.5 m to reach a platform. If the maximum allowed angle is 15°, what is the minimum length of the ramp in m? (Round to nearest integer)",
       answer: 6,
-      hint: "Total R_eq = V/I = 12/4 = 3 Ω. Parallel: 1/3 = 1/4 + 1/(6+R). 1/(6+R) = 1/3 − 1/4 = 1/12. So 6+R = 12, R = 6 Ω. Verify: branch 2 = 12 Ω, parallel with 4 Ω → (4×12)/(4+12) = 48/16 = 3 Ω. I = 12/3 = 4 A." },
+      hint: "length = rise/sin(15°) = 1.5/0.2588 ≈ 5.8 m → 6 m minimum." },
 
-    { type: "int", diff: "hard", pts: 5,
-      question: "Find R_eq for: (3 Ω parallel with 6 Ω), in series with (4 Ω parallel with 12 Ω), in series with 2 Ω. Answer in ohms.",
-      answer: 7,
-      hint: "Work innermost outward: 3||6 = (3×6)/(3+6) = 18/9 = 2 Ω. 4||12 = (4×12)/(4+12) = 48/16 = 3 Ω. Total: 2 + 3 + 2 = 7 Ω. Systematic reduction — always collapse nested parallel groups before adding series." },
+    { type: "tf", diff: "hard",
+      statement: "sin(θ + 180°) = −sin(θ)", correct: true },
 
-    { type: "mc", diff: "hard", pts: 5,
-      question: "A battery (ε = 10 V, r = 2 Ω) is connected to a variable load R. What is the maximum power that can be delivered to the load?",
-      choices: ["5.0 W", "12.5 W", "25 W", "50 W"],
-      correct: 1,
-      explain: "Max power when R = r = 2 Ω. Circuit current: I = ε/(r+R) = 10/4 = 2.5 A. P_load = I²R = (2.5)²(2) = 6.25 × 2 = 12.5 W. Formula: P_max = ε²/(4r) = 100/8 = 12.5 W. At maximum power transfer, efficiency is only 50% — half the power heats the battery internally." },
+    { type: "mc", diff: "hard",
+      question: "If tan(θ) = 2 and θ is in quadrant III, what is sin(θ)?",
+      choices: ["−2/√5", "2/√5", "−1/√5", "1/√5"], correct: 0,
+      explain: "tan = opp/adj = 2/1, hyp = √(2²+1²) = √5. sin = opp/hyp = ±2/√5. Sine is negative in QIII → sin θ = −2/√5." },
+
+    { type: "int", diff: "hard",
+      question: "A ladder leans against a wall making a 75° angle with the ground. If the top of the ladder is 10 m high, how long is the ladder in m? (Round to nearest integer)",
+      answer: 10,
+      hint: "height = length × sin(75°). length = 10/sin(75°) ≈ 10/0.9659 ≈ 10.35 → 10 m." },
   ],
 };
 
-function G10CircuitsPS01() {
+function G10_Trig_Bridge_ExamSet() {
   return <ProbsetComposer config={CONFIG} />;
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<G10CircuitsPS01 />);
+ReactDOM.createRoot(document.getElementById('root')).render(<G10_Trig_Bridge_ExamSet />);
 </script>
 </body>
 </html>

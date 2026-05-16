@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>G10CircuitsPS01</title>
+<title>G10_Trig_Bridge_Probset</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
@@ -1665,108 +1665,113 @@ function ProbsetComposer({ config, storageKey }) {
 
 const CONFIG = {
   meta: {
-    title: "Circuits",
-    subtitle: "Ohm's Law · Series & Parallel · Kirchhoff's Laws",
-    topic: "G10 Circuits — Problem Set 01",
+    title: "Problem Set<br /><em>Trigonometry Fundamentals</em>",
+    subtitle: "20 problems · SOH-CAH-TOA · Basic angles · Identities · Applications",
+    topic: "G10 Trigonometry Bridge",
+    questions: 20,
   },
   blocks: [
-    { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },
+    // ── EASY (1 dot, 3 pts) ──────────────────────────────
+    { type: "section-header", title: "Easy", subtitle: "Direct application · 3 pts each" },
 
-    { type: "int", diff: "easy", pts: 3,
-      question: "A current of 0.25 A flows through a 48 Ω resistor. What is the voltage across it, in volts?",
-      answer: 12,
-      hint: "V = IR = (0.25)(48) = 12 V." },
+    { type: "mc", diff: "easy",
+      question: "In a right triangle, sin(θ) = opposite/hypotenuse. If the side opposite angle θ is 3 cm and the hypotenuse is 5 cm, what is sin(θ)?",
+      choices: ["3/5", "4/5", "5/3", "5/4"], correct: 0 },
 
-    { type: "mc", diff: "easy", pts: 3,
-      question: "An aluminum wire (ρ = 2.8×10⁻⁸ Ω·m) has length 5.0 m and cross-sectional area 7.0×10⁻⁸ m². What is its resistance?",
-      choices: ["0.5 Ω", "2.0 Ω", "4.0 Ω", "20 Ω"],
-      correct: 1,
-      explain: "R = ρL/A = (2.8×10⁻⁸)(5.0)/(7.0×10⁻⁸) = 14×10⁻⁸/7.0×10⁻⁸ = 2.0 Ω." },
+    { type: "mc", diff: "easy",
+      question: "What is cos(60°)?",
+      choices: ["√3/2", "1/2", "√2/2", "0"], correct: 1 },
 
-    { type: "mc", diff: "easy", pts: 3,
-      question: "A current of 3 A flows through a 4 Ω resistor. How much power is dissipated as heat?",
-      choices: ["12 W", "24 W", "36 W", "48 W"],
-      correct: 2,
-      explain: "P = I²R = (3)²(4) = 9 × 4 = 36 W. This is Joule heating — the resistor converts 36 J of electrical energy to heat every second." },
+    { type: "int", diff: "easy",
+      question: "A ladder leans against a wall at a 60° angle. If the ladder is 10 m long, how far is the base from the wall? (Use cos(60°) = 0.5)",
+      answer: 5 },
 
-    { type: "int", diff: "easy", pts: 3,
-      question: "Resistors of 15 Ω, 25 Ω, and 10 Ω are connected in series. What is the equivalent resistance in ohms?",
-      answer: 50,
-      hint: "Series: R_eq = R₁ + R₂ + R₃ = 15 + 25 + 10 = 50 Ω." },
+    { type: "tf", diff: "easy",
+      statement: "tan(45°) = 1", correct: true },
 
-    { type: "mc", diff: "easy", pts: 3,
-      question: "A 2 A current splits between two parallel resistors: 3 Ω and 6 Ω. What is the current through the 3 Ω resistor?",
-      choices: ["0.67 A", "1.33 A", "1.0 A", "2.0 A"],
-      correct: 1,
-      explain: "Current divider: I₁ = I_total × R₂/(R₁+R₂) = 2 × 6/(3+6) = 2 × 6/9 = 12/9 = 1.33 A. Less resistance → more current. The 3 Ω gets twice the current of the 6 Ω." },
+    { type: "mc", diff: "easy",
+      question: "sin(30°) equals which of the following?",
+      choices: ["1/2", "√3/2", "√2/2", "1"], correct: 0 },
 
-    { type: "section-header", title: "Medium", subtitle: "Multi-step reasoning · 7 problems · 28 pts" },
+    { type: "int", diff: "easy",
+      question: "In a 30-60-90 triangle, if the shortest side is 4 cm, what is the length of the hypotenuse?",
+      answer: 8 },
 
-    { type: "int", diff: "medium", pts: 4,
-      question: "Find the equivalent resistance between terminals A and B: a 12 Ω resistor in series with a parallel combination of 6 Ω and 3 Ω. Answer in ohms.",
-      answer: 14,
-      hint: "Reduce innermost first: 6||3 = (6×3)/(6+3) = 18/9 = 2 Ω. Then series: 12 + 2 = 14 Ω. Always collapse parallel groups before adding series." },
+    { type: "tf", diff: "easy",
+      statement: "sin(90°) = 0", correct: false },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A 10 Ω and 30 Ω resistor are in series across a 20 V supply. What is the voltage across the 10 Ω resistor?",
-      choices: ["5 V", "10 V", "15 V", "20 V"],
-      correct: 0,
-      explain: "Voltage divider: V₁₀ = (10/(10+30)) × 20 = (10/40) × 20 = 0.25 × 20 = 5 V. The larger resistor drops most of the voltage — 15 V across the 30 Ω." },
+    { type: "mc", diff: "easy",
+      question: "What is tan(30°)?",
+      choices: ["√3/3", "1/√3", "√3", "3"], correct: 0,
+      explain: "tan(30°) = sin(30°)/cos(30°) = (1/2)/(√3/2) = 1/√3 = √3/3. Both A and B are equivalent — A is the rationalized form." },
 
-    { type: "int", diff: "medium", pts: 4,
-      question: "A 4 Ω and 8 Ω resistor are in series across a 24 V battery. What is the total power dissipated by both resistors, in watts?",
-      answer: 48,
-      hint: "R_eq = 4 + 8 = 12 Ω. I = V/R_eq = 24/12 = 2 A. P_total = I²R_eq = 4 × 12 = 48 W. Or directly: P = V²/R_eq = 576/12 = 48 W." },
+    // ── MEDIUM (2 dots, 4 pts) ────────────────────────────
+    { type: "section-header", title: "Medium", subtitle: "Two-step reasoning · 4 pts each" },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A battery with EMF ε = 9 V and internal resistance r = 1 Ω is connected to a variable load resistor R. For what value of R is the power delivered to the load maximum?",
-      choices: ["0.5 Ω", "1 Ω", "2 Ω", "9 Ω"],
-      correct: 1,
-      explain: "Maximum power transfer theorem: power to load is maximized when R_load = r_internal = 1 Ω. At this point, P_max = ε²/(4r) = 81/4 = 20.25 W. Half the power is dissipated in the internal resistance." },
+    { type: "mc", diff: "medium",
+      question: "A flagpole casts a shadow 12 m long when the sun's angle of elevation is 30°. How tall is the flagpole? (Use tan(30°) ≈ 0.577)",
+      choices: ["6 m", "7 m", "8 m", "9 m"], correct: 1,
+      explain: "tan(30°) = height / shadow → height = 12 × tan(30°) = 12 × 0.577 ≈ 6.92 m ≈ 7 m." },
 
-    { type: "int", diff: "medium", pts: 4,
-      question: "Find R_eq between A and B: a 10 Ω resistor in parallel with a series combination of 4 Ω and 6 Ω. Answer in ohms.",
+    { type: "int", diff: "medium",
+      question: "A ramp rises 2 m over a horizontal distance of 2√3 m. What is the angle of elevation in degrees?",
+      answer: 30,
+      hint: "tan(θ) = rise / run = 2 / (2√3) = 1/√3. What angle has this tangent?" },
+
+    { type: "tf", diff: "medium",
+      statement: "sin(θ) = cos(90° − θ) for any angle θ", correct: true },
+
+    { type: "mc", diff: "medium",
+      question: "If sin(θ) = 0.6 and θ is in the first quadrant, what is cos(θ)?",
+      choices: ["0.4", "0.6", "0.8", "1.0"], correct: 2,
+      explain: "cos(θ) = √(1 − sin²θ) = √(1 − 0.36) = √0.64 = 0.8." },
+
+    { type: "int", diff: "medium",
+      question: "A right triangle has legs of length 5 cm and 12 cm. What is the length of the hypotenuse?",
+      answer: 13 },
+
+    { type: "mc", diff: "medium",
+      question: "What is the value of sin²(45°) + cos²(45°)?",
+      choices: ["0", "0.5", "1", "2"], correct: 2,
+      explain: "sin²(θ) + cos²(θ) = 1 for any angle θ — the fundamental Pythagorean identity." },
+
+    { type: "tf", diff: "medium",
+      statement: "tan(θ) = sin(θ)/cos(θ) is undefined when cos(θ) = 0", correct: true },
+
+    { type: "int", diff: "medium",
+      question: "In right triangle ABC, angle A = 30°, angle B = 60°, and side AB = 10 cm (hypotenuse). What is the length of side BC (opposite angle A)?",
       answer: 5,
-      hint: "Reduce series first: 4 + 6 = 10 Ω. Then parallel: 10||10 = (10×10)/(10+10) = 100/20 = 5 Ω. Two equal resistors in parallel give half the value." },
+      hint: "Side opposite 30° = hypotenuse × sin(30°) = 10 × 0.5." },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A 20 Ω resistor carries 0.5 A for 2 minutes. How much energy is dissipated as heat?",
-      choices: ["10 J", "600 J", "300 J", "1200 J"],
-      correct: 1,
-      explain: "P = I²R = (0.5)²(20) = 0.25 × 20 = 5 W. t = 2 × 60 = 120 s. E = Pt = 5 × 120 = 600 J. Energy = power × time — remember to convert minutes to seconds." },
+    // ── HARD (3 dots, 5 pts) ──────────────────────────────
+    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 5 pts each" },
 
-    { type: "mc", diff: "medium", pts: 4,
-      question: "At a junction in a circuit, three wires meet. Wire 1 carries 5 A into the junction, wire 2 carries 3 A into the junction. What is the current in wire 3?",
-      choices: ["8 A into the junction", "8 A out of the junction", "2 A into the junction", "2 A out of the junction"],
-      correct: 1,
-      explain: "KCL: ΣI_in = ΣI_out. Total in = 5 + 3 = 8 A. Wire 3 must carry 8 A out for the junction to balance. Charge cannot accumulate at a node — what goes in must come out." },
+    { type: "mc", diff: "hard",
+      question: "From the top of a 50 m building, the angle of depression to a car on the ground is 30°. How far is the car from the base of the building?",
+      choices: ["28.9 m", "50.0 m", "86.6 m", "100.0 m"], correct: 2,
+      explain: "Angle of depression = angle of elevation from car. tan(30°) = 50/d → d = 50/tan(30°) = 50/(1/√3) = 50√3 ≈ 86.6 m." },
 
-    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 3 problems · 15 pts" },
+    { type: "int", diff: "hard",
+      question: "A kite is flying at a height of 30 m. If the string makes a 60° angle with the ground, what is the length of the string to the nearest integer?",
+      answer: 35,
+      hint: "height = length × sin(60°). So length = height / sin(60°) = 30 / (√3/2) = 60/√3 ≈ 34.64 m." },
 
-    { type: "int", diff: "hard", pts: 5,
-      question: "A 12 V battery supplies 4 A total to two parallel branches. Branch 1 has a single 4 Ω resistor. Branch 2 has a 6 Ω resistor in series with an unknown resistor R. Find R in ohms.",
-      answer: 6,
-      hint: "Total R_eq = V/I = 12/4 = 3 Ω. Parallel: 1/3 = 1/4 + 1/(6+R). 1/(6+R) = 1/3 − 1/4 = 1/12. So 6+R = 12, R = 6 Ω. Verify: branch 2 = 12 Ω, parallel with 4 Ω → (4×12)/(4+12) = 48/16 = 3 Ω. I = 12/3 = 4 A." },
+    { type: "tf", diff: "hard",
+      statement: "For any angle θ, sin(θ + 90°) = cos(θ)", correct: true },
 
-    { type: "int", diff: "hard", pts: 5,
-      question: "Find R_eq for: (3 Ω parallel with 6 Ω), in series with (4 Ω parallel with 12 Ω), in series with 2 Ω. Answer in ohms.",
-      answer: 7,
-      hint: "Work innermost outward: 3||6 = (3×6)/(3+6) = 18/9 = 2 Ω. 4||12 = (4×12)/(4+12) = 48/16 = 3 Ω. Total: 2 + 3 + 2 = 7 Ω. Systematic reduction — always collapse nested parallel groups before adding series." },
-
-    { type: "mc", diff: "hard", pts: 5,
-      question: "A battery (ε = 10 V, r = 2 Ω) is connected to a variable load R. What is the maximum power that can be delivered to the load?",
-      choices: ["5.0 W", "12.5 W", "25 W", "50 W"],
-      correct: 1,
-      explain: "Max power when R = r = 2 Ω. Circuit current: I = ε/(r+R) = 10/4 = 2.5 A. P_load = I²R = (2.5)²(2) = 6.25 × 2 = 12.5 W. Formula: P_max = ε²/(4r) = 100/8 = 12.5 W. At maximum power transfer, efficiency is only 50% — half the power heats the battery internally." },
+    { type: "mc", diff: "hard",
+      question: "If cos(θ) = 0.8 and θ is in the fourth quadrant, what is sin(θ)?",
+      choices: ["−0.6", "0.6", "−0.8", "0.8"], correct: 0,
+      explain: "sin²(θ) + cos²(θ) = 1 → sin²(θ) = 1 − 0.64 = 0.36 → sin(θ) = ±0.6. In QIV, sine is negative → sin(θ) = −0.6." },
   ],
 };
 
-function G10CircuitsPS01() {
+function G10_Trig_Bridge_Probset() {
   return <ProbsetComposer config={CONFIG} />;
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<G10CircuitsPS01 />);
+ReactDOM.createRoot(document.getElementById('root')).render(<G10_Trig_Bridge_Probset />);
 </script>
 </body>
 </html>
