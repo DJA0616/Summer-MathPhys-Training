@@ -32,6 +32,7 @@ const GLOBAL_CSS = `
   ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: ${C.bg}; } ::-webkit-scrollbar-thumb { background: ${C.muted}; border-radius: 2px; }
   @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes timerFadeIn { from { opacity:0; } to { opacity:1; } }
   .bk-fade { animation: fadeUp 0.45s ease both; }
   .bk-fade-fast { animation: fadeUp 0.3s ease both; }
   input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
@@ -1057,54 +1058,65 @@ function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfi
 
   return (
     <TimerCtx.Provider value={ctxVal}>
-      {/* Timer display — fixed top-right */}
+      {/* Inline timer — positioned by parent */}
       <div style={{
-        position: "fixed", top: 0, right: 0, zIndex: 100,
-        padding: "18px 24px",
-        display: "flex", flexDirection: "column", alignItems: "flex-end",
+        position: "relative", display: "inline-flex", flexDirection: "column",
+        alignItems: "center", flexShrink: 0,
         pointerEvents: "none",
       }}>
+        {/* Morphing polygon — behind timer text */}
+        <svg
+          width="140" height="140" viewBox="0 0 400 400"
+          style={{
+            position: "absolute", left: "50%", top: "50%",
+            transform: "translate(-50%,-50%)", pointerEvents: "none",
+            zIndex: 0, opacity: 0.35,
+            animation: "timerFadeIn 1s ease",
+          }}
+        >
+          <polygon points={str(pts)} fill="none" stroke={col.c} strokeWidth="3" strokeOpacity="0.08" style={{ filter: "blur(8px)", transition: "stroke 0.7s" }} />
+          <polygon points={str(outer)} fill="none" stroke={col.c} strokeWidth="0.4" strokeOpacity="0.10" style={{ transition: "stroke 0.7s" }} />
+          <polygon points={str(pts)} fill="none" stroke={col.c} strokeWidth="0.85" strokeOpacity="0.45" style={{ transition: "stroke 0.7s" }} />
+          <polygon points={str(inner)} fill="none" stroke={col.c} strokeWidth="0.4" strokeOpacity="0.18" style={{ transition: "stroke 0.7s" }} />
+          {pts.map(([x, y], i) => (
+            <line key={i} x1="200" y1="200" x2={x} y2={y} stroke={col.c} strokeWidth="0.3" strokeOpacity="0.10" style={{ transition: "stroke 0.7s" }} />
+          ))}
+          {[32, 60, 92].map((r, i) => (
+            <circle key={i} cx="200" cy="200" r={r} fill="none" stroke={col.c} strokeWidth="0.4" strokeOpacity={0.08 - i * 0.02} style={{ transition: "stroke 0.7s" }} />
+          ))}
+          {pts.map(([x, y], i) => (
+            <circle key={i} cx={x} cy={y} r="1.8" fill={col.c} opacity="0.30" style={{ transition: "fill 0.7s" }} />
+          ))}
+          <circle cx="200" cy="200" r="2.5" fill={col.c} opacity="0.50" style={{ transition: "fill 0.7s" }} />
+        </svg>
+
+        {/* Timer text — above the polygon */}
         <span style={{
+          position: "relative", zIndex: 1,
           fontFamily: F.mono, fontSize: 9, letterSpacing: "0.22em", color: C.muted,
-          textTransform: "uppercase", marginBottom: 6,
+          textTransform: "uppercase", marginBottom: 2,
+          animation: "timerFadeIn 0.6s ease",
         }}>Exam Timer</span>
         <span style={{
-          fontFamily: F.mono, fontSize: "clamp(36px, 5vw, 56px)",
+          position: "relative", zIndex: 1,
+          fontFamily: F.mono, fontSize: "clamp(28px, 4vw, 44px)",
           fontWeight: 300, lineHeight: 1, letterSpacing: "-0.04em",
           color: col.c, textShadow: `0 0 30px ${col.g}, 0 0 60px ${col.dim}`,
           transition: "color 0.7s ease, text-shadow 0.7s ease",
+          animation: "timerFadeIn 0.8s ease",
         }}>
           {mm}:{ss}
         </span>
         <span style={{
+          position: "relative", zIndex: 1,
           fontFamily: F.mono, fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase",
-          color: col.c, opacity: 0.5, marginTop: 4,
+          color: col.c, opacity: 0.5, marginTop: 2,
           transition: "color 0.7s ease",
+          animation: "timerFadeIn 1s ease",
         }}>
           {col.label}
         </span>
       </div>
-
-      {/* Morphing polygon — fixed background */}
-      <svg
-        width="480" height="480" viewBox="0 0 400 400"
-        style={{ position: "fixed", left: "50%", top: "50%", transform: "translate(-50%,-50%)", pointerEvents: "none", zIndex: 0, opacity: 0.55 }}
-      >
-        <polygon points={str(pts)} fill="none" stroke={col.c} strokeWidth="3" strokeOpacity="0.10" style={{ filter: "blur(8px)", transition: "stroke 0.7s" }} />
-        <polygon points={str(outer)} fill="none" stroke={col.c} strokeWidth="0.4" strokeOpacity="0.12" style={{ transition: "stroke 0.7s" }} />
-        <polygon points={str(pts)} fill="none" stroke={col.c} strokeWidth="0.85" strokeOpacity="0.50" style={{ transition: "stroke 0.7s" }} />
-        <polygon points={str(inner)} fill="none" stroke={col.c} strokeWidth="0.4" strokeOpacity="0.22" style={{ transition: "stroke 0.7s" }} />
-        {pts.map(([x, y], i) => (
-          <line key={i} x1="200" y1="200" x2={x} y2={y} stroke={col.c} strokeWidth="0.3" strokeOpacity="0.12" style={{ transition: "stroke 0.7s" }} />
-        ))}
-        {[32, 60, 92].map((r, i) => (
-          <circle key={i} cx="200" cy="200" r={r} fill="none" stroke={col.c} strokeWidth="0.4" strokeOpacity={0.09 - i * 0.025} style={{ transition: "stroke 0.7s" }} />
-        ))}
-        {pts.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="1.8" fill={col.c} opacity="0.35" style={{ transition: "fill 0.7s" }} />
-        ))}
-        <circle cx="200" cy="200" r="2.5" fill={col.c} opacity="0.55" style={{ transition: "fill 0.7s" }} />
-      </svg>
 
       {/* Frozen overlay */}
       {frozen && (
@@ -1228,8 +1240,6 @@ function ProbsetComposer({ config, storageKey }) {
     <>
       <style>{GLOBAL_CSS}</style>
       <Geo />
-      <TimerOverlay enabled={examMode} duration={timerDuration} onExpire={() => setFrozen(true)} phaseThresholds={meta.timerPhaseThresholds} phaseConfig={meta.timerPhaseConfig} />
-
       <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
 
         {/* Navigation bar */}
@@ -1260,24 +1270,27 @@ function ProbsetComposer({ config, storageKey }) {
         </div>
 
         {/* Header */}
-        <div className="bk-fade" style={{ animationDelay: "0ms", marginBottom: 40 }}>
-          <Label style={{ display: "block", marginBottom: 10 }}>{meta.topic ?? meta.title}</Label>
-          <h1 style={{
-            fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500,
-            color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2,
-            marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}, 0 0 48px ${C.glow}`,
-          }}>
-            {meta.title.includes("<em>") || meta.title.includes("<br") ? (
-              <span dangerouslySetInnerHTML={{ __html: meta.title }} />
-            ) : (
-              meta.title
+        <div className="bk-fade" style={{ animationDelay: "0ms", marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 24 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Label style={{ display: "block", marginBottom: 10 }}>{meta.topic ?? meta.title}</Label>
+            <h1 style={{
+              fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500,
+              color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2,
+              marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}, 0 0 48px ${C.glow}`,
+            }}>
+              {meta.title.includes("<em>") || meta.title.includes("<br") ? (
+                <span dangerouslySetInnerHTML={{ __html: meta.title }} />
+              ) : (
+                meta.title
+              )}
+            </h1>
+            {meta.subtitle && (
+              <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>
+                {meta.subtitle}
+              </p>
             )}
-          </h1>
-          {meta.subtitle && (
-            <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>
-              {meta.subtitle}
-            </p>
-          )}
+          </div>
+          <TimerOverlay enabled={examMode} duration={timerDuration} onExpire={() => setFrozen(true)} phaseThresholds={meta.timerPhaseThresholds} phaseConfig={meta.timerPhaseConfig} />
         </div>
 
         {/* Blocks */}
