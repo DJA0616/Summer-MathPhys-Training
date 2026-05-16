@@ -18,7 +18,7 @@ export default function G10MagnetismL01() {
 
       {/* Navbar */}
       <div className="bk-fade" style={{ display: "flex", gap: 12, marginBottom: 36, fontFamily: F.mono, fontSize: 10 }}>
-        <a href="index.html" style={{ color: C.dim, textDecoration: "none" }}>← Index</a>
+        <a href="../index.html" style={{ color: C.dim, textDecoration: "none" }}>← Index</a>
         <span style={{ color: C.muted }}>|</span>
         <a href="highscores.html" style={{ color: C.dim, textDecoration: "none" }}>Highscores</a>
       </div>
@@ -182,7 +182,7 @@ export default function G10MagnetismL01() {
       <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
         <Mono style={{ fontSize: 9 }}>magnetism · lorentz force · faraday · lenz · block 11</Mono>
         <div style={{ display: "flex", gap: 12 }}>
-          <a href="index.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>← Index</a>
+          <a href="../index.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>← Index</a>
           <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>Highscores →</a>
         </div>
       </div>
