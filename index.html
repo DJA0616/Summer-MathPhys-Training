@@ -338,6 +338,17 @@
     </a>
   </div>
 
+  <!-- Progress -->
+  <div class="fade" style="animation-delay:720ms">
+    <div class="section-title">Progress</div>
+    <hr class="section-rule">
+  </div>
+  <div id="progress-section">
+    <div class="card fade" style="animation-delay:740ms; text-align:center; padding:24px;">
+      <div class="card-desc">No progress yet. Complete a problem set to see your results.</div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <div class="footer fade" style="animation-delay:760ms">
     <span>Summer MathPhys Training · G10</span>
@@ -346,5 +357,58 @@
   </div>
 
 </div>
+<script>
+(function() {
+  const KEY = 'smpt-progress';
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e) {}
+
+  const entries = Object.entries(data)
+    .filter(([,r]) => r.startedAt)
+    .map(([file, r]) => ({
+      file,
+      title: file.split('/').pop().replace(/\.jsx$/,'').replace(/_/g,' '),
+      pointsEarned: r.pointsEarned || 0,
+      totalPoints: r.totalPointsAvailable || 0,
+      pct: r.totalPointsAvailable ? Math.round((r.pointsEarned / r.totalPointsAvailable) * 100) : 0,
+      completedAt: r.completedAt || null,
+      startedAt: r.startedAt || null,
+      answered: r.problems ? Object.values(r.problems).filter(p => p.answered).length : 0,
+      total: r.problems ? Object.keys(r.problems).length : 0,
+    }))
+    .sort((a, b) => (b.completedAt || b.startedAt || '').localeCompare(a.completedAt || a.startedAt || ''));
+
+  if (entries.length === 0) return;
+
+  const section = document.getElementById('progress-section');
+  section.innerHTML = '';
+
+  // Recent Activity
+  if (entries.length > 0) {
+    const recent = entries.slice(0, 5);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    recent.forEach((e, i) => {
+      const card = document.createElement('a');
+      card.className = 'card fade';
+      card.style.animationDelay = (740 + i * 40) + 'ms';
+      card.href = 'viewer.html?f=' + encodeURIComponent(e.file);
+      const status = e.completedAt ? 'Completed' : 'In progress';
+      const dateStr = e.completedAt ? new Date(e.completedAt).toLocaleDateString() : new Date(e.startedAt).toLocaleDateString();
+      card.innerHTML =
+        '<div class="card-row">' +
+          '<div>' +
+            '<div class="card-title">' + e.title + '</div>' +
+            '<div class="card-desc">' + status + ' · ' + dateStr + '</div>' +
+          '</div>' +
+          '<span class="badge" style="color:#a0d4b0;border-color:rgba(160,212,176,0.3);">' + e.pct + '%</span>' +
+        '</div>' +
+        '<div class="card-meta">' + e.answered + '/' + e.total + ' answered · ' + e.pointsEarned + '/' + e.totalPoints + ' pts</div>';
+      grid.appendChild(card);
+    });
+    section.appendChild(grid);
+  }
+})();
+</script>
 </body>
 </html>

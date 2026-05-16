@@ -341,10 +341,12 @@ function Spacer({ size = 16 }) {
 // ANSWER FIELD COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function MCField({ question, choices, correct, pts = 3, diff = 1, explain, animateIndex = 0 }) {
+function MCField({ question, choices, correct, pts = 3, diff = 1, explain, animateIndex = 0, onResult }) {
   const [selected, setSelected] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [showExplain, setShowExplain] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const startRef = useRef(Date.now());
 
   return (
     <div className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>
@@ -384,11 +386,16 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
       {selected !== null && (
         <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
           {!revealed && (
-            <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+            <button onClick={() => {
+              const att = attempts + 1;
+              setAttempts(att);
+              setRevealed(true);
+              if (onResult) onResult({ correct: selected === correct, attempts: att, timeSpent: Math.round((Date.now() - startRef.current) / 1000) });
+            }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
               Check
             </button>
           )}
-          <button onClick={() => { setSelected(null); setRevealed(false); setShowExplain(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+          <button onClick={() => { setSelected(null); setRevealed(false); setShowExplain(false); setAttempts(0); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
             Clear
           </button>
           {revealed && explain && (
@@ -407,9 +414,11 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
   );
 }
 
-function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 0 }) {
+function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 0, onResult }) {
   const [selected, setSelected] = useState(null);
   const [revealed, setRevealed] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const startRef = useRef(Date.now());
 
   return (
     <div className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>
@@ -451,11 +460,16 @@ function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 
       {selected !== null && (
         <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
           {!revealed && (
-            <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+            <button onClick={() => {
+              const att = attempts + 1;
+              setAttempts(att);
+              setRevealed(true);
+              if (onResult) onResult({ correct: selected === correct, attempts: att, timeSpent: Math.round((Date.now() - startRef.current) / 1000) });
+            }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
               Check
             </button>
           )}
-          <button onClick={() => { setSelected(null); setRevealed(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+          <button onClick={() => { setSelected(null); setRevealed(false); setAttempts(0); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
             Clear
           </button>
         </div>
@@ -464,11 +478,13 @@ function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 
   );
 }
 
-function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0 }) {
+function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0, onResult }) {
   const [val, setVal] = useState("");
   const [checked, setChecked] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const correct = parseInt(val) === answer;
+  const [attempts, setAttempts] = useState(0);
+  const startRef = useRef(Date.now());
+  const isCorrect = parseInt(val) === answer;
 
   return (
     <div className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>
@@ -488,10 +504,10 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0 
             placeholder="0"
             style={{
               width: 96, padding: "10px 14px",
-              border: `1px solid ${checked ? (correct ? C.accentAlt + "99" : C.err + "88") : C.border}`,
+              border: `1px solid ${checked ? (isCorrect ? C.accentAlt + "99" : C.err + "88") : C.border}`,
               borderRadius: DS.radius,
-              background: checked ? (correct ? C.accentAlt + "0a" : C.err + "0a") : C.bg,
-              color: checked ? (correct ? C.accentAlt : C.err) : C.heading,
+              background: checked ? (isCorrect ? C.accentAlt + "0a" : C.err + "0a") : C.bg,
+              color: checked ? (isCorrect ? C.accentAlt : C.err) : C.heading,
               fontFamily: F.mono, fontSize: 22, fontWeight: 300, textAlign: "right",
               boxShadow: val ? `0 0 10px ${C.glow}` : "none",
               transition: "all 0.2s",
@@ -502,17 +518,23 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0 
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <Mono style={{ fontSize: 9, letterSpacing: "0.12em" }}>INTEGER · 0 – 999</Mono>
-          {checked && <Mono style={{ fontSize: 9, color: correct ? C.accentAlt : C.err }}>{correct ? "✓ correct" : "✗ try again"}</Mono>}
+          {checked && <Mono style={{ fontSize: 9, color: isCorrect ? C.accentAlt : C.err }}>{isCorrect ? "✓ correct" : "✗ try again"}</Mono>}
         </div>
       </div>
       {val !== "" && (
         <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
           {!checked && (
-            <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+            <button onClick={() => {
+              const att = attempts + 1;
+              setAttempts(att);
+              setChecked(true);
+              const ok = parseInt(val) === answer;
+              if (onResult) onResult({ correct: ok, attempts: att, timeSpent: Math.round((Date.now() - startRef.current) / 1000) });
+            }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
               Check
             </button>
           )}
-          <button onClick={() => { setVal(""); setChecked(false); setShowHint(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+          <button onClick={() => { setVal(""); setChecked(false); setShowHint(false); setAttempts(0); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
             Clear
           </button>
           {hint && !checked && <button onClick={() => setShowHint(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showHint ? "Hide hint" : "Hint"}</button>}
@@ -527,8 +549,10 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0 
   );
 }
 
-function FIEField({ question, equation, cards, slotCount = 2, correct = () => false, correctDisplay, pts = 5, diff = 3, animateIndex = 0 }) {
+function FIEField({ question, equation, cards, slotCount = 2, correct = () => false, correctDisplay, pts = 5, diff = 3, animateIndex = 0, onResult }) {
   const CARD_LABELS = {};
+  const [attempts, setAttempts] = useState(0);
+  const startRef = useRef(Date.now());
   cards.forEach(c => { CARD_LABELS[c] = c; });
 
   const initSlots = {};
@@ -735,11 +759,17 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
       {anyFilled && (
         <div style={{ display: "flex", gap: 8 }}>
           {!checked && allFilled && (
-            <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+            <button onClick={() => {
+              const att = attempts + 1;
+              setAttempts(att);
+              setChecked(true);
+              const ok = correct(Object.keys(slots).map(id => blankVal(id)));
+              if (onResult) onResult({ correct: ok, attempts: att, timeSpent: Math.round((Date.now() - startRef.current) / 1000) });
+            }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
               Check
             </button>
           )}
-          <button onClick={() => { setSlots(initSlots); setTexts(initTexts); setSelected(null); setChecked(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+          <button onClick={() => { setSlots(initSlots); setTexts(initTexts); setSelected(null); setChecked(false); setAttempts(0); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
             Clear all
           </button>
         </div>
@@ -750,6 +780,122 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
     </div>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PROGRESS STORAGE — localStorage persistence
+// ═══════════════════════════════════════════════════════════════
+
+const ProgStorage = (() => {
+  const KEY = "smpt-progress";
+
+  const _all = () => {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+    catch { return {}; }
+  };
+  const _write = (data) => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {} };
+
+  return {
+    load(file) {
+      return _all()[file] || null;
+    },
+
+    save(file, record) {
+      const data = _all();
+      data[file] = { ...(data[file] || {}), ...record };
+      _write(data);
+    },
+
+    updateProblem(file, blockIndex, result) {
+      const data = _all();
+      const rec = data[file] || { problems: {} };
+      const prev = rec.problems[blockIndex] || {};
+      rec.problems[blockIndex] = {
+        ...prev,
+        answered: true,
+        correct: result.correct,
+        attempts: result.attempts,
+        timeSpent: result.timeSpent,
+      };
+      const pts = prev.pointsAvailable ?? 0;
+      if (result.correct && !prev.correct) {
+        rec.pointsEarned = (rec.pointsEarned || 0) + pts;
+      }
+      if (!result.correct && prev.correct) {
+        rec.pointsEarned = Math.max(0, (rec.pointsEarned || 0) - pts);
+      }
+      data[file] = rec;
+      _write(data);
+    },
+
+    setProblemMeta(file, blockIndex, meta) {
+      const data = _all();
+      const rec = data[file] || { problems: {} };
+      rec.problems[blockIndex] = { ...(rec.problems[blockIndex] || {}), ...meta };
+      data[file] = rec;
+      _write(data);
+    },
+
+    startSession(file, totalPoints) {
+      const data = _all();
+      data[file] = {
+        ...(data[file] || {}),
+        startedAt: new Date().toISOString(),
+        totalPointsAvailable: totalPoints,
+        pointsEarned: data[file]?.pointsEarned || 0,
+        problems: data[file]?.problems || {},
+      };
+      _write(data);
+    },
+
+    endSession(file) {
+      const data = _all();
+      if (data[file]) {
+        data[file].completedAt = new Date().toISOString();
+        _write(data);
+      }
+    },
+
+    getHighscores() {
+      const data = _all();
+      return Object.entries(data)
+        .filter(([, r]) => r.pointsEarned > 0)
+        .map(([file, r]) => ({
+          file,
+          title: file.split("/").pop().replace(/\.jsx$/, "").replace(/_/g, " "),
+          pointsEarned: r.pointsEarned || 0,
+          totalPoints: r.totalPointsAvailable || 0,
+          pct: r.totalPointsAvailable ? Math.round((r.pointsEarned / r.totalPointsAvailable) * 100) : 0,
+          completedAt: r.completedAt || null,
+          startedAt: r.startedAt || null,
+          examMode: r.examMode || false,
+        }))
+        .sort((a, b) => b.pct - a.pct || b.pointsEarned - a.pointsEarned);
+    },
+
+    getHistory(limit = 10) {
+      const data = _all();
+      return Object.entries(data)
+        .filter(([, r]) => r.startedAt)
+        .map(([file, r]) => ({
+          file,
+          title: file.split("/").pop().replace(/\.jsx$/, "").replace(/_/g, " "),
+          pointsEarned: r.pointsEarned || 0,
+          totalPoints: r.totalPointsAvailable || 0,
+          pct: r.totalPointsAvailable ? Math.round((r.pointsEarned / r.totalPointsAvailable) * 100) : 0,
+          completedAt: r.completedAt || null,
+          startedAt: r.startedAt || null,
+          answered: r.problems ? Object.values(r.problems).filter(p => p.answered).length : 0,
+          total: r.problems ? Object.keys(r.problems).length : 0,
+        }))
+        .sort((a, b) => (b.completedAt || b.startedAt || "").localeCompare(a.completedAt || a.startedAt || ""))
+        .slice(0, limit);
+    },
+
+    clearAll() {
+      try { localStorage.removeItem(KEY); } catch {}
+    },
+  };
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // TIMER CONTEXT
@@ -789,7 +935,7 @@ const sCurvePts = (p1, p2, t) => p1.map((p, i) => [sCurve(p[0], p2[i][0], t), sC
 const str = pts => pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
 const scale = (pts, s) => pts.map(([x, y]) => [200 + (x - 200) * s, 200 + (y - 200) * s]);
 
-function TimerOverlay({ enabled, duration, onExpire }) {
+function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfig }) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [running, setRunning] = useState(false);
   const [frozen, setFrozen] = useState(false);
@@ -802,8 +948,16 @@ function TimerOverlay({ enabled, duration, onExpire }) {
   const phaseRef = useRef("blue");
   const startedRef = useRef(false);
 
-  const phase = timeLeft <= 5 ? "red" : timeLeft <= 10 ? "sage" : "blue";
-  const col = PHASES[phase];
+  const thresholds = phaseThresholds ?? { sage: 10, red: 5 };
+  const mergedPhases = { ...PHASES };
+  if (phaseConfig) {
+    for (const k of Object.keys(phaseConfig)) {
+      mergedPhases[k] = { ...mergedPhases[k], ...phaseConfig[k] };
+    }
+  }
+
+  const phase = timeLeft <= thresholds.red ? "red" : timeLeft <= thresholds.sage ? "sage" : "blue";
+  const col = mergedPhases[phase];
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
   // Auto-start on mount
@@ -819,9 +973,9 @@ function TimerOverlay({ enabled, duration, onExpire }) {
     snapActiveRef.current = true;
     const from = FRAMES[(idx - 1 + FRAMES.length) % FRAMES.length];
     const to = FRAMES[idx % FRAMES.length];
-    const amp = PHASES[phaseRef.current].floatAmp;
-    const phaseDiv = PHASES[phaseRef.current].floatPhaseDiv;
-    const dur = PHASES[phaseRef.current].transition;
+    const amp = mergedPhases[phaseRef.current].floatAmp;
+    const phaseDiv = mergedPhases[phaseRef.current].floatPhaseDiv;
+    const dur = mergedPhases[phaseRef.current].transition;
     const t0 = performance.now();
     const step = now => {
       const t = Math.min((now - t0) / dur, 1);
@@ -841,8 +995,8 @@ function TimerOverlay({ enabled, duration, onExpire }) {
   const float = useCallback((idx) => {
     if (floatRafRef.current) cancelAnimationFrame(floatRafRef.current);
     const base = FRAMES[idx % FRAMES.length];
-    const amp = PHASES[phaseRef.current].floatAmp;
-    const phaseDiv = PHASES[phaseRef.current].floatPhaseDiv;
+    const amp = mergedPhases[phaseRef.current].floatAmp;
+    const phaseDiv = mergedPhases[phaseRef.current].floatPhaseDiv;
     const t0 = performance.now();
     const step = now => {
       if (!snapActiveRef.current && floatRafRef.current) {
@@ -976,20 +1130,58 @@ function TimerOverlay({ enabled, duration, onExpire }) {
 const DIFFICULTY_ORDER = { "easy": 1, "medium": 2, "hard": 3 };
 const DIFFICULTY_PTS = { "easy": 3, "medium": 4, "hard": 5 };
 
-function ProbsetComposer({ config }) {
+function ProbsetComposer({ config, storageKey }) {
   const { meta, blocks } = config;
   const [frozen, setFrozen] = useState(false);
+  const [results, setResults] = useState({});
+  const sessionStarted = useRef(false);
 
-  const questionCount = blocks.filter(b => ["mc", "tf", "int", "fie"].includes(b.type)).length;
-  const totalPoints = blocks
-    .filter(b => ["mc", "tf", "int", "fie"].includes(b.type))
-    .reduce((sum, b) => sum + (b.pts ?? DIFFICULTY_PTS[b.diff] ?? 3), 0);
+  const questionBlocks = blocks
+    .map((b, i) => ({ ...b, _idx: i }))
+    .filter(b => ["mc", "tf", "int", "fie"].includes(b.type));
+  const questionCount = questionBlocks.length;
+  const totalPoints = questionBlocks.reduce((sum, b) => sum + (b.pts ?? DIFFICULTY_PTS[b.diff] ?? 3), 0);
 
   const examMode = meta.examMode ?? questionCount >= 30;
   const timerDuration = meta.timerDuration ?? (questionCount >= 45 ? 90 * 60 : 60 * 60);
 
+  const answeredCount = Object.values(results).filter(r => r.answered).length;
+  const earnedPoints = Object.values(results).reduce((sum, r) => sum + (r.correct ? r.pts : 0), 0);
+  const allAnswered = answeredCount >= questionCount && questionCount > 0;
+
+  useEffect(() => {
+    if (storageKey && !sessionStarted.current) {
+      sessionStarted.current = true;
+      ProgStorage.startSession(storageKey, totalPoints);
+      questionBlocks.forEach(b => {
+        ProgStorage.setProblemMeta(storageKey, b._idx, { pointsAvailable: b.pts ?? DIFFICULTY_PTS[b.diff] ?? 3 });
+      });
+    }
+  }, [storageKey, totalPoints]);
+
+  useEffect(() => {
+    if (allAnswered && storageKey) {
+      ProgStorage.endSession(storageKey);
+    }
+  }, [allAnswered, storageKey]);
+
+  const handleResult = (blockIdx, pts, result) => {
+    setResults(prev => {
+      const existing = prev[blockIdx];
+      // Keep the first correct answer — don't downgrade
+      if (existing?.correct) return prev;
+      const next = { ...prev, [blockIdx]: { answered: true, correct: result.correct, attempts: result.attempts, pts, timeSpent: result.timeSpent } };
+      if (storageKey) ProgStorage.updateProblem(storageKey, blockIdx, result);
+      return next;
+    });
+  };
+
   const renderBlock = (block, i) => {
     const idx = block.animateIndex ?? i;
+    const pts = block.pts ?? DIFFICULTY_PTS[block.diff] ?? 3;
+    const onResult = ["mc", "tf", "int", "fie"].includes(block.type)
+      ? (r) => handleResult(i, pts, r)
+      : undefined;
     switch (block.type) {
       case "section-header":
         return <SectionHeader key={i} title={block.title} subtitle={block.subtitle} animateIndex={idx} />;
@@ -1018,13 +1210,13 @@ function ProbsetComposer({ config }) {
       case "info-row":
         return <InfoRow key={i} label={block.label} value={block.value} accent={block.accent} />;
       case "mc":
-        return <MCField key={i} question={block.question} choices={block.choices} correct={block.correct} pts={block.pts ?? DIFFICULTY_PTS[block.diff] ?? 3} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} explain={block.explain} animateIndex={idx} />;
+        return <MCField key={i} question={block.question} choices={block.choices} correct={block.correct} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} explain={block.explain} animateIndex={idx} onResult={onResult} />;
       case "tf":
-        return <TFField key={i} statement={block.statement} correct={block.correct} pts={block.pts ?? DIFFICULTY_PTS[block.diff] ?? 3} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} animateIndex={idx} />;
+        return <TFField key={i} statement={block.statement} correct={block.correct} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} animateIndex={idx} onResult={onResult} />;
       case "int":
-        return <INTField key={i} question={block.question} answer={block.answer} pts={block.pts ?? DIFFICULTY_PTS[block.diff] ?? 4} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 2} hint={block.hint} animateIndex={idx} />;
+        return <INTField key={i} question={block.question} answer={block.answer} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 2} hint={block.hint} animateIndex={idx} onResult={onResult} />;
       case "fie":
-        return <FIEField key={i} question={block.question} equation={block.equation} cards={block.cards} slotCount={block.slotCount ?? 2} correct={block.correct} correctDisplay={block.correctDisplay} pts={block.pts ?? 5} diff={block.diff ?? 3} animateIndex={idx} />;
+        return <FIEField key={i} question={block.question} equation={block.equation} cards={block.cards} slotCount={block.slotCount ?? 2} correct={block.correct} correctDisplay={block.correctDisplay} pts={pts} diff={block.diff ?? 3} animateIndex={idx} onResult={onResult} />;
       default:
         return null;
     }
@@ -1034,9 +1226,36 @@ function ProbsetComposer({ config }) {
     <>
       <style>{GLOBAL_CSS}</style>
       <Geo />
-      <TimerOverlay enabled={examMode} duration={timerDuration} onExpire={() => setFrozen(true)} />
+      <TimerOverlay enabled={examMode} duration={timerDuration} onExpire={() => setFrozen(true)} phaseThresholds={meta.timerPhaseThresholds} phaseConfig={meta.timerPhaseConfig} />
 
       <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+
+        {/* Navigation bar */}
+        <div className="bk-fade" style={{
+          animationDelay: "0ms", marginBottom: 28,
+          display: "flex", alignItems: "center", gap: 16,
+          padding: "8px 0", borderBottom: `1px solid ${C.border}`,
+        }}>
+          <a href="index.html" style={{
+            fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
+            color: C.dim, textDecoration: "none",
+            padding: "3px 0", borderBottom: `1px solid transparent`,
+            transition: "all 0.2s",
+          }}
+            onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
+            onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
+          >&larr; Back</a>
+          <span style={{ color: C.muted, fontSize: 10 }}>|</span>
+          <Mono style={{ fontSize: 9, color: C.dim }}>
+            {answeredCount}/{questionCount} answered
+            {earnedPoints > 0 && <> &middot; {earnedPoints}/{totalPoints} pts</>}
+          </Mono>
+          {allAnswered && (
+            <Mono style={{ fontSize: 9, color: C.accentAlt, marginLeft: "auto" }}>
+              Score: {earnedPoints}/{totalPoints} ({Math.round(earnedPoints / totalPoints * 100)}%)
+            </Mono>
+          )}
+        </div>
 
         {/* Header */}
         <div className="bk-fade" style={{ animationDelay: "0ms", marginBottom: 40 }}>
@@ -1069,6 +1288,12 @@ function ProbsetComposer({ config }) {
           <Mono style={{ fontSize: 9 }}>{meta.topic ?? "probset"} · block-kit</Mono>
           <Mono style={{ fontSize: 9, color: C.dim }}>{questionCount} questions · {totalPoints} points total</Mono>
         </div>
+        {allAnswered && (
+          <div style={{ marginTop: 18, padding: "14px 18px", background: C.accentAlt + "08", border: `1px solid ${C.accentAlt}33`, borderLeft: `2px solid ${C.accentAlt}88`, borderRadius: DS.radius, textAlign: "center" }}>
+            <p style={{ fontFamily: F.serif, fontSize: 15, color: C.accentAlt }}>All problems answered — {earnedPoints}/{totalPoints} points ({Math.round(earnedPoints / totalPoints * 100)}%)</p>
+            <a href="index.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none", marginTop: 8, display: "inline-block" }}>&larr; Back to index</a>
+          </div>
+        )}
       </div>
     </>
   );
@@ -1085,5 +1310,5 @@ export {
   Paragraph, SectionHeader, Diagram, SliderGraph, Equation, Hint, Example, Spacer,
   MCField, TFField, INTField, FIEField,
   TimerOverlay, useTimer,
-  ProbsetComposer,
+  ProbsetComposer, ProgStorage,
 };

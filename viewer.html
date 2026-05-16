@@ -93,7 +93,8 @@
 
     // ── Step 4: Execute ─────────────────────────────────
     const __blockkit = blockKitExports;
-    const Component = new Function('React', 'ReactDOM', '__blockkit', transpiled + `\nreturn ${defaultExportName};`)(React, ReactDOM, __blockkit);
+    const __storage = __blockkit.ProgStorage;
+    const Component = new Function('React', 'ReactDOM', '__blockkit', '__storage', transpiled + `\nreturn ${defaultExportName};`)(React, ReactDOM, __blockkit, __storage);
 
     if (typeof Component !== 'function') {
       showError(`Default export is not a component (got ${typeof Component}).\nEnsure the file exports a default function component.`);
@@ -103,7 +104,7 @@
     // ── Step 5: Render ──────────────────────────────────
     document.getElementById('loading').style.display = 'none';
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(Component));
+    root.render(React.createElement(Component, { storageKey: file }));
   } catch (e) {
     showError(`${e.message}\n\n${e.stack ? e.stack.split('\n').slice(0, 6).join('\n') : ''}`);
   }
