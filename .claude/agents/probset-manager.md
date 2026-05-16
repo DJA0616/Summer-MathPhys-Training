@@ -40,6 +40,7 @@ const CONFIG = {
     title: "Problem Set<br /><em>Topic Name</em>",
     subtitle: "N questions · Key themes",
     topic: "G10 Subject Area",
+    // navLinks: [{ href: "related-guide.html", label: "Related Guide" }]  // optional sibling links
   },
   blocks: [
     // Content blocks and answer fields in order
@@ -50,6 +51,17 @@ export default function TopicName_Probset() {
   return <ProbsetComposer config={CONFIG} />;
 }
 ```
+
+### Navigation (REQUIRED)
+
+The `ProbsetComposer` automatically renders a top navbar with:
+- **Index** link (`index.html`) — always present
+- **Highscores** link (`highscores.html`) — always present
+- **Custom nav links** — from `meta.navLinks` array (optional, for sibling guides)
+
+Multi-part learning guides must also include intra-page navigation (part tabs, prev/next buttons) within the blocks array. See existing guides in `learning-guides/` for patterns.
+
+The completion footer also links to Index and Highscores.
 
 ## CONFIG Block Types
 
@@ -116,6 +128,7 @@ Use `C.accent` (#7eb8d4) for primary lines, `C.accentAlt` (#a0d4b0) for secondar
 5. FIE blocks include `equation` (array with `"__BLANK__"` markers), `cards` (array), and `correct` (function).
 6. Custom SVG render functions use valid JSX, reference `C` and `F` not `DS`.
 7. No copy-pasted DS/CSS/Geo/primitives — those live in block-kit.
+8. **Navigation present**: ProbsetComposer auto-includes Index + Highscores navbar. Verify multi-part guides have intra-page navigation (tabs/prev-next). Add `meta.navLinks` for sibling guide links.
 
 If uncertain about any requirement, ask for clarification before proceeding.
 

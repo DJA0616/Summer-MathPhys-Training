@@ -1,158 +1,5 @@
 import { useState } from "react";
-
-const DS = {
-  colors: {
-    bg: "#0a0a0a", surface: "#111111", elevated: "#181818",
-    border: "#222222", muted: "#2a2a2a", dim: "#555555",
-    subtle: "#888888", body: "#c8c8c8", heading: "#efefef",
-    accent: "#7eb8d4", accentAlt: "#a0d4b0", err: "#d47e8a",
-    glow: "rgba(126,184,212,0.18)", glowStr: "rgba(126,184,212,0.5)",
-  },
-  font: {
-    serif: "'EB Garamond', Georgia, serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  radius: "4px",
-};
-
-const { colors: C, font: F } = DS;
-
-const css = `
-  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: ${C.bg}; color: ${C.body}; font-family: ${F.serif}; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
-  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: ${C.bg}; } ::-webkit-scrollbar-thumb { background: ${C.muted}; border-radius: 2px; }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-  .fade { animation: fadeUp 0.4s ease forwards; }
-  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
-  input:focus { outline: none; }
-`;
-
-const Geo = () => (
-  <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}>
-    <defs>
-      <radialGradient id="rg1" cx="85%" cy="5%" r="35%"><stop offset="0%" stopColor="#7eb8d4" stopOpacity="0.05" /><stop offset="100%" stopColor="#7eb8d4" stopOpacity="0" /></radialGradient>
-      <radialGradient id="rg2" cx="5%" cy="95%" r="30%"><stop offset="0%" stopColor="#a0d4b0" stopOpacity="0.04" /><stop offset="100%" stopColor="#a0d4b0" stopOpacity="0" /></radialGradient>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#rg1)" /><rect width="100%" height="100%" fill="url(#rg2)" />
-    <g opacity="0.06" stroke="#7eb8d4" strokeWidth="0.6" fill="none">
-      <polygon points="820,15 900,70 740,70" /><polygon points="900,70 960,15 960,125" />
-      <line x1="820" y1="15" x2="820" y2="125" /><line x1="740" y1="70" x2="960" y2="70" />
-    </g>
-    <g opacity="0.045" stroke="#a0d4b0" strokeWidth="0.5" fill="none">
-      {[80, 140, 200, 260].map((r, i) => <circle key={i} cx="50" cy="95%" r={r} />)}
-    </g>
-    <g opacity="0.02" stroke="#7eb8d4" strokeWidth="0.4">
-      {Array.from({ length: 18 }).map((_, i) => <line key={`h${i}`} x1="0" y1={i * 60} x2="100%" y2={i * 60} />)}
-      {Array.from({ length: 24 }).map((_, i) => <line key={`v${i}`} x1={i * 80} y1="0" x2={i * 80} y2="100%" />)}
-    </g>
-  </svg>
-);
-
-const Card = ({ children, style = {} }) => (
-  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: DS.radius, padding: "22px 26px", position: "relative", overflow: "hidden", ...style }}>
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${C.accent}44,transparent)` }} />
-    {children}
-  </div>
-);
-
-const Label = ({ children, style = {} }) => (
-  <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: C.dim, ...style }}>{children}</span>
-);
-
-const Mono = ({ children, style = {} }) => (
-  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 300, color: C.subtle, ...style }}>{children}</span>
-);
-
-const Tag = ({ children, accent = false, alt = false }) => (
-  <span style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", padding: "2px 7px", borderRadius: DS.radius, border: `1px solid ${alt ? C.accentAlt+"44" : accent ? C.accent+"44" : C.border}`, color: alt ? C.accentAlt : accent ? C.accent : C.dim }}>{children}</span>
-);
-
-const Rule = () => <div style={{ borderTop: `1px solid ${C.border}`, margin: "18px 0" }} />;
-
-const MathBlock = ({ children }) => (
-  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 300, background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius, padding: "12px 16px", color: C.subtle, letterSpacing: "0.03em", lineHeight: 2, whiteSpace: "pre" }}>{children}</div>
-);
-
-const InfoRow = ({ label, value, accent = false }) => (
-  <div style={{ display: "flex", gap: 16, padding: "9px 0", borderBottom: `1px solid ${C.border}`, alignItems: "baseline" }}>
-    <Mono style={{ minWidth: 200, color: C.dim, flexShrink: 0, fontSize: 11 }}>{label}</Mono>
-    <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{value}</span>
-  </div>
-);
-
-const Dots = ({ filled = 1 }) => (
-  <span style={{ display: "inline-flex", gap: 3 }}>
-    {[1,2,3].map(i => <span key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: i <= filled ? C.accent : C.muted, boxShadow: i <= filled ? `0 0 4px ${C.glowStr}` : "none" }} />)}
-  </span>
-);
-
-const PartSummary = ({ intro, points }) => (
-  <div style={{ padding: "16px 18px", background: C.elevated, border: `1px solid ${C.accent}33`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
-    <Label style={{ display: "block", marginBottom: 10, color: C.accent }}>Summary</Label>
-    {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{intro}</p>}
-    {points && <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>{points.map((p, i) => <div key={i} style={{ display: "flex", gap: 10 }}><Mono style={{ color: C.accent, minWidth: 14, fontSize: 11, flexShrink: 0 }}>{i + 1}.</Mono><span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{p}</span></div>)}</div>)}
-  </div>
-);
-
-const CompNote = ({ children }) => (
-  <div style={{ padding: "12px 16px", background: C.bg, border: `1px solid ${C.accentAlt}33`, borderLeft: `2px solid ${C.accentAlt}77`, borderRadius: DS.radius }}>
-    <Label style={{ color: C.accentAlt, display: "block", marginBottom: 8 }}>Competition Insight</Label>
-    <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{children}</div>
-  </div>
-);
-
-function MCField({ question, choices, correct, pts = 3, diff = 1, explain }) {
-  const [selected, setSelected] = useState(null);
-  const [revealed, setRevealed] = useState(false);
-  const [showExplain, setShowExplain] = useState(false);
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}><div style={{ display: "flex", gap: 8, alignItems: "center" }}><Tag>MC</Tag><Dots filled={diff} /></div><Mono style={{ fontSize: 10 }}>{pts} pts</Mono></div>
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-        {choices.map((ch, i) => {
-          const L = ["A","B","C","D"][i], on = selected === i;
-          const ok = revealed && i === correct, bad = revealed && on && i !== correct;
-          return (<div key={i} onClick={() => !revealed && setSelected(i)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", border: `1px solid ${ok ? C.accentAlt+"aa" : bad ? C.err+"88" : on ? C.accent+"88" : C.border}`, borderRadius: DS.radius, cursor: revealed ? "default" : "pointer", background: ok ? C.accentAlt+"0e" : bad ? C.err+"0e" : on ? C.accent+"0e" : "transparent", boxShadow: on ? `0 0 12px ${C.glow}` : "none", transition: "all 0.18s ease" }}><Mono style={{ fontSize: 10, color: on ? C.accent : C.dim, minWidth: 14 }}>{L}</Mono><span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{ch}</span>{ok && <Mono style={{ fontSize: 9, color: C.accentAlt }}>✓</Mono>}{bad && <Mono style={{ fontSize: 9, color: C.err }}>✗</Mono>}</div>);
-        })}
-      </div>
-      {selected !== null && (
-        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-          {!revealed && <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>Check</button>}
-          <button onClick={() => { setSelected(null); setRevealed(false); setShowExplain(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>Clear</button>
-          {revealed && explain && <button onClick={() => setShowExplain(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showExplain ? "Hide" : "Explain"}</button>}
-        </div>
-      )}
-      {showExplain && explain && <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{explain}</p></div>}
-    </div>
-  );
-}
-
-function INTField({ question, answer, pts = 4, diff = 2, hint }) {
-  const [val, setVal] = useState("");
-  const [checked, setChecked] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const correct = parseInt(val) === answer;
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}><div style={{ display: "flex", gap: 8, alignItems: "center" }}><Tag>INT</Tag><Dots filled={diff} /></div><Mono style={{ fontSize: 10 }}>{pts} pts</Mono></div>
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <input type="number" min="0" max="9999" value={val} placeholder="0" onChange={e => { setVal(e.target.value); setChecked(false); }} style={{ width: 96, padding: "10px 14px", borderRadius: DS.radius, border: `1px solid ${checked ? (correct ? C.accentAlt+"99" : C.err+"88") : C.border}`, background: checked ? (correct ? C.accentAlt+"0a" : C.err+"0a") : C.bg, color: checked ? (correct ? C.accentAlt : C.err) : C.heading, fontFamily: F.mono, fontSize: 22, fontWeight: 300, textAlign: "right", boxShadow: val ? `0 0 10px ${C.glow}` : "none", transition: "all 0.2s" }} />
-        <div><Mono style={{ fontSize: 9, letterSpacing: "0.12em", display: "block" }}>INTEGER · 0–9999</Mono>{checked && <Mono style={{ fontSize: 9, display: "block", marginTop: 3, color: correct ? C.accentAlt : C.err }}>{correct ? "✓ correct" : "✗ try again"}</Mono>}</div>
-      </div>
-      {val !== "" && (
-        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-          {!checked && <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>Check</button>}
-          <button onClick={() => { setVal(""); setChecked(false); setShowHint(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>Clear</button>
-          {hint && <button onClick={() => setShowHint(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showHint ? "Hide hint" : "Hint"}</button>}
-        </div>
-      )}
-      {showHint && hint && <div style={{ marginTop: 10, padding: "9px 13px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.6, fontStyle: "italic" }}>{hint}</p></div>}
-    </div>
-  );
-}
+import { C, F, Geo, GLOBAL_CSS, Card, Label, Mono, Dots, Tag, MathBlock, InfoRow, SummaryBox, HintBox, MCField, INTField } from "../project-template-files/block-kit.jsx";
 
 const MAIN_TABS = ["lecture", "practice", "reference"];
 const PART_LABELS = ["I · Reflection & Refraction", "II · Mirrors", "III · Lenses"];
@@ -161,15 +8,22 @@ export default function G10OpticsL01() {
   const [tab, setTab] = useState("lecture");
   const [part, setPart] = useState(0);
 
-  const tabBtn = t => ({ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: DS.radius, border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" });
-  const partBtn = i => ({ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: DS.radius, border: `1px solid ${part === i ? C.accent+"55" : C.border}`, background: part === i ? C.accent+"11" : "transparent", color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s" });
-  const navBtn = (accent = false) => ({ fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: DS.radius, border: `1px solid ${accent ? C.accent+"55" : C.border}`, background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer" });
+  const tabBtn = t => ({ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: "4px", border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" });
+  const partBtn = i => ({ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: "4px", border: `1px solid ${part === i ? C.accent+"55" : C.border}`, background: part === i ? C.accent+"11" : "transparent", color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s" });
+  const navBtn = (accent = false) => ({ fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: "4px", border: `1px solid ${accent ? C.accent+"55" : C.border}`, background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer" });
 
   return (<>
-    <style>{css}</style><Geo />
+    <style>{GLOBAL_CSS}</style><Geo />
     <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
 
-      <div className="fade" style={{ marginBottom: 36 }}>
+      {/* Navbar */}
+      <div className="bk-fade" style={{ display: "flex", gap: 12, marginBottom: 36, fontFamily: F.mono, fontSize: 10 }}>
+        <a href="index.html" style={{ color: C.dim, textDecoration: "none" }}>← Index</a>
+        <span style={{ color: C.muted }}>|</span>
+        <a href="highscores.html" style={{ color: C.dim, textDecoration: "none" }}>Highscores</a>
+      </div>
+
+      <div className="bk-fade" style={{ marginBottom: 36 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}><Tag>Physics</Tag><Tag accent>Optics</Tag><Tag>Block 8</Tag></div>
         <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}` }}>Geometric Optics &<br /><em>Image Formation</em></h1>
         <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>Light travels in straight lines. From that single fact — reflection, refraction, mirrors, and lenses all follow.</p>
@@ -190,12 +44,11 @@ export default function G10OpticsL01() {
       <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
 
       {tab === "lecture" && (
-        <div className="fade">
+        <div className="bk-fade">
           <div style={{ display: "flex", gap: 3, marginBottom: 22, flexWrap: "wrap" }}>{PART_LABELS.map((lbl, i) => <button key={i} onClick={() => setPart(i)} style={partBtn(i)}>{lbl}</button>)}</div>
 
-          {/* ── PART I: Reflection & Refraction ── */}
           {part === 0 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <PartSummary intro="When light hits a boundary between two media, part reflects and part transmits (refracts). Reflection follows the simplest possible rule — angle in = angle out. Refraction follows Snell's law, which encodes how the speed of light changes between media." points={["Law of reflection: θ_i = θ_r — angles measured from the normal. This is symmetry at its most fundamental.", "Snell's Law: n₁sinθ₁ = n₂sinθ₂ — the product n·sinθ is conserved across a boundary.", "When light enters a slower medium (higher n), it bends toward the normal. When it enters a faster medium, it bends away.", "Total internal reflection occurs when light in a denser medium strikes a boundary at an angle exceeding the critical angle θ_c = arcsin(n₂/n₁)."]} />
+            <SummaryBox intro="When light hits a boundary between two media, part reflects and part transmits (refracts). Reflection follows the simplest possible rule — angle in = angle out. Refraction follows Snell's law, which encodes how the speed of light changes between media." points={["Law of reflection: θ_i = θ_r — angles measured from the normal. This is symmetry at its most fundamental.", "Snell's Law: n₁sinθ₁ = n₂sinθ₂ — the product n·sinθ is conserved across a boundary.", "When light enters a slower medium (higher n), it bends toward the normal. When it enters a faster medium, it bends away.", "Total internal reflection occurs when light in a denser medium strikes a boundary at an angle exceeding the critical angle θ_c = arcsin(n₂/n₁)."]} />
 
             <Card>
               <Label style={{ display: "block", marginBottom: 14 }}>Refractive Index</Label>
@@ -221,16 +74,15 @@ export default function G10OpticsL01() {
               <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.65 }}>Diamond's brilliance is a consequence of its small critical angle — light entering a diamond undergoes many internal reflections before escaping, dispersing into spectral colors.</p>
             </Card>
 
-            <CompNote>
+            <HintBox variant="comp">
               <p><strong>Fermat's Principle (competition):</strong> Snell's law minimizes the optical path length OPL = n₁s₁ + n₂s₂. Setting d(OPL)/dx = 0 yields n₁sinθ₁ = n₂sinθ₂ directly. For multi-layer problems or graded-index media (mirages), the path is the curve that minimizes ∫ n(s) ds — a calculus of variations problem. In competition, Fermat's principle often solves reflection/refraction optimization problems more elegantly than geometry alone.</p>
-            </CompNote>
+            </HintBox>
 
-            <Card><MCField question="Light traveling in glass (n = 1.52) strikes a glass-air boundary at 30° from the normal. Does it exit into air?" choices={["Yes, θ₂ ≈ 49°", "Yes, θ₂ ≈ 30°", "No, TIR occurs", "It depends on wavelength"]} correct={0} diff={2} pts={4} explain="n₁sinθ₁ = n₂sinθ₂ → 1.52·sin30° = 1.00·sinθ₂ → 1.52·0.5 = sinθ₂ → sinθ₂ = 0.76 → θ₂ ≈ 49.5°. Since θ₁ = 30° < θ_c = 41.1°, transmission occurs." /></Card>
+            <Card><MCField question="Light traveling in glass (n = 1.52) strikes a glass-air boundary at 30° from the normal. Does it exit into air?" choices={["Yes, θ₂ ≈ 49°", "Yes, θ₂ ≈ 30°", "No, TIR occurs", "It depends on wavelength"]} correct={0} diff="medium" pts={4} explain="n₁sinθ₁ = n₂sinθ₂ → 1.52·sin30° = 1.00·sinθ₂ → 1.52·0.5 = sinθ₂ → sinθ₂ = 0.76 → θ₂ ≈ 49.5°. Since θ₁ = 30° < θ_c = 41.1°, transmission occurs." /></Card>
           </div>)}
 
-          {/* ── PART II: Mirrors ── */}
           {part === 1 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <PartSummary intro="Mirrors form images by reflection. A plane mirror produces a virtual image at equal distance behind the mirror. Curved mirrors — concave and convex — focus or spread light, producing real or virtual images described by the mirror equation." points={["The mirror equation 1/f = 1/d_o + 1/d_i applies to both concave and convex mirrors with a consistent sign convention.", "Concave mirrors (converging, f &gt; 0) can produce real or virtual images depending on object distance relative to f.", "Convex mirrors (diverging, f &lt; 0) always produce virtual, upright, diminished images — your car's side mirror.", "Ray diagrams use three principal rays: parallel→focus, focus→parallel, and center-of-curvature→back along itself."]} />
+            <SummaryBox intro="Mirrors form images by reflection. A plane mirror produces a virtual image at equal distance behind the mirror. Curved mirrors — concave and convex — focus or spread light, producing real or virtual images described by the mirror equation." points={["The mirror equation 1/f = 1/d_o + 1/d_i applies to both concave and convex mirrors with a consistent sign convention.", "Concave mirrors (converging, f &gt; 0) can produce real or virtual images depending on object distance relative to f.", "Convex mirrors (diverging, f &lt; 0) always produce virtual, upright, diminished images — your car's side mirror.", "Ray diagrams use three principal rays: parallel→focus, focus→parallel, and center-of-curvature→back along itself."]} />
 
             <Card>
               <Label style={{ display: "block", marginBottom: 14 }}>The Mirror Equation</Label>
@@ -246,16 +98,15 @@ export default function G10OpticsL01() {
               {[["d_o &gt; 2f", "Real, inverted, diminished — between f and 2f"], ["d_o = 2f", "Real, inverted, same size — at 2f"], ["f &lt; d_o &lt; 2f", "Real, inverted, enlarged — beyond 2f"], ["d_o = f", "Image at infinity — parallel reflected rays"], ["d_o &lt; f", "Virtual, upright, enlarged — behind mirror"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
             </Card>
 
-            <CompNote>
+            <HintBox variant="comp">
               <p><strong>Compound mirror systems:</strong> When an image from one mirror serves as the object for the next, apply the mirror equation sequentially. The image from mirror 1 becomes the object for mirror 2, with d_o₂ = separation − d_i₁ (adjusted for sign). Multi-mirror systems appear in telescopes (Cassegrain, Gregorian) and laser cavities. The key competition skill is sign discipline — a single sign error cascades through the entire calculation.</p>
-            </CompNote>
+            </HintBox>
 
-            <Card><MCField question="An object is placed 30 cm in front of a concave mirror with focal length f = 10 cm. Where is the image?" choices={["5 cm behind the mirror", "15 cm in front of the mirror", "30 cm behind the mirror", "7.5 cm in front of the mirror"]} correct={1} diff={2} pts={4} explain="1/d_i = 1/f − 1/d_o = 1/10 − 1/30 = 3/30 − 1/30 = 2/30 → d_i = 15 cm. Positive d_i means real image, in front of mirror." /></Card>
+            <Card><MCField question="An object is placed 30 cm in front of a concave mirror with focal length f = 10 cm. Where is the image?" choices={["5 cm behind the mirror", "15 cm in front of the mirror", "30 cm behind the mirror", "7.5 cm in front of the mirror"]} correct={1} diff="medium" pts={4} explain="1/d_i = 1/f − 1/d_o = 1/10 − 1/30 = 3/30 − 1/30 = 2/30 → d_i = 15 cm. Positive d_i means real image, in front of mirror." /></Card>
           </div>)}
 
-          {/* ── PART III: Lenses ── */}
           {part === 2 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <PartSummary intro="Lenses form images by refraction at two curved surfaces. The thin lens equation is identical in form to the mirror equation — but the physics is double refraction, not reflection." points={["Thin lens equation: 1/f = 1/d_o + 1/d_i — identical algebra to the mirror equation.", "Converging lenses (f &gt; 0, biconvex) bring parallel rays to a real focus. Diverging lenses (f &lt; 0, biconcave) spread them.", "The lens maker's formula 1/f = (n−1)(1/R₁ − 1/R₂) relates focal length to curvature and refractive index.", "A real image can be projected on a screen. A virtual image cannot — it exists only where rays appear to diverge from."]} />
+            <SummaryBox intro="Lenses form images by refraction at two curved surfaces. The thin lens equation is identical in form to the mirror equation — but the physics is double refraction, not reflection." points={["Thin lens equation: 1/f = 1/d_o + 1/d_i — identical algebra to the mirror equation.", "Converging lenses (f &gt; 0, biconvex) bring parallel rays to a real focus. Diverging lenses (f &lt; 0, biconcave) spread them.", "The lens maker's formula 1/f = (n−1)(1/R₁ − 1/R₂) relates focal length to curvature and refractive index.", "A real image can be projected on a screen. A virtual image cannot — it exists only where rays appear to diverge from."]} />
 
             <Card>
               <Label style={{ display: "block", marginBottom: 14 }}>The Thin Lens Equation</Label>
@@ -278,11 +129,11 @@ export default function G10OpticsL01() {
               {[["d_o &gt; 2f", "Real, inverted, diminished — camera, eye"], ["d_o = 2f", "Real, inverted, same size — 1:1 imaging"], ["f &lt; d_o &lt; 2f", "Real, inverted, enlarged — projector, enlarger"], ["d_o = f", "Image at infinity — collimated output"], ["d_o &lt; f", "Virtual, upright, enlarged — magnifying glass"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
             </Card>
 
-            <CompNote>
+            <HintBox variant="comp">
               <p><strong>Multi-lens systems:</strong> For two thin lenses separated by distance D, the image from lens 1 becomes the object for lens 2. The effective focal length is 1/f_eff = 1/f₁ + 1/f₂ − D/(f₁f₂). When D = 0 (lenses in contact), powers add: P_eff = P₁ + P₂. This is how achromatic doublets work — a converging crown glass lens cemented to a weaker diverging flint glass lens corrects for chromatic aberration while maintaining net positive power.</p>
-            </CompNote>
+            </HintBox>
 
-            <Card><MCField question="A converging lens (f = 20 cm) is used as a magnifying glass with the object 15 cm from the lens. What kind of image is formed?" choices={["Real, inverted, enlarged", "Virtual, upright, enlarged", "Real, upright, diminished", "Virtual, inverted, diminished"]} correct={1} diff={2} pts={4} explain="d_o = 15 cm &lt; f = 20 cm → object inside focal point. Converging lens with d_o &lt; f produces a virtual, upright, enlarged image on the same side as the object." /></Card>
+            <Card><MCField question="A converging lens (f = 20 cm) is used as a magnifying glass with the object 15 cm from the lens. What kind of image is formed?" choices={["Real, inverted, enlarged", "Virtual, upright, enlarged", "Real, upright, diminished", "Virtual, inverted, diminished"]} correct={1} diff="medium" pts={4} explain="d_o = 15 cm &lt; f = 20 cm → object inside focal point. Converging lens with d_o &lt; f produces a virtual, upright, enlarged image on the same side as the object." /></Card>
           </div>)}
 
           <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
@@ -292,19 +143,17 @@ export default function G10OpticsL01() {
         </div>
       )}
 
-      {/* ═══════════════ PRACTICE ═══════════════ */}
-      {tab === "practice" && (<div className="fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {tab === "practice" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <Card><Label style={{ display: "block", marginBottom: 6 }}>Problem Set · Geometric Optics</Label><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>6 problems · Easy → Medium → Hard · 21 pts total</p></Card>
-        <Card><MCField question="A ray of light in air strikes a water surface (n = 1.33) at 30° from the normal. What is the angle of refraction?" choices={["22°", "30°", "42°", "49°"]} correct={0} diff={1} pts={3} explain="n₁sinθ₁ = n₂sinθ₂ → 1.00·sin30° = 1.33·sinθ₂ → sinθ₂ = 0.5/1.33 ≈ 0.376 → θ₂ ≈ 22.1°." /></Card>
-        <Card><MCField question="What is the critical angle for light traveling from glass (n=1.52) to air?" choices={["24°", "33°", "41°", "49°"]} correct={2} diff={1} pts={3} explain="θ_c = arcsin(n₂/n₁) = arcsin(1.00/1.52) = arcsin(0.658) ≈ 41.1°." /></Card>
-        <Card><INTField question="An object is 40 cm from a concave mirror of focal length 15 cm. Find the image distance in cm." answer={24} diff={2} pts={4} hint="1/d_i = 1/f − 1/d_o = 1/15 − 1/40 = 8/120 − 3/120 = 5/120. d_i = 120/5 = 24 cm." /></Card>
-        <Card><MCField question="A biconvex lens has equal curvature radii |R| = 30 cm and n = 1.5. What is its focal length?" choices={["15 cm", "30 cm", "45 cm", "60 cm"]} correct={1} diff={2} pts={4} explain="1/f = (n−1)(1/R₁ − 1/R₂) = (0.5)(1/30 − (−1/30)) = 0.5·(2/30) = 1/30. f = 30 cm." /></Card>
-        <Card><INTField question="A converging lens (f=10 cm) produces a real image 30 cm from the lens. What is the object distance in cm?" answer={15} diff={2} pts={4} hint="1/d_o = 1/f − 1/d_i = 1/10 − 1/30 = 3/30 − 1/30 = 2/30. d_o = 15 cm." /></Card>
-        <Card><MCField question="A convex mirror (f = −25 cm) has an object placed 50 cm in front. The image is:" choices={["Real, at 17 cm in front", "Virtual, at 17 cm behind", "Real, at 50 cm in front", "Virtual, at 25 cm behind"]} correct={1} diff={2} pts={4} explain="1/d_i = 1/f − 1/d_o = −1/25 − 1/50 = −2/50 − 1/50 = −3/50 → d_i = −16.7 cm. Negative d_i = virtual, behind mirror." /></Card>
+        <Card><MCField question="A ray of light in air strikes a water surface (n = 1.33) at 30° from the normal. What is the angle of refraction?" choices={["22°", "30°", "42°", "49°"]} correct={0} diff="easy" pts={3} explain="n₁sinθ₁ = n₂sinθ₂ → 1.00·sin30° = 1.33·sinθ₂ → sinθ₂ = 0.5/1.33 ≈ 0.376 → θ₂ ≈ 22.1°." /></Card>
+        <Card><MCField question="What is the critical angle for light traveling from glass (n=1.52) to air?" choices={["24°", "33°", "41°", "49°"]} correct={2} diff="easy" pts={3} explain="θ_c = arcsin(n₂/n₁) = arcsin(1.00/1.52) = arcsin(0.658) ≈ 41.1°." /></Card>
+        <Card><INTField question="An object is 40 cm from a concave mirror of focal length 15 cm. Find the image distance in cm." answer={24} diff="medium" pts={4} hint="1/d_i = 1/f − 1/d_o = 1/15 − 1/40 = 8/120 − 3/120 = 5/120. d_i = 120/5 = 24 cm." /></Card>
+        <Card><MCField question="A biconvex lens has equal curvature radii |R| = 30 cm and n = 1.5. What is its focal length?" choices={["15 cm", "30 cm", "45 cm", "60 cm"]} correct={1} diff="medium" pts={4} explain="1/f = (n−1)(1/R₁ − 1/R₂) = (0.5)(1/30 − (−1/30)) = 0.5·(2/30) = 1/30. f = 30 cm." /></Card>
+        <Card><INTField question="A converging lens (f=10 cm) produces a real image 30 cm from the lens. What is the object distance in cm?" answer={15} diff="medium" pts={4} hint="1/d_o = 1/f − 1/d_i = 1/10 − 1/30 = 3/30 − 1/30 = 2/30. d_o = 15 cm." /></Card>
+        <Card><MCField question="A convex mirror (f = −25 cm) has an object placed 50 cm in front. The image is:" choices={["Real, at 17 cm in front", "Virtual, at 17 cm behind", "Real, at 50 cm in front", "Virtual, at 25 cm behind"]} correct={1} diff="medium" pts={4} explain="1/d_i = 1/f − 1/d_o = −1/25 − 1/50 = −2/50 − 1/50 = −3/50 → d_i = −16.7 cm. Negative d_i = virtual, behind mirror." /></Card>
       </div>)}
 
-      {/* ═══════════════ REFERENCE ═══════════════ */}
-      {tab === "reference" && (<div className="fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {tab === "reference" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Card>
           <Label style={{ display: "block", marginBottom: 14 }}>Reflection & Refraction</Label>
           <MathBlock>{"θ_i = θ_r                    law of reflection\nn₁·sin θ₁ = n₂·sin θ₂        Snell's law\nθ_c = arcsin(n₂/n₁)          critical angle (n₁ > n₂)\n\nn = c/v                      refractive index"}</MathBlock>
@@ -321,9 +170,11 @@ export default function G10OpticsL01() {
 
       <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
         <Mono style={{ fontSize: 9 }}>optics · mirrors · lenses · block 8</Mono>
-        <Mono style={{ fontSize: 9, color: C.dim }}>prerequisite: triangle similarity (G10 math)</Mono>
+        <div style={{ display: "flex", gap: 12 }}>
+          <a href="index.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>← Index</a>
+          <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>Highscores →</a>
+        </div>
       </div>
     </div>
   </>);
 }
-

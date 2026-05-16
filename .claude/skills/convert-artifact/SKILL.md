@@ -9,11 +9,11 @@ User says: "convert this to HTML", "make this standalone", "deploy this artifact
 ## How It Works
 
 1. Run `project-template-files/convert.ps1` with the JSX file path(s)
-2. Script auto-wraps JSX into HTML template with React + Babel standalone CDN
-3. Auto-replaces `import { ... } from "react"` → `const { ... } = React;`
-4. Auto-replaces `export default function X()` → `function X()`
-5. Adds `ReactDOM.createRoot(...).render(<X />)` mount line
-6. Outputs `.html` file(s) in same directory
+2. Script auto-detects block-kit imports and inlines the full block-kit source (~1639 lines) into output
+3. Strips all imports, replaces with `const { useState, ... } = React;` hook destructure
+4. Strips `export default/export` from functions
+5. Adds `ReactDOM.createRoot(...).render(<ComponentName />)` mount line
+6. Outputs `.html` file in same directory
 
 ## Usage
 
@@ -30,12 +30,19 @@ Get-ChildItem path/to/*.jsx | ForEach-Object { ./project-template-files/convert.
 
 ## What the HTML File Contains
 
-- React 18 + ReactDOM + Babel standalone from CDN (jsdelivr)
-- Google Fonts (@import EB Garamond + JetBrains Mono)
+- React 18 + ReactDOM + Babel standalone from CDN (unpkg)
+- Google Fonts (@import EB Garamond + JetBrains Mono) — injected by GLOBAL_CSS
 - Base CSS (dark bg, scrollbar, fadeUp animation)
-- Inlined DS design tokens
-- All sub-components, answer fields, and main component as editable `<script type="text/babel">`
-- SVG geo background preserved as-is
+- Full block-kit source inlined (DS, GLOBAL_CSS, Geo, all primitives, MCField, INTField, TFField, FIEField, ProbsetComposer, HighscoresPage, ProgStorage)
+- Main component code as editable `<script type="text/babel">`
+
+## Block Kit Inlining
+
+The script detects `import { ... } from "...block-kit.jsx"` and:
+1. Resolves the path relative to the input file
+2. Reads block-kit.jsx, strips its imports/exports
+3. Prepends the cleaned block-kit code before the component
+4. All symbols (C, F, Geo, GLOBAL_CSS, Card, Label, etc.) resolve at runtime
 
 ## Hosting the Output
 

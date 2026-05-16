@@ -35,7 +35,7 @@ const GLOBAL_CSS = `
   @keyframes timerFadeIn { from { opacity:0; } to { opacity:1; } }
   .bk-fade { animation: fadeUp 0.45s ease both; }
   .bk-fade-fast { animation: fadeUp 0.3s ease both; }
-  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: ${C.muted}; border-radius: 1px; outline: none; cursor: pointer; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: ${C.accent}; cursor: pointer; box-shadow: 0 0 6px ${C.glow}; }
   input:focus, select:focus { outline: none; }
@@ -484,8 +484,35 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
   const [checked, setChecked] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [focused, setFocused] = useState(false);
   const startRef = useRef(Date.now());
+  const intVal = parseInt(val) || 0;
   const isCorrect = parseInt(val) === answer;
+
+  const stepUp = () => { if (!checked) { setVal(String(Math.min(999, intVal + 1))); } };
+  const stepDown = () => { if (!checked) { setVal(String(Math.max(0, intVal - 1))); } };
+
+  const spinBtn = (char, onClick) => (
+    <button
+      onClick={onClick}
+      disabled={checked}
+      style={{
+        width: 28, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
+        border: `1px solid ${checked ? C.muted : C.accent}55`,
+        borderRadius: 3, background: "transparent",
+        color: checked ? C.muted : C.accent,
+        fontFamily: F.mono, fontSize: 10, lineHeight: 1, cursor: checked ? "default" : "pointer",
+        padding: 0, transition: "all 0.15s",
+        opacity: checked ? 0.35 : 1,
+      }}
+      onMouseEnter={e => { if (!checked) { e.target.style.background = C.accent + "15"; e.target.style.borderColor = C.accent + "88"; } }}
+      onMouseLeave={e => { if (!checked) { e.target.style.background = "transparent"; e.target.style.borderColor = C.accent + "55"; } }}
+    >{char}</button>
+  );
+
+  const borderCol = checked ? (isCorrect ? C.accentAlt + "99" : C.err + "88")
+    : focused ? C.accent + "77"
+    : C.border;
 
   return (
     <div className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>
@@ -496,26 +523,28 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
       <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{question}</p>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ position: "relative" }}>
-          <input
-            type="number" min="0" max="999"
-            value={val}
-            onChange={e => { setVal(e.target.value); setChecked(false); }}
-            placeholder="0"
-            style={{
-              width: 96, padding: "10px 14px",
-              border: `1px solid ${checked ? (isCorrect ? C.accentAlt + "99" : C.err + "88") : C.border}`,
-              borderRadius: DS.radius,
-              background: checked ? (isCorrect ? C.accentAlt + "0a" : C.err + "0a") : C.bg,
-              color: checked ? (isCorrect ? C.accentAlt : C.err) : C.heading,
-              fontFamily: F.mono, fontSize: 22, fontWeight: 300, textAlign: "right",
-              boxShadow: val ? `0 0 10px ${C.glow}` : "none",
-              transition: "all 0.2s",
-            }}
-            onFocus={e => { if (!checked) e.target.style.borderColor = C.accent + "77"; }}
-            onBlur={e => { if (!checked) e.target.style.borderColor = C.border; }}
-          />
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <input
+          type="text" inputMode="numeric" pattern="[0-9]*"
+          value={val}
+          onChange={e => { const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 3); setVal(v); setChecked(false); }}
+          placeholder="0"
+          onFocus={() => { if (!checked) setFocused(true); }}
+          onBlur={() => setFocused(false)}
+          style={{
+            width: 80, padding: "10px 12px",
+            border: `1px solid ${borderCol}`,
+            borderRadius: DS.radius,
+            background: checked ? (isCorrect ? C.accentAlt + "0a" : C.err + "0a") : C.bg,
+            color: checked ? (isCorrect ? C.accentAlt : C.err) : C.heading,
+            fontFamily: F.mono, fontSize: 22, fontWeight: 300, textAlign: "center",
+            boxShadow: val ? `0 0 10px ${C.glow}` : "none",
+            transition: "all 0.2s", outline: "none", caretColor: C.accent,
+          }}
+        />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {spinBtn("+", stepUp)}
+          {spinBtn("−", stepDown)}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <Mono style={{ fontSize: 9, letterSpacing: "0.12em" }}>INTEGER · 0 – 999</Mono>
@@ -851,7 +880,13 @@ const ProgStorage = (() => {
     endSession(file) {
       const data = _all();
       if (data[file]) {
-        data[file].completedAt = new Date().toISOString();
+        const rec = data[file];
+        rec.completedAt = new Date().toISOString();
+        const probs = Object.values(rec.problems || {});
+        rec.totalTimeSeconds = probs.reduce((sum, p) => sum + (p.timeSpent || 0), 0);
+        if (rec.startedAt) {
+          rec.wallTimeSeconds = Math.round((new Date(rec.completedAt) - new Date(rec.startedAt)) / 1000);
+        }
         _write(data);
       }
     },
@@ -869,6 +904,8 @@ const ProgStorage = (() => {
           completedAt: r.completedAt || null,
           startedAt: r.startedAt || null,
           examMode: r.examMode || false,
+          totalTimeSeconds: r.totalTimeSeconds || 0,
+          wallTimeSeconds: r.wallTimeSeconds || 0,
         }))
         .sort((a, b) => b.pct - a.pct || b.pointsEarned - a.pointsEarned);
     },
@@ -887,6 +924,8 @@ const ProgStorage = (() => {
           startedAt: r.startedAt || null,
           answered: r.problems ? Object.values(r.problems).filter(p => p.answered).length : 0,
           total: r.problems ? Object.keys(r.problems).length : 0,
+          totalTimeSeconds: r.totalTimeSeconds || 0,
+          wallTimeSeconds: r.wallTimeSeconds || 0,
         }))
         .sort((a, b) => (b.completedAt || b.startedAt || "").localeCompare(a.completedAt || a.startedAt || ""))
         .slice(0, limit);
@@ -1136,6 +1175,249 @@ function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfi
 }
 
 // ═══════════════════════════════════════════════════════════════
+// HIGHSCORES PAGE — leaderboard from localStorage
+// ═══════════════════════════════════════════════════════════════
+
+function fmtTime(seconds) {
+  if (!seconds || seconds <= 0) return "—";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function HighscoresPage({ navLinks }) {
+  const [tab, setTab] = useState("scores");
+  const [scores, setScores] = useState([]);
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    setScores(ProgStorage.getHighscores());
+    setHistory(ProgStorage.getHistory(20));
+  }, []);
+
+  const tabBtn = t => ({
+    fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: DS.radius,
+    border: `1px solid ${tab === t ? C.accent + "55" : "transparent"}`,
+    background: tab === t ? C.accent + "11" : "transparent",
+    color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s",
+  });
+
+  const defaultNav = [
+    { href: "index.html", label: "← Index" },
+    { href: "highscores.html", label: "Highscores" },
+  ];
+
+  const links = navLinks || defaultNav;
+
+  const thStyle = {
+    fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase",
+    color: C.dim, textAlign: "left", padding: "8px 12px", borderBottom: `1px solid ${C.border}`,
+  };
+
+  const tdStyle = {
+    fontFamily: F.serif, fontSize: 13, color: C.body, padding: "10px 12px",
+    borderBottom: `1px solid ${C.border}`,
+  };
+
+  const monoStyle = {
+    fontFamily: F.mono, fontSize: 10, color: C.subtle, padding: "10px 12px",
+    borderBottom: `1px solid ${C.border}`,
+  };
+
+  const pctColor = pct => pct >= 90 ? C.accentAlt : pct >= 70 ? C.accent : pct >= 50 ? C.subtle : C.err;
+
+  return (
+    <>
+      <style>{GLOBAL_CSS}</style>
+      <Geo />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+
+        {/* Navbar */}
+        <div className="bk-fade" style={{
+          animationDelay: "0ms", marginBottom: 28,
+          display: "flex", alignItems: "center", gap: 16,
+          padding: "8px 0", borderBottom: `1px solid ${C.border}`,
+        }}>
+          {links.map((l, i) => (
+            <span key={i}>
+              {i > 0 && <span style={{ color: C.muted, fontSize: 10, marginRight: 16 }}>|</span>}
+              <a href={l.href} style={{
+                fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
+                color: C.dim, textDecoration: "none",
+                padding: "3px 0", borderBottom: `1px solid transparent`,
+                transition: "all 0.2s",
+              }}
+                onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
+                onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
+              >{l.label}</a>
+            </span>
+          ))}
+        </div>
+
+        {/* Header */}
+        <div className="bk-fade" style={{ animationDelay: "0ms", marginBottom: 36 }}>
+          <Label style={{ display: "block", marginBottom: 10 }}>Records</Label>
+          <h1 style={{
+            fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500,
+            color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2,
+            marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}`,
+          }}>Highscores<br /><em>&amp; History</em></h1>
+          <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>
+            Best scores and completion times across all problem sets.
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          {["scores", "history"].map(t => (
+            <button key={t} onClick={() => setTab(t)} style={tabBtn(t)}>
+              {t === "scores" ? "High Scores" : "Recent History"}
+            </button>
+          ))}
+          <button onClick={() => {
+            if (confirm("Clear all stored scores and history?")) {
+              ProgStorage.clearAll();
+              setScores([]);
+              setHistory([]);
+            }
+          }} style={{
+            fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em",
+            marginLeft: "auto", padding: "4px 10px", borderRadius: DS.radius,
+            border: `1px solid ${C.err}33`, background: "transparent",
+            color: C.muted, cursor: "pointer", transition: "all 0.2s",
+          }}
+            onMouseEnter={e => { e.target.style.color = C.err; e.target.style.borderColor = C.err + "55"; }}
+            onMouseLeave={e => { e.target.style.color = C.muted; e.target.style.borderColor = C.err + "33"; }}
+          >Clear All</button>
+        </div>
+        <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
+
+        {/* High Scores tab */}
+        {tab === "scores" && (
+          <div className="bk-fade">
+            {scores.length === 0 ? (
+              <Card>
+                <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, textAlign: "center", padding: "20px 0" }}>
+                  No scores yet. Complete a problem set to see your results here.
+                </p>
+              </Card>
+            ) : (
+              <Card style={{ padding: 0, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...thStyle, width: "5%", textAlign: "center" }}>#</th>
+                      <th style={{ ...thStyle, width: "30%" }}>Problem Set</th>
+                      <th style={{ ...thStyle, width: "15%", textAlign: "center" }}>Score</th>
+                      <th style={{ ...thStyle, width: "12%", textAlign: "center" }}>%</th>
+                      <th style={{ ...thStyle, width: "18%", textAlign: "center" }}>Best Time</th>
+                      <th style={{ ...thStyle, width: "20%", textAlign: "right" }}>Completed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scores.map((s, i) => (
+                      <tr key={s.file} style={{ transition: "background 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.elevated; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <td style={{ ...monoStyle, textAlign: "center", color: i === 0 ? C.accent : C.dim }}>{i + 1}</td>
+                        <td style={tdStyle}>
+                          <a href={s.file.replace(/\.jsx$/, ".html")} style={{
+                            color: i === 0 ? C.accent : C.body, textDecoration: "none",
+                            fontFamily: F.serif, fontSize: 13,
+                          }}
+                            onMouseEnter={e => { e.target.style.color = C.accent; }}
+                            onMouseLeave={e => { e.target.style.color = i === 0 ? C.accent : C.body; }}
+                          >{s.title.replace(/\b\w/g, c => c.toUpperCase())}</a>
+                          {s.examMode && <Tag accent style={{ marginLeft: 8 }}>EXAM</Tag>}
+                        </td>
+                        <td style={{ ...monoStyle, textAlign: "center", color: C.heading }}>{s.pointsEarned}/{s.totalPoints}</td>
+                        <td style={{ ...monoStyle, textAlign: "center", color: pctColor(s.pct), fontWeight: 400 }}>{s.pct}%</td>
+                        <td style={{ ...monoStyle, textAlign: "center" }}>{fmtTime(s.totalTimeSeconds)}</td>
+                        <td style={{ ...monoStyle, textAlign: "right", color: C.dim, fontSize: 9 }}>{fmtDate(s.completedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* History tab */}
+        {tab === "history" && (
+          <div className="bk-fade">
+            {history.length === 0 ? (
+              <Card>
+                <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, textAlign: "center", padding: "20px 0" }}>
+                  No history yet. Start a problem set to begin tracking.
+                </p>
+              </Card>
+            ) : (
+              <Card style={{ padding: 0, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...thStyle, width: "30%" }}>Problem Set</th>
+                      <th style={{ ...thStyle, width: "12%", textAlign: "center" }}>Progress</th>
+                      <th style={{ ...thStyle, width: "12%", textAlign: "center" }}>Score</th>
+                      <th style={{ ...thStyle, width: "16%", textAlign: "center" }}>Time</th>
+                      <th style={{ ...thStyle, width: "14%", textAlign: "center" }}>Status</th>
+                      <th style={{ ...thStyle, width: "16%", textAlign: "right" }}>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map(h => (
+                      <tr key={h.file + h.startedAt} style={{ transition: "background 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.elevated; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <td style={tdStyle}>
+                          <a href={h.file.replace(/\.jsx$/, ".html")} style={{
+                            color: C.body, textDecoration: "none", fontFamily: F.serif, fontSize: 13,
+                          }}
+                            onMouseEnter={e => { e.target.style.color = C.accent; }}
+                            onMouseLeave={e => { e.target.style.color = C.body; }}
+                          >{h.title.replace(/\b\w/g, c => c.toUpperCase())}</a>
+                        </td>
+                        <td style={{ ...monoStyle, textAlign: "center" }}>{h.answered}/{h.total}</td>
+                        <td style={{ ...monoStyle, textAlign: "center", color: pctColor(h.pct) }}>{h.pct}%</td>
+                        <td style={{ ...monoStyle, textAlign: "center" }}>{fmtTime(h.totalTimeSeconds)}</td>
+                        <td style={{ ...monoStyle, textAlign: "center" }}>
+                          <span style={{
+                            display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+                            background: h.completedAt ? C.accentAlt : C.accent,
+                            marginRight: 6, verticalAlign: "middle",
+                          }} />
+                          {h.completedAt ? "Done" : "Active"}
+                        </td>
+                        <td style={{ ...monoStyle, textAlign: "right", color: C.dim, fontSize: 9 }}>{fmtDate(h.completedAt || h.startedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
+          <Mono style={{ fontSize: 9 }}>highscores · block-kit</Mono>
+          <Mono style={{ fontSize: 9, color: C.dim }}>{scores.length} sets completed</Mono>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // PROBSET COMPOSER — renders a content tree
 // ═══════════════════════════════════════════════════════════════
 
@@ -1256,14 +1538,37 @@ function ProbsetComposer({ config, storageKey }) {
           }}
             onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
             onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
-          >&larr; Back</a>
+          >&larr; Index</a>
           <span style={{ color: C.muted, fontSize: 10 }}>|</span>
-          <Mono style={{ fontSize: 9, color: C.dim }}>
+          <a href="highscores.html" style={{
+            fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
+            color: C.dim, textDecoration: "none",
+            padding: "3px 0", borderBottom: `1px solid transparent`,
+            transition: "all 0.2s",
+          }}
+            onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
+            onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
+          >Highscores</a>
+          {(meta.navLinks || []).map((l, i) => (
+            <span key={i}>
+              <span style={{ color: C.muted, fontSize: 10 }}>|</span>
+              <a href={l.href} style={{
+                fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
+                color: C.dim, textDecoration: "none", marginLeft: 16,
+                padding: "3px 0", borderBottom: `1px solid transparent`,
+                transition: "all 0.2s",
+              }}
+                onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
+                onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
+              >{l.label}</a>
+            </span>
+          ))}
+          <Mono style={{ fontSize: 9, color: C.dim, marginLeft: "auto" }}>
             {answeredCount}/{questionCount} answered
             {earnedPoints > 0 && <> &middot; {earnedPoints}/{totalPoints} pts</>}
           </Mono>
           {allAnswered && (
-            <Mono style={{ fontSize: 9, color: C.accentAlt, marginLeft: "auto" }}>
+            <Mono style={{ fontSize: 9, color: C.accentAlt }}>
               Score: {earnedPoints}/{totalPoints} ({Math.round(earnedPoints / totalPoints * 100)}%)
             </Mono>
           )}
@@ -1306,7 +1611,10 @@ function ProbsetComposer({ config, storageKey }) {
         {allAnswered && (
           <div style={{ marginTop: 18, padding: "14px 18px", background: C.accentAlt + "08", border: `1px solid ${C.accentAlt}33`, borderLeft: `2px solid ${C.accentAlt}88`, borderRadius: DS.radius, textAlign: "center" }}>
             <p style={{ fontFamily: F.serif, fontSize: 15, color: C.accentAlt }}>All problems answered — {earnedPoints}/{totalPoints} points ({Math.round(earnedPoints / totalPoints * 100)}%)</p>
-            <a href="index.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none", marginTop: 8, display: "inline-block" }}>&larr; Back to index</a>
+            <div style={{ display: "flex", gap: 20, justifyContent: "center", marginTop: 8 }}>
+              <a href="index.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none" }}>&larr; Index</a>
+              <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none" }}>Highscores &rarr;</a>
+            </div>
           </div>
         )}
       </div>
@@ -1326,4 +1634,5 @@ export {
   MCField, TFField, INTField, FIEField,
   TimerOverlay, useTimer,
   ProbsetComposer, ProgStorage,
+  HighscoresPage,
 };

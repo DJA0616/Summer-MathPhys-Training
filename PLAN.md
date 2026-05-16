@@ -1,148 +1,112 @@
-# Plan for Running on GitHub Server/Live Server (Without Build Step)
+# PLAN.md — Next Phase
 
-## Overview
-Run the React-based project directly in the browser using client-side JSX transformation via Babel Standalone, enabling deployment to GitHub Pages or any static host without a build step.
+## Phase 2A: Infrastructure Polish (now)
 
-## File Structure Changes
-- Add `index.html` as entry point
-- Keep existing `.jsx` files (e.g., `Probset_Format_v2.jsx`, `design-system.jsx`)
-- No build output directory needed
+### 1. Index catalog updates
+- Add Highscores card to index.html (Problem Sets / Learning Guides / Highscores sections)
+- Add missing Trig_Bridge_L01_Probset to catalog
+- Generate `highscores.html` via `convert.ps1`
+- Add highscores progress summary snippet to index.html (like existing progress section, but pulls top 3 from localStorage)
 
-## Implementation Steps
-1. Create `index.html` in project root:
-   ```html
-   <!DOCTYPE html>
-   <html lang="en">
-   <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Summer Math/Physics Training</title>
-     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-   </head>
-   <body>
-     <div id="root"></div>
-     <script type="text/babel" data-src="Probset_Format_v2.jsx" data-plugins="transform-react-jsx"></script>
-     <script type="text/babel">
-       const root = ReactDOM.createRoot(document.getElementById('root'));
-       root.render(<ProbsetFormat />);
-     </script>
-   </body>
-   </html>
-   ```
-2. Adjust JSX imports in `Probset_Format_v2.jsx`:
-   - Replace `import { useState } from "react";` with `const { useState } = React;`
-   - Ensure all dependencies are available via CDN or inline
-3. Test locally by opening `index.html` in browser
-4. Deploy to GitHub Pages:
-   - Push to `main` or `gh-pages` branch
-   - Configure GitHub Pages to serve from root directory
+### 2. Migrate old learning guides to block-kit
+All 4 G10 lectures (Waves, Optics, Electrostatics, Circuits) currently copy-paste DS/CSS/Geo/primitives inline — legacy from before block-kit existed. Migrate each to:
 
-## Dependencies (CDN)
-- React 18: `https://unpkg.com/react@18/umd/react.development.js`
-- ReactDOM 18: `https://unpkg.com/react-dom@18/umd/react-dom.development.js`
-- Babel Standalone: `https://unpkg.com/@babel/standalone/babel.min.js`
-
-## Considerations
-- Use development CDN versions for easier debugging; switch to production minified versions for live deployment
-- Ensure all JSX files are accessible via relative paths in `data-src` attribute
-- No need for JSX build tools (Webpack, Vite, etc.)
-- Works on any static host (GitHub Pages, Netlify, Vercel, etc.)
-
----
-
-# Plan for localStorage Integration
-
-## Overview
-Persist times, scores, and progress across sessions using browser localStorage, enabling users to resume where they left off.
-
-## File Structure Changes
-- Modify `Probset_Format_v2.jsx` to add localStorage logic
-- No new files required
-
-## Implementation Steps
-1. Define storage key constant:
-   ```javascript
-   const STORAGE_KEY = 'summerMathPhysProgress';
-   ```
-2. Create helper functions to load and save state:
-   ```javascript
-   const loadFromStorage = () => {
-     try {
-       const stored = localStorage.getItem(STORAGE_KEY);
-       return stored ? JSON.parse(stored) : null;
-     } catch (e) {
-       console.warn('Failed to load from localStorage:', e);
-       return null;
-     }
-   };
-
-   const saveToStorage = (state) => {
-     try {
-       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-     } catch (e) {
-       console.warn('Failed to save to localStorage:', e);
-     }
-   };
-   ```
-3. In `ProbsetFormat` component:
-   - Initialize state with `useState`, using `loadFromStorage()` as initializer or fallback to default state
-   - Add `useEffect` to save state to localStorage whenever relevant state changes:
-     ```javascript
-     useEffect(() => {
-       saveToStorage({
-         tab,
-         // Include any other state to persist (scores, times, progress)
-       });
-     }, [tab, /* other state variables */]);
-     ```
-4. Determine what to persist:
-   - Currently selected tab (`tab`)
-   - For future extension: scores per problem set, completion times, progress indicators
-   - Start with tab persistence; expand as needed
-5. Test by:
-   - Changing tabs
-   - Refreshing page - should restore last tab
-   - Closing and reopening browser - should restore state
-
-## State Structure Example
-```javascript
-{
-  tab: 'types', // last selected tab
-  scores: {     // optional: track scores per problem set
-    set1: 85,
-    set2: 92
-  },
-  progress: {   // optional: completion status
-    set1: true,
-    set2: false
-  },
-  timestamps: { // optional: time spent
-    set1: 120,  // seconds
-    set2: 180
-  }
-}
+```jsx
+import { ProbsetComposer } from "../project-template-files/block-kit.jsx";
+const CONFIG = { meta: {...}, blocks: [...] };
+export default function GuideName() { return <ProbsetComposer config={CONFIG} />; }
 ```
 
-## Considerations
-- Start small: persist only tab selection to verify mechanism
-- Use `JSON.parse`/`JSON.stringify` with try/catch for safety
-- Consider storage limits (approximately 5MB per origin)
-- For sensitive data, consider encryption (not required for this use case)
-- Clear storage option: provide button to reset progress if needed
-- Works across all modern browsers supporting localStorage
+This gives them navbar (Index | Highscores), highscores tracking, and trims ~200 lines of duplicated code per file. Trig_Bridge_L01 also needs migration (it's standalone too, though simpler).
+
+**Migration checklist per guide:**
+- Replace inline DS/CSS/Geo/primitives with block-kit import
+- Map existing content to CONFIG blocks (paragraph, card→diagram/slider-graph, MCField→mc block, etc.)
+- Preserve intra-page tab/part navigation as custom blocks or inline within lecture section
+- Verify all interactive fields still work
+- Re-generate HTML via convert.ps1
+
+### 3. Promote content-pipeline skill
+Move `.claude/projects/.../memory/skills/content-pipeline/SKILL.md` → `.claude/skills/content-pipeline/SKILL.md`. This skill orchestrates the full plan→compile→validate→refine pipeline in one invocation. Currently buried in memory where it's invisible to the skill loader.
 
 ---
 
-## Combined Implementation Notes
-Both plans can be implemented independently:
-- The GitHub server plan enables deployment
-- The localStorage plan enhances user experience
-- They do not conflict; localStorage works in deployed version
+## Phase 2B: Content Completion (next)
 
-## Next Steps
-1. Implement GitHub server plan first to establish deployable baseline
-2. Add localStorage integration to persist UI state
-3. Test locally and on GitHub Pages
-4. Extend localStorage to include scores and progress as feature evolves
+### 4. Probsets for Blocks 8-10
+Each needs a companion probset matching its lecture:
+
+| Block | Lecture | Probset target |
+|-------|---------|----------------|
+| 8 Optics | G10_Optics_L01 | ~15 problems: Snell's law, TIR, mirror/lens equation, ray diagrams |
+| 9 Electrostatics | G10_Electrostatics_L01 | ~15 problems: Coulomb's law, field superposition, potential |
+| 10 Circuits | G10_Circuits_L01 | ~15 problems: Ohm's law, series/parallel, equivalent resistance |
+
+Use two-phase pipeline: syllabus-researcher → plan markdown → probset-manager → JSX.
+Difficulty: ~40% easy, 35% medium, 25% hard. No exam mode (<30 questions).
+
+### 5. Block 11: Magnetism & Complex Numbers
+Last uncovered roadmap block. Create:
+- `G10_Magnetism_L01.jsx` — lecture guide covering magnetic force, field configurations, Faraday's/Lenz's law, complex numbers as phasors
+- `G10_Magnetism_Probset.jsx` — companion problem set
+
+Research via syllabus-researcher agent first.
+
+---
+
+## Phase 2C: New Artifact Types (after content)
+
+### 6. Quiz artifact type
+Roadmap lists "Quiz" for blocks 7, 8, 10, 11. Quiz = shorter than probset (8-12 questions), timed (10-20 min), all difficulties mixed, auto-submit on expiry.
+
+Implementation options:
+- **A: ProbsetComposer with quiz meta** — set `examMode: true`, short `timerDuration`, hide explanations until after submit. Minimal code change, reuse everything.
+- **B: Dedicated QuizComposer** — separate component with quiz-specific UI (one question at a time, no back-navigation, results screen at end). More work, better UX.
+
+Recommend **Option A** first (fast, covers need), Option B later if quiz UX feels lacking.
+
+### 7. Build/convert automation
+Currently each `.jsx` → `.html` conversion is manual via `convert.ps1`. Options:
+- **Watch script**: `watch.ps1` — monitors file changes, auto-converts on save
+- **Batch script**: `build-all.ps1` — converts all JSX files in problem_sets/ and learning-guides/ at once
+- **GitHub Action**: auto-convert and deploy to GH Pages on push
+
+Start with batch script (simplest), add watch later.
+
+---
+
+## Dependency Order
+
+```
+1. Index + highscores catalog updates (no deps)
+2. content-pipeline skill promotion (no deps)
+3. Migrate old guides to block-kit (depends on block-kit being stable)
+4. Build batch script (no deps)
+   ↓
+5. Optics probset (depends on Optics L01 existing)
+6. Electrostatics probset
+7. Circuits probset
+8. Magnetism lecture + probset (depends on syllabus research)
+   ↓
+9. Quiz type (depends on probsets existing to quiz on)
+10. Watch script / CI (nice-to-have)
+```
+
+## Files That Will Change
+
+| File | Action |
+|------|--------|
+| `index.html` | Add highscores card, missing probset, progress widget |
+| `highscores.html` | Generate from highscores.jsx |
+| `learning-guides/G10_Waves_L01.jsx` | Migrate to block-kit |
+| `learning-guides/G10_Optics_L01.jsx` | Migrate to block-kit |
+| `learning-guides/G10_Electrostatics_L01.jsx` | Migrate to block-kit |
+| `learning-guides/G10_Circuits_L01.jsx` | Migrate to block-kit |
+| `learning-guides/Trig_Bridge_L01.jsx` | Migrate to block-kit |
+| `.claude/skills/content-pipeline/SKILL.md` | Move from memory |
+| `problem_sets/G10_Optics_Probset.jsx` | Create |
+| `problem_sets/G10_Electrostatics_Probset.jsx` | Create |
+| `problem_sets/G10_Circuits_Probset.jsx` | Create |
+| `learning-guides/G10_Magnetism_L01.jsx` | Create |
+| `problem_sets/G10_Magnetism_Probset.jsx` | Create |
+| `project-template-files/build-all.ps1` | Create |

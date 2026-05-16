@@ -36,7 +36,7 @@
 
   try {
     // ── Step 1: Load block-kit if this file uses it ─────
-    const source = await fetch(file).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}: ${file}`); return r.text(); });
+    const source = await fetch(file, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}: ${file}`); return r.text(); });
     const usesBlockKit = source.includes('ProbsetComposer') || source.includes('block-kit');
 
     let blockKitExports = {};
@@ -111,7 +111,7 @@
 
   // ── Helpers ──────────────────────────────────────────
   async function loadBlockKit() {
-    let src = await fetch('project-template-files/block-kit.jsx').then(r => {
+    let src = await fetch('project-template-files/block-kit.jsx', { cache: 'no-cache' }).then(r => {
       if (!r.ok) throw new Error(`HTTP ${r.status}: block-kit.jsx`);
       return r.text();
     });

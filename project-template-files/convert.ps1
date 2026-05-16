@@ -11,6 +11,36 @@ if (-not (Test-Path $InputFile)) {
 }
 
 $jsx = Get-Content $InputFile -Raw
+$inputDir = Split-Path $InputFile -Parent
+
+# Check for block-kit import and inline it
+$bkMatch = [regex]::Match($jsx, "import\s*\{([^}]*)\}\s*from\s*`"([^`"]*block-kit[^`"]*)`"")
+$blockKitCode = ""
+if ($bkMatch.Success) {
+    $bkPath = $bkMatch.Groups[2].Value
+    $bkAbsPath = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($inputDir, $bkPath))
+    if (-not (Test-Path $bkAbsPath)) {
+        Write-Warning "Block-kit file not found at resolved path: $bkAbsPath"
+    } else {
+        $bkRaw = Get-Content $bkAbsPath -Raw
+        # Strip React imports
+        $bkRaw = $bkRaw -replace "import\s*\{[^}]*\}\s*from\s*`"[^`"]*react[^`"]*`";?", ''
+        $bkRaw = $bkRaw -replace "import\s+\w+\s+from\s*`"[^`"]*react[^`"]*`";?", ''
+        # Strip other imports (keep React-related ones already handled)
+        $bkRaw = $bkRaw -replace "import\s*\{[^}]*\}\s*from\s*`"[^`"]*`";?", ''
+        $bkRaw = $bkRaw -replace "import\s+\w+\s+from\s*`"[^`"]*`";?", ''
+        $bkRaw = $bkRaw -replace "import\s+\w+\s*,\s*\{[^}]*\}\s*from\s*`"[^`"]*`";?", ''
+        # Strip exports
+        $bkRaw = $bkRaw -replace 'export\s+default\s+function', 'function'
+        $bkRaw = $bkRaw -replace 'export\s+function', 'function'
+        $bkRaw = $bkRaw -replace 'export\s+const', 'const'
+        $bkRaw = $bkRaw -replace 'export\s+let', 'let'
+        $bkRaw = $bkRaw -replace 'export\s+var', 'var'
+        $bkRaw = $bkRaw -replace 'export\s+\{', '// exported: {'
+        $bkRaw = $bkRaw -replace 'export\s+default\s+', '// exported default: '
+        $blockKitCode = $bkRaw
+    }
+}
 
 # Extract the component name (export default function X)
 $nameMatch = [regex]::Match($jsx, 'export\s+default\s+function\s+(\w+)')
@@ -20,12 +50,13 @@ if (-not $nameMatch.Success) {
 }
 $componentName = $nameMatch.Groups[1].Value
 
-# Extract all hooks used (useState, useEffect, useRef, useCallback, useMemo, etc.)
-$hookMatches = [regex]::Matches($jsx, '\b(use[A-Z]\w+)\b')
+# Extract all hooks used (in both block-kit and the component)
+$allCode = $blockKitCode + "`n" + $jsx
+$hookMatches = [regex]::Matches($allCode, '\b(use[A-Z]\w+)\b')
 $hooks = $hookMatches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
 $hookDestructure = "const { $($hooks -join ', ') } = React;"
 
-# Remove import statements
+# Remove import statements from main file
 $jsx = $jsx -replace "import\s*\{[^}]*\}\s*from\s*`"[^`"]*`";?", ''
 $jsx = $jsx -replace "import\s+\w+\s+from\s*`"[^`"]*`";?", ''
 $jsx = $jsx -replace "import\s+\w+\s*,\s*\{[^}]*\}\s*from\s*`"[^`"]*`";?", ''
@@ -69,6 +100,8 @@ $html = @"
 <script type="text/babel">
 $hookDestructure
 
+$blockKitCode
+
 $jsx
 
 ReactDOM.createRoot(document.getElementById('root')).render(<$componentName />);
@@ -83,3 +116,7 @@ $html | Set-Content $outputFile -Encoding UTF8
 Write-Host "Converted: $InputFile -> $outputFile"
 Write-Host "  Component: $componentName"
 Write-Host "  Hooks: $hooks"
+if ($blockKitCode) {
+    $lines = ($blockKitCode -split "`n").Count
+    Write-Host "  Inlined block-kit ($lines lines)"
+}
