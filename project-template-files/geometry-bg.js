@@ -5,9 +5,10 @@
  * Auto-initializes. Exposes window.GeometryBackground for programmatic use.
  *
  * Reactivity:
- *   - Mouse: grid warps toward cursor, particles glow/attract, polygon tilts, radial glow follows
- *   - Scroll: parallax depth layers (grid 0.3x, particles 0.5x, polygon 0.15x, orbiters 0.4x)
- *   - Time: particles drift in Lissajous orbits, polygon morphs between keyframes, orbiters circle
+ *   - Mouse: grid warps toward cursor, particles glow/attract, polygons tilt, rays brighten, radial glow follows
+ *   - Scroll: parallax depth layers (grid 0.3x, particles 0.5x, polygons 0.1-0.3x, orbiters 0.4x, rays 0.2x)
+ *   - Time: particles drift in Lissajous orbits, multiple polygons morph slowly through keyframes,
+ *           orbiters circle, floating rays drift across scene
  *
  * Configurable via data attributes on the script tag:
  *   data-accent="#7eb8d4" data-accent-alt="#a0d4b0" data-bg="#0a0a0a"
@@ -47,11 +48,25 @@
     particleDriftAmp: 40,
     particleParallax: 0.5,
 
-    // Morphing polygon
+    // Morphing polygons — multiple instances with varied shape sequences
+    polygonInstances: 5,
     polygonOpacity: 0.045,
     polygonStrokeWidth: 0.5,
-    polygonMorphDuration: 8000, // ms per keyframe transition
-    polygonParallax: 0.15,
+    polygonMorphMin: 12000,  // ms per keyframe transition (min, randomized per instance)
+    polygonMorphMax: 28000,
+    polygonParallaxMin: 0.08,
+    polygonParallaxMax: 0.22,
+
+    // Floating rays
+    rayCount: 10,
+    rayMinLength: 60,
+    rayMaxLength: 200,
+    rayOpacity: 0.05,
+    rayWidth: 0.4,
+    raySpeedMin: 8,   // px/s drift
+    raySpeedMax: 25,
+    rayMouseReach: 250,
+    rayParallax: 0.2,
 
     // Orbiting nodes
     orbiterCount: 5,
@@ -108,6 +123,40 @@
     [pt(22, 1.07), pt(84, 0.46), pt(158, 0.93), pt(222, 0.46), pt(288, 1.07), pt(196, 0.74)],
   ];
 
+  // 5-point star/pentagon sequences — sharper, more angular
+  const SHAPE_5PT = [
+    [pt(0, 1), pt(72, 0.5), pt(144, 1), pt(216, 0.5), pt(288, 1)],
+    [pt(0, 0.5), pt(72, 1), pt(144, 0.5), pt(216, 1), pt(288, 0.5)],
+    [pt(0, 1), pt(72, 1), pt(144, 1), pt(216, 1), pt(288, 1)],
+    [pt(10, 1.2), pt(82, 0.6), pt(154, 1.1), pt(226, 0.55), pt(298, 0.9)],
+    [pt(0, 0.8), pt(65, 1.15), pt(130, 0.7), pt(210, 1.15), pt(285, 0.8)],
+    [pt(15, 0.55), pt(70, 0.95), pt(144, 0.5), pt(218, 0.95), pt(292, 0.55)],
+    [pt(0, 0.9), pt(72, 0.4), pt(144, 0.9), pt(216, 0.4), pt(288, 0.9)],
+  ];
+
+  // 4-point diamond/rhombus sequences
+  const SHAPE_4PT = [
+    [pt(0, 1), pt(90, 0.6), pt(180, 1), pt(270, 0.6)],
+    [pt(45, 1), pt(135, 0.5), pt(225, 1), pt(315, 0.5)],
+    [pt(0, 0.55), pt(90, 1.1), pt(180, 0.55), pt(270, 1.1)],
+    [pt(0, 1), pt(90, 1), pt(180, 1), pt(270, 1)],
+    [pt(20, 1.15), pt(110, 0.7), pt(200, 1.05), pt(290, 0.65)],
+    [pt(0, 0.7), pt(90, 1.2), pt(180, 0.7), pt(270, 1.2)],
+    [pt(30, 0.5), pt(120, 1), pt(210, 0.5), pt(300, 1)],
+  ];
+
+  // 8-point octagon sequences — complex, slower-feeling
+  const SHAPE_8PT = [
+    [pt(0, 1), pt(45, 0.7), pt(90, 1), pt(135, 0.7), pt(180, 1), pt(225, 0.7), pt(270, 1), pt(315, 0.7)],
+    [pt(0, 0.7), pt(45, 1), pt(90, 0.7), pt(135, 1), pt(180, 0.7), pt(225, 1), pt(270, 0.7), pt(315, 1)],
+    [pt(0, 1), pt(45, 1), pt(90, 1), pt(135, 1), pt(180, 1), pt(225, 1), pt(270, 1), pt(315, 1)],
+    [pt(10, 1.1), pt(55, 0.65), pt(100, 1.05), pt(145, 0.7), pt(190, 1.1), pt(235, 0.6), pt(280, 1.05), pt(325, 0.7)],
+    [pt(0, 0.6), pt(45, 1.15), pt(90, 0.6), pt(135, 1.15), pt(180, 0.6), pt(225, 1.15), pt(270, 0.6), pt(315, 1.15)],
+    [pt(22, 0.75), pt(67, 0.55), pt(112, 0.9), pt(157, 0.5), pt(202, 0.75), pt(247, 0.55), pt(292, 0.9), pt(337, 0.5)],
+  ];
+
+  const ALL_SHAPES = [POLY_FRAMES, SHAPE_5PT, SHAPE_4PT, SHAPE_8PT];
+
   // ═══════════════════════════════════════════════════════════════
   // UTILITY HELPERS
   // ═══════════════════════════════════════════════════════════════
@@ -139,11 +188,11 @@
       this.docHeight = 0;
       this.dpr = 1;
 
-      // Polygon morph state
-      this.polyFrameIdx = 0;
-      this.polyMorphT = 0;
-      this.polyMorphElapsed = 0;
-      this.polyCurrent = POLY_FRAMES[0];
+      // Polygon instances (multiple shapes, scattered)
+      this.polyInstances = [];
+
+      // Floating rays
+      this.rays = [];
 
       // Particles
       this.particles = [];
@@ -168,6 +217,8 @@
       this._hideStaticGeo();
 
       this.resize();
+      this.createPolyInstances();
+      this.createRays();
       this.createParticles();
       this.createOrbiters();
       this.bindEvents();
@@ -256,6 +307,55 @@
       }
     }
 
+    // ── Polygon Instances ──────────────────────────────────
+
+    createPolyInstances() {
+      this.polyInstances = [];
+      for (let i = 0; i < CFG.polygonInstances; i++) {
+        const seq = ALL_SHAPES[i % ALL_SHAPES.length];
+        const startFrame = Math.floor(Math.random() * seq.length);
+        this.polyInstances.push({
+          sequence: seq,
+          // Scatter across viewport, biasing toward edges/corners
+          vx: 0.08 + Math.random() * 0.84,
+          vy: 0.08 + Math.random() * 0.84,
+          scale: 0.06 + Math.random() * 0.14,
+          morphMs: CFG.polygonMorphMin + Math.random() * (CFG.polygonMorphMax - CFG.polygonMorphMin),
+          parallax: CFG.polygonParallaxMin + Math.random() * (CFG.polygonParallaxMax - CFG.polygonParallaxMin),
+          opacity: CFG.polygonOpacity * (0.5 + Math.random() * 1.0),
+          frameIdx: startFrame,
+          morphElapsed: Math.random() * CFG.polygonMorphMax,
+          drawGhost: Math.random() > 0.4,
+          drawRays: Math.random() > 0.5,
+          accent: i % 2 === 0 ? CFG.accent : CFG.accentAlt,
+        });
+      }
+    }
+
+    // ── Floating Rays ──────────────────────────────────────
+
+    createRays() {
+      this.rays = [];
+      for (let i = 0; i < CFG.rayCount; i++) {
+        this.rays.push(this._spawnRay(true));
+      }
+    }
+
+    _spawnRay(initial) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = CFG.raySpeedMin + Math.random() * (CFG.raySpeedMax - CFG.raySpeedMin);
+      return {
+        x: initial ? Math.random() * this.width : -100 - Math.random() * 300,
+        y: initial ? Math.random() * this.height : Math.random() * this.height,
+        angle: angle,
+        length: CFG.rayMinLength + Math.random() * (CFG.rayMaxLength - CFG.rayMinLength),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        opacity: CFG.rayOpacity * (0.4 + Math.random() * 1.2),
+        width: CFG.rayWidth * (0.5 + Math.random() * 1.0),
+      };
+    }
+
     // ── Events ──────────────────────────────────────────────
 
     bindEvents() {
@@ -263,7 +363,8 @@
 
       window.addEventListener("resize", () => {
         this.resize();
-        // Re-clamp orbiter positions
+        this.createPolyInstances();
+        this.createRays();
         this.orbiters.forEach((o) => {
           o.cx = clamp(o.cx, 0, this.width);
           o.cy = clamp(o.cy, 0, this.docHeight);
@@ -319,16 +420,19 @@
       // ── 2. Grid ──
       this.drawGrid(ctx, W, H);
 
-      // ── 3. Morphing polygon ──
-      this.drawMorphingPolygon(ctx, W, H);
+      // ── 3. Morphing polygons (multiple instances) ──
+      this.drawMorphingPolygons(ctx, W, H);
 
-      // ── 4. Orbiters ──
+      // ── 4. Floating rays ──
+      this.drawRays(ctx, W, H);
+
+      // ── 5. Orbiters ──
       this.drawOrbiters(ctx, W, H, D);
 
-      // ── 5. Constellation particles ──
+      // ── 6. Constellation particles ──
       this.drawConstellation(ctx, W, H, D);
 
-      // ── 6. Mouse glow ──
+      // ── 7. Mouse glow ──
       this.drawMouseGlow(ctx, W, H);
 
       requestAnimationFrame((t) => this.animate(t));
@@ -401,77 +505,135 @@
       ctx.restore();
     }
 
-    // ── 3. Morphing Polygon ─────────────────────────────────
+    // ── 3. Morphing Polygons (multiple instances) ────────────
 
-    drawMorphingPolygon(ctx, W, H) {
-      // Advance morph timer
-      this.polyMorphElapsed += 16.67; // approximate frame time
-      if (this.polyMorphElapsed >= CFG.polygonMorphDuration) {
-        this.polyMorphElapsed = 0;
-        this.polyFrameIdx = (this.polyFrameIdx + 1) % POLY_FRAMES.length;
-      }
-      const t = this.polyMorphElapsed / CFG.polygonMorphDuration;
-      const from = POLY_FRAMES[this.polyFrameIdx];
-      const to = POLY_FRAMES[(this.polyFrameIdx + 1) % POLY_FRAMES.length];
-      const morphed = morphFrame(from, to, t);
+    drawMorphingPolygons(ctx, W, H) {
+      const baseScale = Math.min(W, H);
 
-      // Position: center of viewport + parallax + slight mouse tilt
-      const px = W * 0.82 + (this.smooth.x - 0.5) * 30;
-      const py = H * 0.18 + (this.smooth.y - 0.5) * 30 - this.smoothScroll * CFG.polygonParallax;
+      this.polyInstances.forEach((inst) => {
+        // Advance morph timer
+        inst.morphElapsed += 16.67;
+        if (inst.morphElapsed >= inst.morphMs) {
+          inst.morphElapsed = 0;
+          inst.frameIdx = (inst.frameIdx + 1) % inst.sequence.length;
+        }
+        const t = inst.morphElapsed / inst.morphMs;
+        const from = inst.sequence[inst.frameIdx];
+        const to = inst.sequence[(inst.frameIdx + 1) % inst.sequence.length];
+        const morphed = morphFrame(from, to, t);
 
-      const scale = Math.min(W, H) * 0.14;
+        const px = W * inst.vx + (this.smooth.x - 0.5) * 20;
+        const py = H * inst.vy + (this.smooth.y - 0.5) * 20 - this.smoothScroll * inst.parallax;
+        const scale = baseScale * inst.scale;
+        const rotate = (this.smooth.x - 0.5) * 0.12 + (this.smooth.y - 0.5) * 0.08;
 
-      // Mouse tilts the polygon via slight rotation
-      const rotate = (this.smooth.x - 0.5) * 0.15 + (this.smooth.y - 0.5) * 0.1;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(rotate);
 
-      ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(rotate);
+        const col = inst.accent;
 
-      ctx.strokeStyle = hexToRgba(CFG.accent, CFG.polygonOpacity * 1.6);
-      ctx.lineWidth = CFG.polygonStrokeWidth;
-      ctx.fillStyle = hexToRgba(CFG.accent, CFG.polygonOpacity * 0.3);
-      ctx.beginPath();
-      morphed.forEach(([x, y], i) => {
-        const fx = x * scale;
-        const fy = y * scale;
-        if (i === 0) ctx.moveTo(fx, fy);
-        else ctx.lineTo(fx, fy);
-      });
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Also draw outer ghost ring
-      ctx.strokeStyle = hexToRgba(CFG.accent, CFG.polygonOpacity * 0.6);
-      ctx.lineWidth = 0.3;
-      const outerScale = scale * 1.6;
-      ctx.beginPath();
-      morphed.forEach(([x, y], i) => {
-        if (i === 0) ctx.moveTo(x * outerScale, y * outerScale);
-        else ctx.lineTo(x * outerScale, y * outerScale);
-      });
-      ctx.closePath();
-      ctx.stroke();
-
-      ctx.restore();
-
-      // Radial lines from center of polygon to vertices
-      ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(rotate);
-      ctx.strokeStyle = hexToRgba(CFG.accent, CFG.polygonOpacity * 0.8);
-      ctx.lineWidth = 0.25;
-      morphed.forEach(([x, y]) => {
+        // Filled polygon
+        ctx.strokeStyle = hexToRgba(col, inst.opacity * 1.6);
+        ctx.lineWidth = CFG.polygonStrokeWidth;
+        ctx.fillStyle = hexToRgba(col, inst.opacity * 0.3);
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(x * scale, y * scale);
+        morphed.forEach(([x, y], i) => {
+          const fx = x * scale;
+          const fy = y * scale;
+          if (i === 0) ctx.moveTo(fx, fy);
+          else ctx.lineTo(fx, fy);
+        });
+        ctx.closePath();
+        ctx.fill();
         ctx.stroke();
+
+        // Ghost outer ring
+        if (inst.drawGhost) {
+          ctx.strokeStyle = hexToRgba(col, inst.opacity * 0.5);
+          ctx.lineWidth = 0.25;
+          const outerScale = scale * 1.6;
+          ctx.beginPath();
+          morphed.forEach(([x, y], i) => {
+            if (i === 0) ctx.moveTo(x * outerScale, y * outerScale);
+            else ctx.lineTo(x * outerScale, y * outerScale);
+          });
+          ctx.closePath();
+          ctx.stroke();
+        }
+
+        // Radial lines from center to vertices
+        if (inst.drawRays) {
+          ctx.strokeStyle = hexToRgba(col, inst.opacity * 0.7);
+          ctx.lineWidth = 0.2;
+          morphed.forEach(([x, y]) => {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(x * scale, y * scale);
+            ctx.stroke();
+          });
+        }
+
+        ctx.restore();
       });
-      ctx.restore();
     }
 
-    // ── 4. Orbiting Nodes ───────────────────────────────────
+    // ── 4. Floating Rays ─────────────────────────────────────
+
+    drawRays(ctx, W, H) {
+      const dt = 16.67 / 1000; // seconds per frame (approx)
+      const mouseOnScreen = this.mouse.x > 0 && this.mouse.y > 0;
+      const scrollOff = this.smoothScroll * CFG.rayParallax;
+
+      this.rays.forEach((r) => {
+        // Drift
+        r.x += r.vx * dt;
+        r.y += r.vy * dt - scrollOff * 0.01; // subtle vertical parallax drift
+
+        // Wrap around edges with margin
+        const margin = r.length;
+        if (r.x > W + margin) { r.x = -margin; r.y = Math.random() * H; }
+        if (r.x < -margin) { r.x = W + margin; r.y = Math.random() * H; }
+        if (r.y > H + margin) { r.y = -margin; r.x = Math.random() * W; }
+        if (r.y < -margin) { r.y = H + margin; r.x = Math.random() * W; }
+
+        const endX = r.x + Math.cos(r.angle) * r.length;
+        const endY = r.y + Math.sin(r.angle) * r.length;
+
+        let rayOpacity = r.opacity;
+        let rayWidth = r.width;
+
+        // Mouse proximity glow
+        if (mouseOnScreen) {
+          const midX = (r.x + endX) / 2;
+          const midY = (r.y + endY) / 2;
+          const d = dist(this.mouse.x, this.mouse.y, midX, midY);
+          if (d < CFG.rayMouseReach) {
+            const factor = 1 - d / CFG.rayMouseReach;
+            rayOpacity = r.opacity + factor * 0.12;
+            rayWidth = r.width * (1 + factor * 1.5);
+          }
+        }
+
+        // Draw ray as a line with subtle glow
+        ctx.strokeStyle = hexToRgba(CFG.accent, rayOpacity);
+        ctx.lineWidth = rayWidth;
+        ctx.beginPath();
+        ctx.moveTo(r.x, r.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Small dot at midpoint
+        const midX = (r.x + endX) / 2;
+        const midY = (r.y + endY) / 2;
+        ctx.fillStyle = hexToRgba(CFG.accent, rayOpacity * 0.8);
+        ctx.beginPath();
+        ctx.arc(midX, midY, rayWidth * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // ── 5. Orbiting Nodes ───────────────────────────────────
 
     drawOrbiters(ctx, W, H, D) {
       const mouseOnScreen = this.mouse.x > 0 && this.mouse.y > 0;
