@@ -54,24 +54,21 @@ Research via syllabus-researcher agent first.
 
 ---
 
-## Phase 2C: New Artifact Types (after content)
+## Phase 2C: New Artifact Types ✅ DONE
 
-### 6. Quiz artifact type
-Roadmap lists "Quiz" for blocks 7, 8, 10, 11. Quiz = shorter than probset (8-12 questions), timed (10-20 min), all difficulties mixed, auto-submit on expiry.
+### 6. Quiz artifact type ✅
+Implemented Option A: ProbsetComposer with `quizMode: true` meta flag.
+- Added `suppressExplain` prop to MCField (hides Explain button when quizMode active and timer not frozen)
+- Added `suppressHint` prop to INTField (hides Hint button in quiz mode)
+- ProbsetComposer wires `quizMode` → `suppressExplain`/`suppressHint` based on frozen state
+- Quiz CONFIG pattern: `examMode: true`, `quizMode: true`, `timerDuration: 15*60`, mixed difficulty (no section headers)
+- Sample quiz created: `G10_Circuits_Quiz01.jsx` (10 questions, 37 pts, 15 min)
 
-Implementation options:
-- **A: ProbsetComposer with quiz meta** — set `examMode: true`, short `timerDuration`, hide explanations until after submit. Minimal code change, reuse everything.
-- **B: Dedicated QuizComposer** — separate component with quiz-specific UI (one question at a time, no back-navigation, results screen at end). More work, better UX.
-
-Recommend **Option A** first (fast, covers need), Option B later if quiz UX feels lacking.
-
-### 7. Build/convert automation
-Currently each `.jsx` → `.html` conversion is manual via `convert.ps1`. Options:
-- **Watch script**: `watch.ps1` — monitors file changes, auto-converts on save
-- **Batch script**: `build-all.ps1` — converts all JSX files in problem_sets/ and learning-guides/ at once
-- **GitHub Action**: auto-convert and deploy to GH Pages on push
-
-Start with batch script (simplest), add watch later.
+### 7. Build/convert automation ✅
+- `build-all.ps1` created — scans `learning-guides/` and `problem_sets/` for .jsx, runs convert.ps1 on each
+- `--Watch` flag for file-change monitoring with configurable interval
+- Reports per-file OK/FAIL with summary
+- Fixed convert.ps1 bugs: duplicate `useTimer` decl, orphaned `};` from export blocks, missing `createContext`
 
 ---
 

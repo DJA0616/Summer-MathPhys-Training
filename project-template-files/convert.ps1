@@ -36,7 +36,8 @@ if ($bkMatch.Success) {
         $bkRaw = $bkRaw -replace 'export\s+const', 'const'
         $bkRaw = $bkRaw -replace 'export\s+let', 'let'
         $bkRaw = $bkRaw -replace 'export\s+var', 'var'
-        $bkRaw = $bkRaw -replace 'export\s+\{', '// exported: {'
+        # Strip export blocks (multiline: exports { ... };)
+        $bkRaw = [regex]::Replace($bkRaw, 'export\s*\{[\s\S]*?\};', '// export block removed', 'Multiline')
         $bkRaw = $bkRaw -replace 'export\s+default\s+', '// exported default: '
         $blockKitCode = $bkRaw
     }
@@ -50,11 +51,15 @@ if (-not $nameMatch.Success) {
 }
 $componentName = $nameMatch.Groups[1].Value
 
-# Extract all hooks used (in both block-kit and the component)
+# Extract all React API usages (hooks + createContext etc.) from combined code
 $allCode = $blockKitCode + "`n" + $jsx
-$hookMatches = [regex]::Matches($allCode, '\b(use[A-Z]\w+)\b')
-$hooks = $hookMatches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
-$hookDestructure = "const { $($hooks -join ', ') } = React;"
+$apiMatches = [regex]::Matches($allCode, '\b(use[A-Z]\w+|createContext|createElement|Fragment)\b')
+$allApis = $apiMatches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+
+# Filter to only React built-in APIs (exclude custom hooks/apis defined in block-kit)
+$reactApis = @("useState","useEffect","useContext","useReducer","useCallback","useMemo","useRef","useImperativeHandle","useLayoutEffect","useDebugValue","useDeferredValue","useTransition","useId","useSyncExternalStore","useInsertionEffect","createContext","createElement","Fragment")
+$apis = $allApis | Where-Object { $_ -in $reactApis }
+$hookDestructure = "const { $($apis -join ', ') } = React;"
 
 # Remove import statements from main file
 $jsx = $jsx -replace "import\s*\{[^}]*\}\s*from\s*`"[^`"]*`";?", ''
@@ -67,7 +72,7 @@ $jsx = $jsx -replace 'export\s+function', 'function'
 $jsx = $jsx -replace 'export\s+const', 'const'
 $jsx = $jsx -replace 'export\s+let', 'let'
 $jsx = $jsx -replace 'export\s+var', 'var'
-$jsx = $jsx -replace 'export\s+\{', '// exported: {'
+$jsx = [regex]::Replace($jsx, 'export\s*\{[\s\S]*?\};', '// export block removed', 'Multiline')
 $jsx = $jsx -replace 'export\s+default\s+', '// exported default: '
 
 $html = @"
@@ -115,7 +120,7 @@ $html | Set-Content $outputFile -Encoding UTF8
 
 Write-Host "Converted: $InputFile -> $outputFile"
 Write-Host "  Component: $componentName"
-Write-Host "  Hooks: $hooks"
+Write-Host "  Hooks: $apis"
 if ($blockKitCode) {
     $lines = ($blockKitCode -split "`n").Count
     Write-Host "  Inlined block-kit ($lines lines)"
