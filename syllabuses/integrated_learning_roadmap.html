@@ -1,0 +1,304 @@
+<h2 class="sr-only">Integrated Physics-Math Learning Roadmap — G9 and G10</h2>
+<style>
+  .rmap-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 12px
+  }
+
+  .rmap-legend {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    flex-shrink: 0
+  }
+
+  .leg-pill {
+    font-size: 10px;
+    padding: 2px 9px;
+    border-radius: 99px;
+    border: 0.5px solid;
+    white-space: nowrap
+  }
+
+  .phase-bar {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    padding: 1.25rem 0 0.6rem;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    margin-top: 0.5rem
+  }
+
+  .phase-bar.first {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0
+  }
+
+  .blk {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s
+  }
+
+  .blk:hover {
+    border-color: var(--color-border-primary)
+  }
+
+  .blk-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px
+  }
+
+  .bnum {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    min-width: 18px
+  }
+
+  .btitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    flex: 1
+  }
+
+  .dpills {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap
+  }
+
+  .dpill {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    border: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-secondary);
+    background: var(--color-background-secondary)
+  }
+
+  .dpill.special {
+    border-color: var(--color-border-warning);
+    color: var(--color-text-warning);
+    background: var(--color-background-warning)
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px
+  }
+
+  .col {
+    padding: 7px 9px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid
+  }
+
+  .cl {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px
+  }
+
+  .ct {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--color-text-secondary)
+  }
+
+  .col-p {
+    border-color: var(--color-border-info)
+  }
+
+  .col-p .cl {
+    color: var(--color-text-info)
+  }
+
+  .col-m {
+    border-color: var(--color-border-success)
+  }
+
+  .col-m .cl {
+    color: var(--color-text-success)
+  }
+
+  .comp-row {
+    font-size: 11px;
+    color: var(--color-text-warning);
+    background: var(--color-background-warning);
+    border-radius: var(--border-radius-md);
+    padding: 4px 9px;
+    display: flex;
+    align-items: baseline;
+    gap: 5px
+  }
+
+  .comp-lbl {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex-shrink: 0
+  }
+
+  .warn-row {
+    font-size: 11px;
+    color: var(--color-text-danger);
+    background: var(--color-background-danger);
+    border-radius: var(--border-radius-md);
+    padding: 4px 9px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px
+  }
+
+  .footer {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center
+  }
+</style>
+
+<div class="rmap-header">
+  <div>
+    <p style="font-size:14px;font-weight:500;margin:0;color:var(--color-text-primary)">Integrated learning roadmap</p>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin:3px 0 0">G9–G10 Physics & Math · 11 blocks ·
+      competition track</p>
+  </div>
+  <div class="rmap-legend">
+    <span class="leg-pill"
+      style="border-color:var(--color-border-info);color:var(--color-text-info);background:var(--color-background-info)">Physics</span>
+    <span class="leg-pill"
+      style="border-color:var(--color-border-success);color:var(--color-text-success);background:var(--color-background-success)">Math</span>
+    <span class="leg-pill"
+      style="border-color:var(--color-border-warning);color:var(--color-text-warning);background:var(--color-background-warning)">Competition</span>
+  </div>
+</div>
+
+<div class="phase-bar">Phase 2 · G10 Current (SY 2025–2026)</div>
+
+<div class="blk"
+  onclick="sendPrompt('Start Block 7 — Waves, SHM, and Trigonometry with trig bridge: give me the trig bridge first then the lecture set')">
+  <div class="blk-head"><span class="bnum">07</span><span class="btitle">Waves, SHM & Trigonometry</span>
+    <div class="dpills"><span class="dpill special">Trig Bridge</span><span class="dpill">Lecture</span><span
+        class="dpill">Probset</span><span class="dpill">Quiz</span></div>
+  </div>
+  <div class="cols">
+    <div class="col col-p">
+      <div class="cl">Physics</div>
+      <div class="ct">Wave properties, superposition, SHM, pendulum, sound, Doppler</div>
+    </div>
+    <div class="col col-m">
+      <div class="cl">Math</div>
+      <div class="ct">Trig functions pre-taught — sin/cos as projection of circular motion</div>
+    </div>
+  </div>
+  <div class="comp-row"><span class="comp-lbl">Competition</span>Standing waves, resonance conditions, wave
+    interference, Mach number</div>
+  <div class="warn-row"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Pre-teach 2-week trig bridge at G10 start
+    — formal math unit not until Q3</div>
+</div>
+
+<div class="blk"
+  onclick="sendPrompt('Start Block 8 — Geometric Optics and Triangle Similarity: give me a lecture set')">
+  <div class="blk-head"><span class="bnum">08</span><span class="btitle">Geometric Optics & Similarity</span>
+    <div class="dpills"><span class="dpill">Lecture</span><span class="dpill">Probset</span><span
+        class="dpill">Quiz</span></div>
+  </div>
+  <div class="cols">
+    <div class="col col-p">
+      <div class="cl">Physics</div>
+      <div class="ct">Reflection, Snell's Law, TIR, concave/convex mirrors, thin lens equation</div>
+    </div>
+    <div class="col col-m">
+      <div class="cl">Math</div>
+      <div class="ct">Triangle similarity (ray diagrams), circles (curved mirror geometry)</div>
+    </div>
+  </div>
+  <div class="comp-row"><span class="comp-lbl">Competition</span>Multi-lens systems, Fermat's principle, fiber optics,
+    apparent depth</div>
+</div>
+
+<div class="blk" onclick="sendPrompt('Start Block 9 — Electrostatics and Vector Fields: give me a lecture set')">
+  <div class="blk-head"><span class="bnum">09</span><span class="btitle">Electrostatics & Vector Fields</span>
+    <div class="dpills"><span class="dpill">Lecture</span><span class="dpill">Probset</span></div>
+  </div>
+  <div class="cols">
+    <div class="col col-p">
+      <div class="cl">Physics</div>
+      <div class="ct">Coulomb's Law, electric field & potential, charge distributions</div>
+    </div>
+    <div class="col col-m">
+      <div class="cl">Math</div>
+      <div class="ct">Vector superposition (revisits Block 1), coordinate geometry for field mapping</div>
+    </div>
+  </div>
+  <div class="comp-row"><span class="comp-lbl">Competition</span>Field superposition, Gauss's Law intuition,
+    equipotential surfaces</div>
+</div>
+
+<div class="blk" onclick="sendPrompt('Start Block 10 — Circuits and Mathematical Models: give me a lecture set')">
+  <div class="blk-head"><span class="bnum">10</span><span class="btitle">Circuits & Mathematical Models</span>
+    <div class="dpills"><span class="dpill">Lecture</span><span class="dpill">Probset</span><span
+        class="dpill">Quiz</span></div>
+  </div>
+  <div class="cols">
+    <div class="col col-p">
+      <div class="cl">Physics</div>
+      <div class="ct">Ohm's Law, resistance, resistor combinations, current, complete circuits</div>
+    </div>
+    <div class="col col-m">
+      <div class="cl">Math</div>
+      <div class="ct">Functions as models — V-I curves, piecewise, exponential RC decay intuition</div>
+    </div>
+  </div>
+  <div class="comp-row"><span class="comp-lbl">Competition</span>Kirchhoff's Laws, Wheatstone bridge, delta-star
+    transformation</div>
+</div>
+
+<div class="blk" onclick="sendPrompt('Start Block 11 — Magnetism and Complex Numbers: give me a lecture set')">
+  <div class="blk-head"><span class="bnum">11</span><span class="btitle">Magnetism & Complex Numbers</span>
+    <div class="dpills"><span class="dpill">Lecture</span><span class="dpill">Probset</span><span
+        class="dpill">Quiz</span></div>
+  </div>
+  <div class="cols">
+    <div class="col col-p">
+      <div class="cl">Physics</div>
+      <div class="ct">Magnetic force, field configurations, Faraday's Law, Lenz's Law</div>
+    </div>
+    <div class="col col-m">
+      <div class="cl">Math</div>
+      <div class="ct">Complex numbers in polar form, Euler's formula — phasor representation of EM fields</div>
+    </div>
+  </div>
+  <div class="comp-row"><span class="comp-lbl">Competition</span>Motional EMF, Lorentz force trajectories, Hall effect,
+    induction braking</div>
+</div>
+
+<div class="footer">
+  <span style="font-size:11px;color:var(--color-text-tertiary)">11 blocks · 2 phases · math-physics integrated</span>
+  <button
+    onclick="sendPrompt('Give me an estimated week-by-week timeline for all 11 blocks with exam dates from the syllabi')"
+    style="font-size:11px">Timeline ↗</button>
+</div>

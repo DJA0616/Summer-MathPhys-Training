@@ -1,0 +1,673 @@
+import { useState, useRef, useEffect } from "react";
+
+const DS = {
+  colors: {
+    bg: "#0a0a0a", surface: "#111111", elevated: "#181818",
+    border: "#222222", muted: "#2a2a2a", dim: "#555555",
+    subtle: "#888888", body: "#c8c8c8", heading: "#efefef",
+    accent: "#7eb8d4", accentAlt: "#a0d4b0", err: "#d47e8a",
+    glow: "rgba(126,184,212,0.18)", glowStr: "rgba(126,184,212,0.5)",
+  },
+  font: {
+    serif: "'EB Garamond', Georgia, serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  radius: "4px",
+};
+
+const { colors: C, font: F } = DS;
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: ${C.bg}; color: ${C.body}; font-family: ${F.serif}; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: ${C.bg}; } ::-webkit-scrollbar-thumb { background: ${C.muted}; border-radius: 2px; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .fade { animation: fadeUp 0.4s ease forwards; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: ${C.muted}; border-radius: 1px; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: ${C.accent}; cursor: pointer; box-shadow: 0 0 6px ${C.glow}; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  input:focus { outline: none; }
+`;
+
+const Geo = () => (
+  <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}>
+    <defs>
+      <radialGradient id="rg1" cx="85%" cy="5%" r="35%">
+        <stop offset="0%" stopColor="#7eb8d4" stopOpacity="0.05" />
+        <stop offset="100%" stopColor="#7eb8d4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="rg2" cx="5%" cy="95%" r="30%">
+        <stop offset="0%" stopColor="#a0d4b0" stopOpacity="0.04" />
+        <stop offset="100%" stopColor="#a0d4b0" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#rg1)" />
+    <rect width="100%" height="100%" fill="url(#rg2)" />
+    <g opacity="0.06" stroke="#7eb8d4" strokeWidth="0.6" fill="none">
+      <polygon points="820,15 900,70 740,70" /><polygon points="900,70 960,15 960,125" />
+      <line x1="820" y1="15" x2="820" y2="125" /><line x1="740" y1="70" x2="960" y2="70" />
+    </g>
+    <g opacity="0.045" stroke="#a0d4b0" strokeWidth="0.5" fill="none">
+      {[80, 140, 200, 260].map((r, i) => <circle key={i} cx="50" cy="95%" r={r} />)}
+    </g>
+    <g opacity="0.02" stroke="#7eb8d4" strokeWidth="0.4">
+      {Array.from({ length: 18 }).map((_, i) => <line key={`h${i}`} x1="0" y1={i * 60} x2="100%" y2={i * 60} />)}
+      {Array.from({ length: 24 }).map((_, i) => <line key={`v${i}`} x1={i * 80} y1="0" x2={i * 80} y2="100%" />)}
+    </g>
+    {[[150,180],[350,420],[560,160],[680,360],[820,280],[220,560]].map(([cx,cy],i) => (
+      <circle key={i} cx={cx} cy={cy} r="1.5" fill="#7eb8d4" opacity="0.16" />
+    ))}
+  </svg>
+);
+
+const Card = ({ children, style = {} }) => (
+  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: DS.radius, padding: "22px 26px", position: "relative", overflow: "hidden", ...style }}>
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${C.accent}44,transparent)` }} />
+    {children}
+  </div>
+);
+
+const Label = ({ children, style = {} }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: C.dim, ...style }}>{children}</span>
+);
+
+const Mono = ({ children, style = {} }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 300, color: C.subtle, ...style }}>{children}</span>
+);
+
+const Tag = ({ children, accent = false, alt = false }) => (
+  <span style={{
+    fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase",
+    padding: "2px 7px", borderRadius: DS.radius,
+    border: `1px solid ${alt ? C.accentAlt+"44" : accent ? C.accent+"44" : C.border}`,
+    color: alt ? C.accentAlt : accent ? C.accent : C.dim,
+  }}>{children}</span>
+);
+
+const Rule = () => <div style={{ borderTop: `1px solid ${C.border}`, margin: "18px 0" }} />;
+
+const MathBlock = ({ children }) => (
+  <div style={{
+    fontFamily: F.mono, fontSize: 14, fontWeight: 300,
+    background: C.bg, border: `1px solid ${C.border}`,
+    borderLeft: `2px solid ${C.accent}88`,
+    borderRadius: DS.radius, padding: "12px 16px",
+    color: C.subtle, letterSpacing: "0.03em", lineHeight: 2, whiteSpace: "pre",
+  }}>{children}</div>
+);
+
+const InfoRow = ({ label, value, accent = false }) => (
+  <div style={{ display: "flex", gap: 16, padding: "9px 0", borderBottom: `1px solid ${C.border}`, alignItems: "baseline" }}>
+    <Mono style={{ minWidth: 160, color: C.dim, flexShrink: 0, fontSize: 11 }}>{label}</Mono>
+    <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{value}</span>
+  </div>
+);
+
+const Dots = ({ filled = 1 }) => (
+  <span style={{ display: "inline-flex", gap: 3 }}>
+    {[1,2,3].map(i => (
+      <span key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: i <= filled ? C.accent : C.muted, boxShadow: i <= filled ? `0 0 4px ${C.glowStr}` : "none" }} />
+    ))}
+  </span>
+);
+
+const PartSummary = ({ intro, points }) => (
+  <div style={{ padding: "16px 18px", background: C.elevated, border: `1px solid ${C.accent}33`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
+    <Label style={{ display: "block", marginBottom: 10, color: C.accent }}>Summary</Label>
+    {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{intro}</p>}
+    {points && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {points.map((p, i) => (
+          <div key={i} style={{ display: "flex", gap: 10 }}>
+            <Mono style={{ color: C.accent, minWidth: 14, fontSize: 11, flexShrink: 0 }}>{i + 1}.</Mono>
+            <span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{p}</span>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const CompNote = ({ children }) => (
+  <div style={{ padding: "12px 16px", background: C.bg, border: `1px solid ${C.accentAlt}33`, borderLeft: `2px solid ${C.accentAlt}77`, borderRadius: DS.radius }}>
+    <Label style={{ color: C.accentAlt, display: "block", marginBottom: 8 }}>Competition Insight</Label>
+    <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{children}</div>
+  </div>
+);
+
+const Quote = ({ text, author }) => (
+  <div style={{ padding: "14px 18px", borderLeft: `2px solid ${C.accent}55`, margin: "4px 0" }}>
+    <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic", lineHeight: 1.7, marginBottom: 6 }}>"{text}"</p>
+    <Mono style={{ fontSize: 10 }}>— {author}</Mono>
+  </div>
+);
+
+// ── Interactive Fields ──────────────────────────────────────
+
+function MCField({ question, choices, correct, pts = 3, diff = 1, explain }) {
+  const [selected, setSelected] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const [showExplain, setShowExplain] = useState(false);
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Tag>MC</Tag><Dots filled={diff} />
+        </div>
+        <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
+      </div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {choices.map((ch, i) => {
+          const L = ["A","B","C","D"][i], on = selected === i;
+          const ok = revealed && i === correct, bad = revealed && on && i !== correct;
+          return (
+            <div key={i} onClick={() => !revealed && setSelected(i)} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+              border: `1px solid ${ok ? C.accentAlt+"aa" : bad ? C.err+"88" : on ? C.accent+"88" : C.border}`,
+              borderRadius: DS.radius, cursor: revealed ? "default" : "pointer",
+              background: ok ? C.accentAlt+"0e" : bad ? C.err+"0e" : on ? C.accent+"0e" : "transparent",
+              boxShadow: on ? `0 0 12px ${C.glow}` : "none", transition: "all 0.18s ease",
+            }}>
+              <Mono style={{ fontSize: 10, color: on ? C.accent : C.dim, minWidth: 14 }}>{L}</Mono>
+              <span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{ch}</span>
+              {ok && <Mono style={{ fontSize: 9, color: C.accentAlt }}>✓</Mono>}
+              {bad && <Mono style={{ fontSize: 9, color: C.err }}>✗</Mono>}
+            </div>
+          );
+        })}
+      </div>
+      {selected !== null && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          {!revealed && <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>Check</button>}
+          <button onClick={() => { setSelected(null); setRevealed(false); setShowExplain(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>Clear</button>
+          {revealed && explain && <button onClick={() => setShowExplain(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showExplain ? "Hide" : "Explain"}</button>}
+        </div>
+      )}
+      {showExplain && explain && (
+        <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{explain}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function INTField({ question, answer, pts = 4, diff = 2, hint }) {
+  const [val, setVal] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const correct = parseInt(val) === answer;
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Tag>INT</Tag><Dots filled={diff} />
+        </div>
+        <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
+      </div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <input type="number" min="0" max="9999" value={val} placeholder="0"
+          onChange={e => { setVal(e.target.value); setChecked(false); }}
+          style={{ width: 96, padding: "10px 14px", borderRadius: DS.radius,
+            border: `1px solid ${checked ? (correct ? C.accentAlt+"99" : C.err+"88") : C.border}`,
+            background: checked ? (correct ? C.accentAlt+"0a" : C.err+"0a") : C.bg,
+            color: checked ? (correct ? C.accentAlt : C.err) : C.heading,
+            fontFamily: F.mono, fontSize: 22, fontWeight: 300, textAlign: "right",
+            boxShadow: val ? `0 0 10px ${C.glow}` : "none", transition: "all 0.2s",
+          }} />
+        <div>
+          <Mono style={{ fontSize: 9, letterSpacing: "0.12em", display: "block" }}>INTEGER · 0–9999</Mono>
+          {checked && <Mono style={{ fontSize: 9, display: "block", marginTop: 3, color: correct ? C.accentAlt : C.err }}>{correct ? "✓ correct" : "✗ try again"}</Mono>}
+        </div>
+      </div>
+      {val !== "" && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          {!checked && <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>Check</button>}
+          <button onClick={() => { setVal(""); setChecked(false); setShowHint(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>Clear</button>
+          {hint && <button onClick={() => setShowHint(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showHint ? "Hide hint" : "Hint"}</button>}
+        </div>
+      )}
+      {showHint && hint && (
+        <div style={{ marginTop: 10, padding: "9px 13px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.6, fontStyle: "italic" }}>{hint}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Wave Visualizer ─────────────────────────────────────────
+
+function WaveVisualizer() {
+  const cvRef = useRef(null);
+  const fRef = useRef(1), ARef = useRef(1);
+  const needsRedraw = useRef(true);
+  const [freq, setFreq] = useState(1);
+  const [amp, setAmp] = useState(1);
+
+  useEffect(() => {
+    const cv = cvRef.current; if (!cv) return;
+    const ctx = cv.getContext("2d"); const W = 640, H = 200;
+
+    function draw() {
+      const A = ARef.current, f = fRef.current;
+      ctx.clearRect(0, 0, W, H);
+      const cy = H / 2, ampPx = A * 70;
+
+      // Axes
+      ctx.strokeStyle = "rgba(126,184,212,0.15)"; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(30, cy); ctx.lineTo(W - 10, cy); ctx.stroke();
+
+      // λ markers
+      const lambda = W / (f * 4);
+      ctx.strokeStyle = "rgba(126,184,212,0.08)"; ctx.setLineDash([4, 4]);
+      for (let x = 40; x < W - 10; x += lambda) {
+        ctx.beginPath(); ctx.moveTo(x, cy - ampPx - 10); ctx.lineTo(x, cy + ampPx + 10); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Wave
+      ctx.beginPath(); ctx.strokeStyle = C.accent; ctx.lineWidth = 2;
+      for (let px = 40; px < W - 10; px++) {
+        const t = (px - 40) / (W - 50);
+        const y = cy - Math.sin(f * 2 * Math.PI * t) * ampPx;
+        px === 40 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+
+      // Labels
+      ctx.font = "10px monospace"; ctx.fillStyle = "rgba(239,239,239,0.34)"; ctx.textAlign = "right";
+      ctx.fillText(`λ = ${(1 / f).toFixed(1)}`, W - 14, 18);
+      ctx.fillText(`f = ${f.toFixed(1)} Hz`, W - 14, 32);
+      ctx.fillText(`A = ${A.toFixed(1)}`, W - 14, 46);
+    }
+
+    let rafId;
+    function loop() { if (needsRedraw.current) { draw(); needsRedraw.current = false; } rafId = requestAnimationFrame(loop); }
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  const update = (setter, ref, val) => { setter(val); ref.current = val; needsRedraw.current = true; };
+
+  return (
+    <div style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: DS.radius, overflow: "hidden" }}>
+      <canvas ref={cvRef} width={640} height={200} style={{ display: "block", width: "100%" }} />
+      <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.border}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+            <Mono style={{ color: C.accent, fontSize: 11 }}>A — Amplitude</Mono>
+            <Mono style={{ color: C.heading, fontSize: 11 }}>{amp.toFixed(1)}</Mono>
+          </div>
+          <input type="range" min="0.2" max="1.5" step="0.1" value={amp} onChange={e => update(setAmp, ARef, parseFloat(e.target.value))} />
+        </div>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+            <Mono style={{ color: C.accent, fontSize: 11 }}>f — Frequency (Hz)</Mono>
+            <Mono style={{ color: C.heading, fontSize: 11 }}>{freq.toFixed(1)}</Mono>
+          </div>
+          <input type="range" min="0.5" max="4" step="0.1" value={freq} onChange={e => update(setFreq, fRef, parseFloat(e.target.value))} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main ────────────────────────────────────────────────────
+
+const MAIN_TABS = ["lecture", "practice", "reference"];
+const PART_LABELS = ["I · Wave Properties", "II · SHM", "III · Superposition & Sound"];
+
+export default function G10WavesL01() {
+  const [tab, setTab] = useState("lecture");
+  const [part, setPart] = useState(0);
+
+  const tabBtn = t => ({
+    fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: DS.radius,
+    border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`,
+    background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s",
+  });
+
+  const partBtn = i => ({
+    fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: DS.radius,
+    border: `1px solid ${part === i ? C.accent+"55" : C.border}`,
+    background: part === i ? C.accent+"11" : "transparent",
+    color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s",
+  });
+
+  const navBtn = (accent = false) => ({
+    fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: DS.radius,
+    border: `1px solid ${accent ? C.accent+"55" : C.border}`,
+    background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer",
+  });
+
+  return (
+    <>
+      <style>{css}</style>
+      <Geo />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+
+        {/* Header */}
+        <div className="fade" style={{ marginBottom: 36 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <Tag>Physics</Tag><Tag accent>Waves</Tag><Tag>SHM</Tag>
+          </div>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}` }}>
+            Waves &<br /><em>Simple Harmonic Motion</em>
+          </h1>
+          <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>
+            All periodic phenomena — pendula, springs, sound, light — share one mathematical structure. Understand it once, apply it everywhere.
+          </p>
+        </div>
+
+        {/* Overview */}
+        <Card style={{ marginBottom: 24 }}>
+          <Label style={{ display: "block", marginBottom: 12 }}>What This Covers</Label>
+          <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+            A wave is a disturbance that propagates energy through a medium without transporting matter. A simple harmonic oscillator is a system where restoring force is proportional to displacement — the purest form of oscillation. Together, these two concepts explain everything from the sound of a violin to the light from a distant galaxy.
+          </p>
+          <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+            This lecture assumes you have completed the <strong style={{ fontWeight: 500, color: C.accent }}>Trig Bridge</strong> — the sinusoidal form y = A·sin(ωt + φ) and the language of periodic motion are prerequisite. We build the physics on that foundation.
+          </p>
+          <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+            {["I · Wave Properties", "II · SHM", "III · Superposition & Sound"].map((p, i) => <Tag key={i}>{p}</Tag>)}
+          </div>
+        </Card>
+
+        {/* Tab nav */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          {MAIN_TABS.map(t => <button key={t} onClick={() => setTab(t)} style={tabBtn(t)}>{t}</button>)}
+        </div>
+        <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
+
+        {/* ═══════════════ LECTURE ═══════════════ */}
+        {tab === "lecture" && (
+          <div className="fade">
+            <div style={{ display: "flex", gap: 3, marginBottom: 22, flexWrap: "wrap" }}>
+              {PART_LABELS.map((lbl, i) => <button key={i} onClick={() => setPart(i)} style={partBtn(i)}>{lbl}</button>)}
+            </div>
+
+            {/* ── PART I: Wave Properties ── */}
+            {part === 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+                <PartSummary
+                  intro="A wave is described by its amplitude, wavelength, frequency, and speed. These four quantities are locked together by the wave equation v = fλ. Change one, and something else must adjust."
+                  points={[
+                    "v = fλ is the fundamental wave equation — speed equals frequency times wavelength.",
+                    "Frequency f is set by the source; speed v is set by the medium; wavelength λ adjusts to satisfy v = fλ.",
+                    "Transverse waves (string, EM): displacement perpendicular to propagation. Longitudinal waves (sound): displacement parallel to propagation.",
+                    "Intensity ∝ A² — double the amplitude, quadruple the energy carried per second.",
+                  ]}
+                />
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>The Wave Equation</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    Consider a wave on a string. A single crest travels a distance of one wavelength λ in one period T. Since speed = distance/time:
+                  </p>
+                  <MathBlock>{"v = λ / T         since T = 1 / f\nv = f · λ          fundamental wave equation"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14, marginBottom: 14 }}>
+                    This equation holds for <em>all</em> waves — water waves, sound, light, seismic waves. The speed v depends on the medium, not the source. When a wave crosses from one medium to another, its speed changes, its wavelength changes, but its frequency stays the same (the source is still the source).
+                  </p>
+                  <InfoRow label="v = fλ" value="Wave speed = frequency × wavelength — universal" accent />
+                  <InfoRow label="Frequency f" value="Set by source; unchanged across media boundaries" />
+                  <InfoRow label="Speed v" value="Set by medium properties (tension, density, temperature)" />
+                  <InfoRow label="Wavelength λ" value="Adjusts: λ = v/f — the dependent variable" />
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Wave Visualizer</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    Adjust amplitude and frequency. Observe: increasing f packs more cycles into the same horizontal space (wavelength decreases). Changing amplitude changes the vertical scale only — frequency and wavelength are independent of amplitude.
+                  </p>
+                  <WaveVisualizer />
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Wave Speed in Different Media</Label>
+                  {[
+                    { k: "String under tension", v: "v = √(T/μ) — T is tension (N), μ is linear density (kg/m)" },
+                    { k: "Sound in air (20°C)", v: "v ≈ 343 m/s — increases with temperature" },
+                    { k: "Sound in water", v: "v ≈ 1480 m/s — denser medium, faster sound" },
+                    { k: "Light in vacuum", v: "c = 3.00 × 10⁸ m/s — the universal speed limit" },
+                    { k: "Light in medium", v: "v = c/n — n is refractive index (> 1)" },
+                  ].map(({ k, v }) => <InfoRow key={k} label={k} value={v} />)}
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Intensity and the Inverse-Square Law</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    A wave carries energy. Its intensity I is the power transmitted per unit area perpendicular to the direction of propagation:
+                  </p>
+                  <MathBlock>{"I = P / A            power per unit area (W/m²)\nI ∝ A²              intensity ∝ amplitude²\nI ∝ 1/r²            spherical waves"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14 }}>
+                    The 1/r² drop-off is why distant sounds are faint and why the Sun — a sphere 1.4 million km across — appears as a point in the sky. Energy is conserved; it simply spreads over an ever-larger spherical surface.
+                  </p>
+                </Card>
+
+                <CompNote>
+                  <p>The wave equation ∂²y/∂t² = v²·∂²y/∂x² is the master equation governing all classical waves. Its solutions are any functions of the form f(x ± vt) — the ± determines direction. The sinusoidal solution y = A·sin(kx − ωt) is a special case, but any shape propagates without distortion in a dispersionless medium. When dispersion is present (v depends on f), different frequency components travel at different speeds, and the wave packet broadens — this is why tsunamis (long wavelength) travel so much faster than wind waves.</p>
+                </CompNote>
+
+                <Card>
+                  <MCField
+                    question="A wave on a string has frequency f = 50 Hz and wavelength λ = 0.4 m. What is the wave speed?"
+                    choices={["0.008 m/s", "20 m/s", "125 m/s", "200 m/s"]}
+                    correct={1} diff={1} pts={3}
+                    explain="v = f·λ = (50 Hz)(0.4 m) = 20 m/s. The wave equation is multiplication; no other operation needed."
+                  />
+                </Card>
+              </div>
+            )}
+
+            {/* ── PART II: SHM ── */}
+            {part === 1 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+                <PartSummary
+                  intro="Simple harmonic motion is the projection of uniform circular motion onto a line. Every SHM system has a natural frequency set by its physical structure — not by how hard you push it."
+                  points={[
+                    "SHM occurs when restoring force ∝ −displacement: F = −kx. The minus sign is the physics — it returns the system to equilibrium.",
+                    "Angular frequency ω = √(k/m) for a spring, ω = √(g/L) for a pendulum. These determine period; amplitude determines energy.",
+                    "Position, velocity, acceleration are all sinusoidal with fixed phase relationships — v leads x by π/2, a leads v by π/2.",
+                    "Total energy is constant: E = ½kA². Kinetic and potential exchange continuously, their sum remains unchanged.",
+                  ]}
+                />
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>The Spring-Mass System</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    Hooke's Law: F = −kx. The restoring force is proportional to displacement and directed toward equilibrium. Combine with Newton's Second Law:
+                  </p>
+                  <MathBlock>{"F = −kx  =  ma\n−kx  =  m(d²x/dt²)\nd²x/dt²  =  −(k/m)x"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14, marginBottom: 14 }}>
+                    This is a differential equation whose solution is x(t) = A·sin(ωt + φ) where ω = √(k/m). The system selects the sinusoidal form — we do not impose it.
+                  </p>
+                  <InfoRow accent label="ω = √(k/m)" value="Angular frequency — set by stiffness k and mass m" />
+                  <InfoRow accent label="T = 2π√(m/k)" value="Period — stiffer spring → shorter period; more mass → longer period" />
+                  <InfoRow label="x(t) = A·sin(ωt + φ)" value="Position — sinusoidal with amplitude A" />
+                  <InfoRow label="v(t) = Aω·cos(ωt + φ)" value="Velocity — leads position by π/2 (quarter-cycle)" />
+                  <InfoRow label="a(t) = −Aω²·sin(ωt + φ)" value="Acceleration — opposite to displacement (restoring)" />
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>The Simple Pendulum</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    For small angles (θ &lt; ~15°), sin θ ≈ θ in radians, and the pendulum's restoring torque τ = −mgL·θ yields:
+                  </p>
+                  <MathBlock>{"ω = √(g/L)          angular frequency\nT = 2π√(L/g)        period — independent of mass!"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14, marginBottom: 14 }}>
+                    This is the principle of <em>isochronism</em> — all pendula of the same length swing with the same period regardless of mass or amplitude (for small angles). Galileo discovered this watching a chandelier in Pisa Cathedral, timing it against his own pulse. It is why pendulum clocks work: the period is determined by geometry alone.
+                  </p>
+                  <Rule />
+                  <Label style={{ display: "block", marginBottom: 10 }}>Pendulum Physics in One Equation</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 8 }}>
+                    The period formula T = 2π√(L/g) encodes three remarkable facts:
+                  </p>
+                  {[
+                    { k: "Mass independence", v: "A 1 kg bob and a 100 kg bob have the same period. Inertia (resistance to motion) and gravitational force both scale with mass — they cancel." },
+                    { k: "geometric determination", v: "Period depends only on L and g. To halve the period, quarter the length (T² ∝ L)." },
+                    { k: "g as a measurable", v: "Measure T and L precisely, and you can determine g to within 1%. This is how early geodesists mapped Earth's gravitational field." },
+                  ].map(({ k, v }) => <InfoRow key={k} label={k} value={v} />)}
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Energy in SHM</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    At any instant, the total mechanical energy is the sum of kinetic and potential:
+                  </p>
+                  <MathBlock>{"E = ½mv² + ½kx²\n  = ½m(Aω·cos ωt)² + ½k(A·sin ωt)²\n  = ½kA²(cos²ωt + sin²ωt)\n  = ½kA²              (constant!)"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.65 }}>
+                    The Pythagorean identity cos²ωt + sin²ωt = 1 makes energy conservation automatic. This is why the trig bridge matters — the math and physics are the same thing.
+                  </p>
+                </Card>
+
+                <CompNote>
+                  <p>For large-angle pendula, sin θ ≠ θ and the period becomes amplitude-dependent: T = 2π√(L/g)·[1 + (1/16)θ₀² + ...]. This is an example of <em>anharmonic</em> oscillation. Numerical solutions or elliptic integrals are required for exact values. In competition problems, always check whether the small-angle approximation is justified — if the initial angle exceeds ~20°, the standard T = 2π√(L/g) is measurably wrong.</p>
+                </CompNote>
+
+                <Card>
+                  <INTField
+                    question="A pendulum of length L = 1.0 m swings with small amplitude on Earth (g = 9.8 m/s²). Compute its period in seconds, rounded to the nearest integer. Use T = 2π√(L/g) with π ≈ 3.14."
+                    answer={2} diff={2} pts={4}
+                    hint="T = 2π√(1.0/9.8) = 2·3.14·√(0.102) ≈ 6.28·0.319 ≈ 2.0 s. A 1-meter pendulum has a period of about 2 seconds — a useful benchmark."
+                  />
+                </Card>
+              </div>
+            )}
+
+            {/* ── PART III: Superposition & Sound ── */}
+            {part === 2 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+                <PartSummary
+                  intro="When two or more waves meet, they superpose — the resultant displacement at any point is the algebraic sum of individual displacements. This principle explains interference, standing waves, and beats."
+                  points={[
+                    "Superposition principle: y(x,t) = y₁(x,t) + y₂(x,t). Waves pass through each other unchanged.", "Constructive interference occurs when crests align — amplitudes add. Destructive interference when crest meets trough — amplitudes cancel.",
+                    "Standing waves form when incident and reflected waves of the same frequency superpose. Nodes (zero displacement) and antinodes (maximum displacement) are stationary.",
+                    "Sound is a longitudinal pressure wave. Its speed in air depends on temperature: v = 331 + 0.6·T(°C) m/s.",
+                  ]}
+                />
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Superposition of Two Waves</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    Consider two identical sinusoidal waves traveling in opposite directions:
+                  </p>
+                  <MathBlock>{"y₁ = A·sin(kx − ωt)      rightward\ny₂ = A·sin(kx + ωt)      leftward\n\ny = y₁ + y₂ = 2A·sin(kx)·cos(ωt)"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14, marginBottom: 14 }}>
+                    The result is a <strong style={{ fontWeight: 500, color: C.accent }}>standing wave</strong>. The spatial part sin(kx) determines where the amplitude is maximum (antinodes: kx = π/2, 3π/2, ...) or zero (nodes: kx = 0, π, 2π, ...). The temporal part cos(ωt) means every point oscillates at the same frequency — but with amplitude set by position.
+                  </p>
+                  <InfoRow accent label="Nodes" value="kx = nπ → x = nλ/2 — no displacement ever" />
+                  <InfoRow accent label="Antinodes" value="kx = (n+½)π → x = (2n+1)λ/4 — maximum oscillation" />
+                  <InfoRow label="Node spacing" value="λ/2 between adjacent nodes" />
+                  <InfoRow label="Standing wave condition" value="L = n·λ/2 for a string fixed at both ends" />
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Sound Waves</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    Sound is a longitudinal pressure wave. Molecules oscillate parallel to the direction of propagation, creating compressions (high pressure) and rarefactions (low pressure). The speed of sound in air at temperature T (in °C):
+                  </p>
+                  <MathBlock>{"v = 331 + 0.6·T°C   m/s\n\nv ≈ 343 m/s at 20°C (room temperature)"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14, marginBottom: 14 }}>
+                    Sound exhibits all wave phenomena: reflection (echoes), refraction (temperature gradients bend sound), diffraction (sound bends around corners — why you can hear someone in the next room through an open door), and interference (noise-canceling headphones destructively interfere with ambient sound).
+                  </p>
+                </Card>
+
+                <Card>
+                  <Label style={{ display: "block", marginBottom: 14 }}>Beats</Label>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                    When two waves of slightly different frequencies superpose, the amplitude modulates at the difference frequency:
+                  </p>
+                  <MathBlock>{"y₁ = A·sin(2πf₁t)\ny₂ = A·sin(2πf₂t)\n\ny = y₁ + y₂ = 2A·cos(2π·(f₁−f₂)/2·t)·sin(2π·(f₁+f₂)/2·t)"}</MathBlock>
+                  <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginTop: 14, marginBottom: 14 }}>
+                    The beat frequency is <strong style={{ fontWeight: 500, color: C.accent }}>f_beat = |f₁ − f₂|</strong> — the rate at which the amplitude rises and falls. Musicians use beats to tune instruments: when the beat frequency reaches zero, the two notes are in unison.
+                  </p>
+                </Card>
+
+                <CompNote>
+                  <p><strong>Doppler Effect:</strong> When a source moves relative to an observer, the observed frequency shifts. For sound: f' = f·(v ± v_obs)/(v ∓ v_src). The signs follow one rule: frequency rises when source and observer approach each other, falls when they recede. The Mach number M = v_src/v_sound characterizes shock waves — when M &gt; 1, the source outruns its own sound waves, producing a sonic boom. For light (relativistic Doppler): f' = f·√((1±β)/(1∓β)) where β = v/c. This is how we measure the expansion of the universe — the redshift of distant galaxies.</p>
+                </CompNote>
+
+                <Card>
+                  <MCField
+                    question="Two sound waves of frequencies 440 Hz and 444 Hz are played simultaneously. What beat frequency is heard?"
+                    choices={["2 Hz", "4 Hz", "442 Hz", "884 Hz"]}
+                    correct={1} diff={1} pts={3}
+                    explain="Beat frequency = |f₁ − f₂| = |444 − 440| = 4 Hz. The listener hears a tone at the average frequency (442 Hz) whose loudness pulses 4 times per second."
+                  />
+                </Card>
+              </div>
+            )}
+
+            {/* Part nav */}
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
+              {part > 0 ? <button onClick={() => setPart(p => p - 1)} style={navBtn(false)}>← {PART_LABELS[part - 1]}</button> : <span />}
+              {part < 2 ? <button onClick={() => setPart(p => p + 1)} style={navBtn(true)}>{PART_LABELS[part + 1]} →</button> : <button onClick={() => setTab("practice")} style={navBtn(true)}>Practice →</button>}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ PRACTICE ═══════════════ */}
+        {tab === "practice" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 6 }}>Problem Set · Waves & SHM</Label>
+              <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>6 problems · Easy → Medium → Hard · 22 pts total</p>
+            </Card>
+
+            <Card><MCField question="A wave has wavelength λ = 2.0 m and period T = 0.5 s. What is its speed?" choices={["0.25 m/s", "1.0 m/s", "4.0 m/s", "8.0 m/s"]} correct={2} diff={1} pts={3} explain="f = 1/T = 1/0.5 = 2.0 Hz. v = f·λ = (2.0)(2.0) = 4.0 m/s." /></Card>
+
+            <Card><MCField question="A spring-mass system has k = 100 N/m and m = 1.0 kg. What is its angular frequency ω?" choices={["0.1 rad/s", "10 rad/s", "50 rad/s", "100 rad/s"]} correct={1} diff={1} pts={3} explain="ω = √(k/m) = √(100/1.0) = 10 rad/s." /></Card>
+
+            <Card><INTField question="A pendulum has length L = 0.25 m. Using g = 10 m/s² and π ≈ 3.14, compute its period in seconds, rounded to the nearest integer. Hint: T = 2π√(L/g)." answer={1} diff={2} pts={4} hint="T = 2·3.14·√(0.25/10) = 6.28·√0.025 = 6.28·0.158 ≈ 0.99 s. Rounds to 1 s." /></Card>
+
+            <Card><MCField question="A string of length L = 1.2 m is fixed at both ends. The standing wave with 3 antinodes is observed. What is the wavelength?" choices={["0.4 m", "0.6 m", "0.8 m", "1.2 m"]} correct={2} diff={2} pts={4} explain="3 antinodes → n = 3. Standing wave condition: L = n·λ/2, so λ = 2L/n = 2·1.2/3 = 0.8 m." /></Card>
+
+            <Card><INTField question="A spring with k = 200 N/m is stretched 0.15 m from equilibrium. What is the potential energy stored, in joules? Round to one decimal place. Hint: U = ½kx²." answer={2} diff={2} pts={4} hint="U = ½·200·(0.15)² = 100·0.0225 = 2.25 J. Rounds to 2 J." /></Card>
+
+            <Card><MCField question="A sound wave of frequency 500 Hz travels from air (v = 340 m/s) into water (v = 1500 m/s). What happens to its wavelength?" choices={["Stays the same", "Increases by factor ~4.4", "Decreases by factor ~4.4", "Becomes zero"]} correct={1} diff={2} pts={4} explain="Frequency is unchanged across the boundary. λ = v/f: λ_water = 1500/500 = 3.0 m; λ_air = 340/500 = 0.68 m. Ratio = 3.0/0.68 ≈ 4.4×." /></Card>
+          </div>
+        )}
+
+        {/* ═══════════════ REFERENCE ═══════════════ */}
+        {tab === "reference" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Wave Equation & Properties</Label>
+              <MathBlock>{"v = f · λ            wave speed equation\nT = 1/f              period ↔ frequency\nI ∝ A²               intensity ∝ amplitude²\nI ∝ 1/r²             spherical spreading"}</MathBlock>
+              <div style={{ marginTop: 14 }}>
+                {[
+                  { k: "Wave speed (string)", v: "v = √(T/μ) — T = tension, μ = linear density" },
+                  { k: "Sound in air", v: "v = 331 + 0.6·T(°C) m/s" },
+                  { k: "Light in medium", v: "v = c/n — n is refractive index" },
+                ].map(({ k, v }) => <InfoRow key={k} label={k} value={v} />)}
+              </div>
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Simple Harmonic Motion</Label>
+              <MathBlock>{"ω = √(k/m)           spring-mass\nω = √(g/L)           simple pendulum\n\nx(t) = A·sin(ωt + φ)\nv(t) = Aω·cos(ωt + φ)\na(t) = −Aω²·sin(ωt + φ)\n\nT = 2π/ω = 1/f\nE = ½kA²             total energy (constant)"}</MathBlock>
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Superposition & Standing Waves</Label>
+              <MathBlock>{"y = y₁ + y₂           superposition principle\n\ny = 2A·sin(kx)·cos(ωt)   standing wave\n\nNodes:        x = n·λ/2\nAntinodes:    x = (2n+1)·λ/4\n\ny_string:     L = n·λ/2     (fixed both ends)\nf_n = n·v/(2L)          harmonic frequencies\n\nf_beat = |f₁ − f₂|      beat frequency"}</MathBlock>
+            </Card>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
+          <Mono style={{ fontSize: 9 }}>waves · shm · sound · block 7</Mono>
+          <Mono style={{ fontSize: 9, color: C.dim }}>prerequisite: Trig Bridge (sinusoidal form)</Mono>
+        </div>
+      </div>
+    </>
+  );
+}

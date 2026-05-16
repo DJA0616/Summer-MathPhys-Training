@@ -1,0 +1,294 @@
+import { useState } from "react";
+
+const DS = {
+  colors: {
+    bg: "#0a0a0a", surface: "#111111", elevated: "#181818",
+    border: "#222222", muted: "#2a2a2a", dim: "#555555",
+    subtle: "#888888", body: "#c8c8c8", heading: "#efefef",
+    accent: "#7eb8d4", accentAlt: "#a0d4b0", err: "#d47e8a",
+    glow: "rgba(126,184,212,0.18)", glowStr: "rgba(126,184,212,0.5)",
+  },
+  font: {
+    serif: "'EB Garamond', Georgia, serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  radius: "4px",
+};
+
+const { colors: C, font: F } = DS;
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: ${C.bg}; color: ${C.body}; font-family: ${F.serif}; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: ${C.bg}; } ::-webkit-scrollbar-thumb { background: ${C.muted}; border-radius: 2px; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .fade { animation: fadeUp 0.4s ease forwards; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  input:focus { outline: none; }
+`;
+
+const Geo = () => (
+  <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}>
+    <defs>
+      <radialGradient id="rg1" cx="85%" cy="5%" r="35%"><stop offset="0%" stopColor="#7eb8d4" stopOpacity="0.05" /><stop offset="100%" stopColor="#7eb8d4" stopOpacity="0" /></radialGradient>
+      <radialGradient id="rg2" cx="5%" cy="95%" r="30%"><stop offset="0%" stopColor="#a0d4b0" stopOpacity="0.04" /><stop offset="100%" stopColor="#a0d4b0" stopOpacity="0" /></radialGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#rg1)" /><rect width="100%" height="100%" fill="url(#rg2)" />
+    <g opacity="0.06" stroke="#7eb8d4" strokeWidth="0.6" fill="none">
+      <polygon points="820,15 900,70 740,70" /><polygon points="900,70 960,15 960,125" />
+      <line x1="820" y1="15" x2="820" y2="125" /><line x1="740" y1="70" x2="960" y2="70" />
+    </g>
+    <g opacity="0.045" stroke="#a0d4b0" strokeWidth="0.5" fill="none">
+      {[80, 140, 200, 260].map((r, i) => <circle key={i} cx="50" cy="95%" r={r} />)}
+    </g>
+    <g opacity="0.02" stroke="#7eb8d4" strokeWidth="0.4">
+      {Array.from({ length: 18 }).map((_, i) => <line key={`h${i}`} x1="0" y1={i * 60} x2="100%" y2={i * 60} />)}
+      {Array.from({ length: 24 }).map((_, i) => <line key={`v${i}`} x1={i * 80} y1="0" x2={i * 80} y2="100%" />)}
+    </g>
+  </svg>
+);
+
+const Card = ({ children, style = {} }) => (
+  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: DS.radius, padding: "22px 26px", position: "relative", overflow: "hidden", ...style }}>
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${C.accent}44,transparent)` }} />
+    {children}
+  </div>
+);
+
+const Label = ({ children, style = {} }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: C.dim, ...style }}>{children}</span>
+);
+
+const Mono = ({ children, style = {} }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 300, color: C.subtle, ...style }}>{children}</span>
+);
+
+const Tag = ({ children, accent = false, alt = false }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", padding: "2px 7px", borderRadius: DS.radius, border: `1px solid ${alt ? C.accentAlt+"44" : accent ? C.accent+"44" : C.border}`, color: alt ? C.accentAlt : accent ? C.accent : C.dim }}>{children}</span>
+);
+
+const Rule = () => <div style={{ borderTop: `1px solid ${C.border}`, margin: "18px 0" }} />;
+
+const MathBlock = ({ children }) => (
+  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 300, background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius, padding: "12px 16px", color: C.subtle, letterSpacing: "0.03em", lineHeight: 2, whiteSpace: "pre" }}>{children}</div>
+);
+
+const InfoRow = ({ label, value, accent = false }) => (
+  <div style={{ display: "flex", gap: 16, padding: "9px 0", borderBottom: `1px solid ${C.border}`, alignItems: "baseline" }}>
+    <Mono style={{ minWidth: 200, color: C.dim, flexShrink: 0, fontSize: 11 }}>{label}</Mono>
+    <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{value}</span>
+  </div>
+);
+
+const Dots = ({ filled = 1 }) => (
+  <span style={{ display: "inline-flex", gap: 3 }}>
+    {[1,2,3].map(i => <span key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: i <= filled ? C.accent : C.muted, boxShadow: i <= filled ? `0 0 4px ${C.glowStr}` : "none" }} />)}
+  </span>
+);
+
+const PartSummary = ({ intro, points }) => (
+  <div style={{ padding: "16px 18px", background: C.elevated, border: `1px solid ${C.accent}33`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
+    <Label style={{ display: "block", marginBottom: 10, color: C.accent }}>Summary</Label>
+    {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{intro}</p>}
+    {points && <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>{points.map((p, i) => <div key={i} style={{ display: "flex", gap: 10 }}><Mono style={{ color: C.accent, minWidth: 14, fontSize: 11, flexShrink: 0 }}>{i + 1}.</Mono><span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{p}</span></div>)}</div>)}
+  </div>
+);
+
+const CompNote = ({ children }) => (
+  <div style={{ padding: "12px 16px", background: C.bg, border: `1px solid ${C.accentAlt}33`, borderLeft: `2px solid ${C.accentAlt}77`, borderRadius: DS.radius }}>
+    <Label style={{ color: C.accentAlt, display: "block", marginBottom: 8 }}>Competition Insight</Label>
+    <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{children}</div>
+  </div>
+);
+
+function MCField({ question, choices, correct, pts = 3, diff = 1, explain }) {
+  const [selected, setSelected] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const [showExplain, setShowExplain] = useState(false);
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}><div style={{ display: "flex", gap: 8, alignItems: "center" }}><Tag>MC</Tag><Dots filled={diff} /></div><Mono style={{ fontSize: 10 }}>{pts} pts</Mono></div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {choices.map((ch, i) => {
+          const L = ["A","B","C","D"][i], on = selected === i;
+          const ok = revealed && i === correct, bad = revealed && on && i !== correct;
+          return (<div key={i} onClick={() => !revealed && setSelected(i)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", border: `1px solid ${ok ? C.accentAlt+"aa" : bad ? C.err+"88" : on ? C.accent+"88" : C.border}`, borderRadius: DS.radius, cursor: revealed ? "default" : "pointer", background: ok ? C.accentAlt+"0e" : bad ? C.err+"0e" : on ? C.accent+"0e" : "transparent", boxShadow: on ? `0 0 12px ${C.glow}` : "none", transition: "all 0.18s ease" }}><Mono style={{ fontSize: 10, color: on ? C.accent : C.dim, minWidth: 14 }}>{L}</Mono><span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{ch}</span>{ok && <Mono style={{ fontSize: 9, color: C.accentAlt }}>✓</Mono>}{bad && <Mono style={{ fontSize: 9, color: C.err }}>✗</Mono>}</div>);
+        })}
+      </div>
+      {selected !== null && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          {!revealed && <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>Check</button>}
+          <button onClick={() => { setSelected(null); setRevealed(false); setShowExplain(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>Clear</button>
+          {revealed && explain && <button onClick={() => setShowExplain(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showExplain ? "Hide" : "Explain"}</button>}
+        </div>
+      )}
+      {showExplain && explain && <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{explain}</p></div>}
+    </div>
+  );
+}
+
+function INTField({ question, answer, pts = 4, diff = 2, hint }) {
+  const [val, setVal] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const correct = parseInt(val) === answer;
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}><div style={{ display: "flex", gap: 8, alignItems: "center" }}><Tag>INT</Tag><Dots filled={diff} /></div><Mono style={{ fontSize: 10 }}>{pts} pts</Mono></div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <input type="number" min="0" max="9999" value={val} placeholder="0" onChange={e => { setVal(e.target.value); setChecked(false); }} style={{ width: 96, padding: "10px 14px", borderRadius: DS.radius, border: `1px solid ${checked ? (correct ? C.accentAlt+"99" : C.err+"88") : C.border}`, background: checked ? (correct ? C.accentAlt+"0a" : C.err+"0a") : C.bg, color: checked ? (correct ? C.accentAlt : C.err) : C.heading, fontFamily: F.mono, fontSize: 22, fontWeight: 300, textAlign: "right", boxShadow: val ? `0 0 10px ${C.glow}` : "none", transition: "all 0.2s" }} />
+        <div><Mono style={{ fontSize: 9, letterSpacing: "0.12em", display: "block" }}>INTEGER · 0–9999</Mono>{checked && <Mono style={{ fontSize: 9, display: "block", marginTop: 3, color: correct ? C.accentAlt : C.err }}>{correct ? "✓ correct" : "✗ try again"}</Mono>}</div>
+      </div>
+      {val !== "" && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          {!checked && <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>Check</button>}
+          <button onClick={() => { setVal(""); setChecked(false); setShowHint(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>Clear</button>
+          {hint && <button onClick={() => setShowHint(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showHint ? "Hide hint" : "Hint"}</button>}
+        </div>
+      )}
+      {showHint && hint && <div style={{ marginTop: 10, padding: "9px 13px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.6, fontStyle: "italic" }}>{hint}</p></div>}
+    </div>
+  );
+}
+
+const MAIN_TABS = ["lecture", "practice", "reference"];
+const PART_LABELS = ["I · Ohm's Law & Resistance", "II · Series & Parallel", "III · Circuit Analysis"];
+
+export default function G10CircuitsL01() {
+  const [tab, setTab] = useState("lecture");
+  const [part, setPart] = useState(0);
+
+  const tabBtn = t => ({ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: DS.radius, border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" });
+  const partBtn = i => ({ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: DS.radius, border: `1px solid ${part === i ? C.accent+"55" : C.border}`, background: part === i ? C.accent+"11" : "transparent", color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s" });
+  const navBtn = (accent = false) => ({ fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: DS.radius, border: `1px solid ${accent ? C.accent+"55" : C.border}`, background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer" });
+
+  return (<>
+    <style>{css}</style><Geo />
+    <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+
+      <div className="fade" style={{ marginBottom: 36 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}><Tag>Physics</Tag><Tag accent>Circuits</Tag><Tag>Block 10</Tag></div>
+        <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}` }}>Circuits &<br /><em>Mathematical Models</em></h1>
+        <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>Ohm's Law is a linear model for resistance. V-I curves are the functions you built in G9 math class — now they describe physical devices.</p>
+      </div>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Label style={{ display: "block", marginBottom: 12 }}>What This Covers</Label>
+        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+          Electric circuits are networks of components connected by conductors. At the high-school level, we model them with <strong style={{ fontWeight: 500, color: C.accent }}>lumped parameters</strong>: each resistor, battery, and wire has a defined role. The mathematical structure is algebraic — a system of linear equations constrained by Kirchhoff's laws.
+        </p>
+        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+          The math integration is <strong style={{ fontWeight: 500, color: C.accent }}>functions as models</strong>: the V-I characteristic of a device is a function I(V) — linear for resistors (Ohm's Law), but nonlinear for diodes, filament bulbs, and other real devices.
+        </p>
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>{["I · Ohm's Law & Resistance", "II · Series & Parallel", "III · Circuit Analysis"].map((p, i) => <Tag key={i}>{p}</Tag>)}</div>
+      </Card>
+
+      <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>{MAIN_TABS.map(t => <button key={t} onClick={() => setTab(t)} style={tabBtn(t)}>{t}</button>)}</div>
+      <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
+
+      {tab === "lecture" && (
+        <div className="fade">
+          <div style={{ display: "flex", gap: 3, marginBottom: 22, flexWrap: "wrap" }}>{PART_LABELS.map((lbl, i) => <button key={i} onClick={() => setPart(i)} style={partBtn(i)}>{lbl}</button>)}</div>
+
+          {part === 0 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <PartSummary intro="Ohm's Law V = IR is the simplest functional relationship in circuit theory — a linear model where current is proportional to voltage. Resistance is the constant of proportionality, determined by material and geometry." points={["Ohm's Law: V = IR. Voltage (V) drives current (I) through resistance (R). The starting point for all circuit analysis.", "Resistance R = ρL/A depends on resistivity ρ, length L, and cross-sectional area A.", "Power dissipated: P = IV = I²R = V²/R. Every resistor converts electrical energy to heat.", "Current I = ΔQ/Δt — the rate of charge flow. Convention: current flows from + to − (opposite to electron flow)."]} />
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Ohm's Law & Power</Label>
+              <MathBlock>{"V = I · R                  Ohm's Law\n\nI = V / R                  current ∝ voltage\n\nP = I · V = I²R = V²/R    power dissipated\n\nUnits:\nV — volts (V), I — amperes (A)\nR — ohms (Ω), P — watts (W)"}</MathBlock>
+              {[["V = IR", "Voltage drop across a resistor equals current times resistance"], ["P = I²R", "Power dissipated as heat — this is why resistors get warm"], ["P = V²/R", "For fixed voltage, lower resistance → more power → more heat"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Resistance — Material & Geometry</Label>
+              <MathBlock>{"R = ρ · L / A\n\nρ = resistivity (Ω·m) — material property\nL = length (m) — longer wire = more resistance\nA = cross-sectional area (m²) — thicker wire = less resistance"}</MathBlock>
+              {[["Copper", "ρ ≈ 1.7×10⁻⁸ Ω·m — excellent conductor"], ["Aluminum", "ρ ≈ 2.8×10⁻⁸ Ω·m — lighter"], ["Nichrome", "ρ ≈ 1.1×10⁻⁶ Ω·m — heating elements"], ["Glass / Rubber", "ρ ≈ 10¹⁰–10¹⁵ Ω·m — insulators"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>V-I Characteristics as Functions</Label>
+              <p style={{ fontFamily: F.serif, fontSize: 15, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+                Plot I vs. V and you get the <strong style={{ fontWeight: 500, color: C.accent }}>V-I characteristic</strong> — the function I(V) from G9/G10 math:
+              </p>
+              {[["Ohmic resistor", "I = V/R — linear through origin. Slope = 1/R."], ["Filament bulb", "I(V) curves upward — R increases with temperature."], ["Diode", "I ≈ 0 for V < 0.7V, then rises exponentially."]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <CompNote><p><strong>Microscopic Ohm's Law:</strong> J = σE, where J = I/A is current density and σ = 1/ρ is conductivity. Integrating over geometry recovers V = IR: E = V/L, J = I/A, J = σE → I/A = σ·V/L → V = (L/σA)·I = (ρL/A)·I = IR.</p></CompNote>
+
+            <Card><MCField question="A resistor dissipates 48 W when connected to a 12 V battery. What is its resistance?" choices={["0.25 Ω", "3 Ω", "4 Ω", "48 Ω"]} correct={1} diff={1} pts={3} explain="P = V²/R → R = V²/P = (12)²/48 = 144/48 = 3 Ω." /></Card>
+          </div>)}
+
+          {part === 1 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <PartSummary intro="Resistors combine in two fundamental patterns. Series: same current, voltages add. Parallel: same voltage, currents add." points={["Series: R_eq = R₁ + R₂ + ... + Rₙ. Same current; total voltage sums individual drops.", "Parallel: 1/R_eq = 1/R₁ + 1/R₂ + ... + 1/Rₙ. Same voltage; total current sums branch currents.", "For two in parallel: R_eq = R₁R₂/(R₁ + R₂) — product over sum. Always less than the smallest R.", "Reduce complex circuits stepwise: collapse innermost groups outward."]} />
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Series Resistors</Label>
+              <MathBlock>{"R_eq = R₁ + R₂ + R₃ + ...\n\nI = I₁ = I₂ = I₃          same current\nV = V₁ + V₂ + V₃          voltage divides\n\nV_i = I · R_i              voltage across resistor i\n  = (R_i / R_eq) · V       voltage divider formula"}</MathBlock>
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Parallel Resistors</Label>
+              <MathBlock>{"1/R_eq = 1/R₁ + 1/R₂ + 1/R₃ + ...\n\nV = V₁ = V₂ = V₃          same voltage\nI = I₁ + I₂ + I₃          current divides\n\nI_i = V / R_i              current through branch i\n\nFor 2 in parallel:\nR_eq = R₁·R₂ / (R₁ + R₂)   product over sum"}</MathBlock>
+            </Card>
+
+            <CompNote><p><strong>Delta-Star (Δ-Y) Transformation:</strong> Not all networks reduce to series/parallel. A bridge circuit requires Δ-Y: R₁ = R₁₂·R₃₁/(R₁₂+R₂₃+R₃₁) and cyclic permutations. Essential for Wheatstone bridge problems where the bridge resistor prevents simple reduction.</p></CompNote>
+
+            <Card><MCField question="Three resistors — 2 Ω, 3 Ω, and 6 Ω — are connected in parallel. What is the equivalent resistance?" choices={["11 Ω", "1 Ω", "3.7 Ω", "0.5 Ω"]} correct={1} diff={2} pts={4} explain="1/R_eq = 1/2 + 1/3 + 1/6 = 3/6 + 2/6 + 1/6 = 6/6 = 1. R_eq = 1 Ω." /></Card>
+          </div>)}
+
+          {part === 2 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <PartSummary intro="Kirchhoff's Laws are the universal rules — they work for any network, no matter how complex. The junction rule conserves charge. The loop rule conserves energy." points={["KCL: ΣI_in = ΣI_out at any junction. Charge cannot accumulate at a node.", "KVL: ΣΔV = 0 around any closed loop. Energy gained in battery equals energy lost in resistors.", "EMF ε is energy per unit charge from a source. Terminal voltage V = ε − Ir accounts for internal resistance r.", "For multi-loop circuits: set up linear equations with KCL+KVL, solve simultaneously."]} />
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Kirchhoff's Laws</Label>
+              <MathBlock>{"KCL (Junction Rule):\n  Σ I_in = Σ I_out\n\nKVL (Loop Rule):\n  Σ ΔV = 0  around any closed loop\n\nSign convention:\n  +ε when traversing battery −→+\n  −IR when traversing resistor in direction of I"}</MathBlock>
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>EMF and Internal Resistance</Label>
+              <MathBlock>{"V_terminal = ε − I·r\n\nOpen circuit (I=0): V_terminal = ε\nShort circuit (R_load=0): I_max = ε/r\n\nPower to load: P = I²·R_load\nMax power transfer when R_load = r"}</MathBlock>
+            </Card>
+
+            <CompNote><p><strong>Wheatstone Bridge:</strong> Balance condition: R₁/R₂ = R₃/R₄ — no current through galvanometer. Ratio equality follows from equal voltage drops across parallel paths. This null method is independent of battery voltage, enabling precision resistance measurement.</p></CompNote>
+
+            <Card><MCField question="A battery has EMF ε = 12 V and internal resistance r = 0.5 Ω. It supplies 4 A. What is the terminal voltage?" choices={["12 V", "10 V", "14 V", "11.5 V"]} correct={1} diff={2} pts={4} explain="V_terminal = ε − Ir = 12 − (4)(0.5) = 12 − 2 = 10 V." /></Card>
+          </div>)}
+
+          <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
+            {part > 0 ? <button onClick={() => setPart(p => p - 1)} style={navBtn(false)}>← {PART_LABELS[part - 1]}</button> : <span />}
+            {part < 2 ? <button onClick={() => setPart(p => p + 1)} style={navBtn(true)}>{PART_LABELS[part + 1]} →</button> : <button onClick={() => setTab("practice")} style={navBtn(true)}>Practice →</button>}
+          </div>
+        </div>
+      )}
+
+      {tab === "practice" && (<div className="fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <Card><Label style={{ display: "block", marginBottom: 6 }}>Problem Set · Circuits</Label><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>6 problems · Easy → Medium → Hard · 22 pts total</p></Card>
+        <Card><MCField question="What current flows through a 100 Ω resistor connected to a 12 V battery?" choices={["0.12 A", "1.2 A", "8.3 A", "1200 A"]} correct={0} diff={1} pts={3} explain="I = V/R = 12/100 = 0.12 A = 120 mA." /></Card>
+        <Card><INTField question="A copper wire has ρ = 1.7×10⁻⁸ Ω·m, L = 10 m, and A = 3.4×10⁻⁷ m². What is its resistance in ohms, rounded to the nearest integer?" answer={1} diff={2} pts={4} hint="R = ρL/A = (1.7×10⁻⁸)(10)/(3.4×10⁻⁷) = 1.7×10⁻⁷/3.4×10⁻⁷ = 0.5 Ω. Rounds to 1 Ω." /></Card>
+        <Card><MCField question="Two resistors 6 Ω and 3 Ω are in parallel. What is the equivalent resistance?" choices={["9 Ω", "2 Ω", "1.5 Ω", "0.5 Ω"]} correct={1} diff={1} pts={3} explain="R_eq = (6×3)/(6+3) = 18/9 = 2 Ω." /></Card>
+        <Card><INTField question="A 20 Ω and 30 Ω resistor are in series across a 100 V supply. Find the voltage across the 30 Ω resistor in volts." answer={60} diff={2} pts={4} hint="Voltage divider: V_30 = (30/(20+30))×100 = (30/50)×100 = 60 V." /></Card>
+        <Card><MCField question="A 12 V battery (negligible internal resistance) is connected to a 10 Ω resistor. What is the power delivered?" choices={["12 W", "14.4 W", "1.2 W", "120 W"]} correct={1} diff={2} pts={4} explain="P = V²/R = (12)²/10 = 144/10 = 14.4 W. No internal resistance means the full 12 V appears across the resistor." /></Card>
+        <Card><MCField question="In a Wheatstone bridge at balance, R₁ = 4 Ω, R₂ = 8 Ω, R₃ = 6 Ω. What is R₄?" choices={["3 Ω", "12 Ω", "10 Ω", "2 Ω"]} correct={1} diff={2} pts={4} explain="Balance: R₁/R₂ = R₃/R₄ → 4/8 = 6/R₄ → R₄ = 6×8/4 = 12 Ω." /></Card>
+      </div>)}
+
+      {tab === "reference" && (<div className="fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Card>
+          <Label style={{ display: "block", marginBottom: 14 }}>Ohm's Law & Resistance</Label>
+          <MathBlock>{"V = I · R                  Ohm's Law\nR = ρ · L / A              resistance\nP = I·V = I²R = V²/R       power\n\nSeries:   R_eq = R₁ + R₂ + ...\nParallel: 1/R_eq = 1/R₁ + 1/R₂ + ...\n           R_eq = R₁R₂/(R₁+R₂)  (two)"}</MathBlock>
+        </Card>
+        <Card>
+          <Label style={{ display: "block", marginBottom: 14 }}>Kirchhoff's Laws</Label>
+          <MathBlock>{"KCL: Σ I_in = Σ I_out      junction rule\nKVL: Σ ΔV = 0              loop rule\n\nV_terminal = ε − I·r       internal resistance\nP_max to load when R_load = r\n\nWheatstone balance: R₁/R₂ = R₃/R₄"}</MathBlock>
+        </Card>
+      </div>)}
+
+      <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
+        <Mono style={{ fontSize: 9 }}>circuits · ohm's law · kirchhoff · block 10</Mono>
+        <Mono style={{ fontSize: 9, color: C.dim }}>prerequisite: functions as models (G9 math)</Mono>
+      </div>
+    </div>
+  </>);
+}

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Depth 0 | ForEach-Object { $_.Name })",
+      "PowerShell(./project-template-files/convert.ps1 \"project-template-files/Probset_Format_v2.jsx\")",
+      "PowerShell(./project-template-files/convert.ps1 \"project-template-files/timer-demo.jsx\")",
+      "PowerShell(./project-template-files/convert.ps1 \"project-template-files/design-system.jsx\")",
+      "PowerShell(Set-Content *)",
+      "PowerShell(Get-Item *)"
+    ]
+  }
+}

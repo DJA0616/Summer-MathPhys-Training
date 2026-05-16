@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProbsetFormat</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fade { animation: fadeUp 0.4s ease forwards; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  input:focus { outline: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+
+
+const DS = {
+  colors: {
+    bg: "#0a0a0a", surface: "#111111", elevated: "#181818",
+    border: "#222222", muted: "#2a2a2a", dim: "#555555",
+    subtle: "#888888", body: "#c8c8c8", heading: "#efefef",
+    accent: "#7eb8d4", accentAlt: "#a0d4b0",
+    glow: "rgba(126,184,212,0.18)", glowStr: "rgba(126,184,212,0.5)",
+  },
+  font: {
+    serif: "'EB Garamond', Georgia, serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  radius: "4px",
+};
+
+const { colors: C, font: F } = DS;
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: ${C.bg}; color: ${C.body}; font-family: ${F.serif}; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: ${C.bg}; } ::-webkit-scrollbar-thumb { background: ${C.muted}; border-radius: 2px; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .fade { animation: fadeUp 0.4s ease forwards; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  input:focus { outline: none; }
+`;
+
+// ── Sub-components ──────────────────────────────────────────
+
+const Geo = () => (
+  <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}>
+    <defs>
+      <radialGradient id="g1" cx="85%" cy="5%" r="35%">
+        <stop offset="0%" stopColor="#7eb8d4" stopOpacity="0.05" />
+        <stop offset="100%" stopColor="#7eb8d4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="g2" cx="5%" cy="95%" r="30%">
+        <stop offset="0%" stopColor="#a0d4b0" stopOpacity="0.04" />
+        <stop offset="100%" stopColor="#a0d4b0" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g1)" />
+    <rect width="100%" height="100%" fill="url(#g2)" />
+    <g opacity="0.06" stroke="#7eb8d4" strokeWidth="0.6" fill="none">
+      <polygon points="820,15 900,70 740,70" /><polygon points="900,70 960,15 960,125" />
+      <line x1="820" y1="15" x2="820" y2="125" /><line x1="740" y1="70" x2="960" y2="70" />
+    </g>
+    <g opacity="0.045" stroke="#a0d4b0" strokeWidth="0.5" fill="none">
+      {[80, 140, 200, 260].map((r, i) => <circle key={i} cx="50" cy="95%" r={r} />)}
+    </g>
+    <g opacity="0.02" stroke="#7eb8d4" strokeWidth="0.4">
+      {Array.from({ length: 18 }).map((_, i) => <line key={`h${i}`} x1="0" y1={i * 60} x2="100%" y2={i * 60} />)}
+      {Array.from({ length: 24 }).map((_, i) => <line key={`v${i}`} x1={i * 80} y1="0" x2={i * 80} y2="100%" />)}
+    </g>
+    {[[150, 180], [350, 420], [560, 160], [680, 360], [820, 280], [220, 560]].map(([cx, cy], i) => (
+      <circle key={i} cx={cx} cy={cy} r="1.5" fill="#7eb8d4" opacity="0.16" />
+    ))}
+  </svg>
+);
+
+const Card = ({ children, style = {} }) => (
+  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: DS.radius, padding: "22px 26px", position: "relative", overflow: "hidden", ...style }}>
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${C.accent}44, transparent)` }} />
+    {children}
+  </div>
+);
+
+const Label = ({ children, style = {} }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: C.dim, ...style }}>{children}</span>
+);
+
+const Mono = ({ children, style = {} }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 300, color: C.subtle, ...style }}>{children}</span>
+);
+
+const Dots = ({ filled = 1 }) => (
+  <span style={{ display: "inline-flex", gap: 3 }}>
+    {[1, 2, 3].map(i => (
+      <span key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: i <= filled ? C.accent : C.muted, boxShadow: i <= filled ? `0 0 4px ${C.glowStr}` : "none" }} />
+    ))}
+  </span>
+);
+
+const Tag = ({ children, accent = false }) => (
+  <span style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", padding: "2px 7px", borderRadius: DS.radius, border: `1px solid ${accent ? C.accent + "44" : C.border}`, color: accent ? C.accent : C.dim, background: "transparent" }}>
+    {children}
+  </span>
+);
+
+const Rule = ({ accent = false }) => (
+  <div style={{ borderTop: `1px solid ${accent ? C.accent + "44" : C.border}`, margin: "18px 0" }} />
+);
+
+// ── Answer Field Components ─────────────────────────────────
+
+// Multiple Choice
+function MCField({ question, choices, correct, pts = 3, diff = 1 }) {
+  const [selected, setSelected] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Tag>MC</Tag>
+          <Dots filled={diff} />
+        </div>
+        <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
+      </div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{question}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {choices.map((ch, i) => {
+          const L = ["A", "B", "C", "D"][i];
+          const on = selected === i;
+          const correct_reveal = revealed && i === correct;
+          const wrong_reveal = revealed && on && i !== correct;
+          const borderColor = correct_reveal ? C.accentAlt + "aa" : wrong_reveal ? "#d47e8a88" : on ? C.accent + "88" : C.border;
+          const bgColor = correct_reveal ? C.accentAlt + "0e" : wrong_reveal ? "#d47e8a0e" : on ? C.accent + "0e" : "transparent";
+          const textColor = correct_reveal ? C.accentAlt : wrong_reveal ? "#d47e8a" : on ? C.accent : C.body;
+          return (
+            <div
+              key={i}
+              onClick={() => !revealed && setSelected(i)}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 14px",
+                border: `1px solid ${borderColor}`,
+                borderRadius: DS.radius,
+                cursor: revealed ? "default" : "pointer",
+                background: bgColor,
+                boxShadow: on ? `0 0 12px ${C.glow}` : "none",
+                transition: "all 0.18s ease",
+              }}
+            >
+              <span style={{ fontFamily: F.mono, fontSize: 10, color: on ? C.accent : C.dim, minWidth: 14, letterSpacing: "0.08em" }}>{L}</span>
+              <span style={{ fontFamily: F.serif, fontSize: 14, color: textColor, flex: 1, lineHeight: 1.5 }}>{ch}</span>
+              {correct_reveal && <span style={{ fontFamily: F.mono, fontSize: 9, color: C.accentAlt }}>✓</span>}
+              {wrong_reveal && <span style={{ fontFamily: F.mono, fontSize: 9, color: "#d47e8a" }}>✗</span>}
+            </div>
+          );
+        })}
+      </div>
+      {selected !== null && (
+        <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+          {!revealed && (
+            <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+              Check
+            </button>
+          )}
+          <button onClick={() => { setSelected(null); setRevealed(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+            Clear
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// True or False
+function TFField({ statement, correct = true, pts = 3, diff = 1 }) {
+  const [selected, setSelected] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Tag>T / F</Tag>
+          <Dots filled={diff} />
+        </div>
+        <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
+      </div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, fontStyle: "italic", color: C.body, lineHeight: 1.65, marginBottom: 16, paddingLeft: 12, borderLeft: `2px solid ${C.accent}44` }}>
+        "{statement}"
+      </p>
+      <div style={{ display: "flex", gap: 10 }}>
+        {[true, false].map(val => {
+          const label = val ? "True" : "False";
+          const on = selected === val;
+          const correct_reveal = revealed && val === correct;
+          const wrong_reveal = revealed && on && val !== correct;
+          return (
+            <div
+              key={label}
+              onClick={() => !revealed && setSelected(val)}
+              style={{
+                flex: 1, padding: "14px 0", textAlign: "center",
+                border: `1px solid ${correct_reveal ? C.accentAlt + "aa" : wrong_reveal ? "#d47e8a88" : on ? C.accent + "88" : C.border}`,
+                borderRadius: DS.radius, cursor: revealed ? "default" : "pointer",
+                background: correct_reveal ? C.accentAlt + "0e" : wrong_reveal ? "#d47e8a0e" : on ? C.accent + "0e" : "transparent",
+                boxShadow: on ? `0 0 14px ${C.glow}` : "none",
+                fontFamily: F.serif, fontSize: 16,
+                color: correct_reveal ? C.accentAlt : wrong_reveal ? "#d47e8a" : on ? C.accent : C.subtle,
+                transition: "all 0.18s ease",
+              }}
+            >
+              {label}
+              {correct_reveal && " ✓"}
+              {wrong_reveal && " ✗"}
+            </div>
+          );
+        })}
+      </div>
+      {selected !== null && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          {!revealed && (
+            <button onClick={() => setRevealed(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+              Check
+            </button>
+          )}
+          <button onClick={() => { setSelected(null); setRevealed(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+            Clear
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Integer Answer
+function INTField({ question, answer, pts = 4, diff = 2 }) {
+  const [val, setVal] = useState("");
+  const [checked, setChecked] = useState(false);
+  const correct = parseInt(val) === answer;
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Tag>INT</Tag>
+          <Dots filled={diff} />
+        </div>
+        <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
+      </div>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{question}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ position: "relative" }}>
+          <input
+            type="number" min="0" max="999"
+            value={val}
+            onChange={e => { setVal(e.target.value); setChecked(false); }}
+            placeholder="0"
+            style={{
+              width: 96, padding: "10px 14px",
+              border: `1px solid ${checked ? (correct ? C.accentAlt + "99" : "#d47e8a88") : C.border}`,
+              borderRadius: DS.radius,
+              background: checked ? (correct ? C.accentAlt + "0a" : "#d47e8a0a") : C.bg,
+              color: checked ? (correct ? C.accentAlt : "#d47e8a") : C.heading,
+              fontFamily: F.mono, fontSize: 22, fontWeight: 300,
+              textAlign: "right",
+              boxShadow: val ? `0 0 10px ${C.glow}` : "none",
+              transition: "all 0.2s",
+            }}
+            onFocus={e => { if (!checked) e.target.style.borderColor = C.accent + "77"; }}
+            onBlur={e => { if (!checked) e.target.style.borderColor = C.border; }}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <Mono style={{ fontSize: 9, letterSpacing: "0.12em" }}>INTEGER · 0 – 999</Mono>
+          {checked && <Mono style={{ fontSize: 9, color: correct ? C.accentAlt : "#d47e8a" }}>{correct ? "✓ correct" : "✗ try again"}</Mono>}
+        </div>
+      </div>
+      {val !== "" && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          {!checked && (
+            <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+              Check
+            </button>
+          )}
+          <button onClick={() => { setVal(""); setChecked(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+            Clear
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Fill in the Equation — card bank (preferred) + free text fallback
+function FIEField({ pts = 5, diff = 3 }) {
+  const CARDS = ["d", "theta", "r", "t", "phi", "2d"];
+  const CARD_LABELS = { d: "d", theta: "θ", r: "r", t: "t", phi: "φ", "2d": "2d" };
+
+  const [slots, setSlots]       = useState({ 0: null, 1: null });
+  const [texts, setTexts]       = useState({ 0: "", 1: "" });
+  const [selected, setSelected] = useState(null);
+  const [hovering, setHovering] = useState(null);
+  const [checked, setChecked]   = useState(false);
+
+  const usedCards = new Set(Object.values(slots).filter(Boolean));
+
+  const blankVal = id => slots[id] ? CARD_LABELS[slots[id]] : texts[id];
+  const anyFilled = Object.keys(slots).some(id => slots[id] || texts[id]);
+  const allFilled = [0, 1].every(id => slots[id] || texts[id].trim());
+  const correct = blankVal(0) === "d" && (blankVal(1) === "θ" || blankVal(1) === "theta");
+
+  const placeCard = (card, slotId) => {
+    const next = { ...slots };
+    Object.keys(next).forEach(k => { if (next[k] === card) next[k] = null; });
+    next[slotId] = card;
+    setSlots(next);
+    setTexts(t => ({ ...t, [slotId]: "" }));
+    setSelected(null);
+    setChecked(false);
+  };
+
+  const removeCard = slotId => {
+    setSlots({ ...slots, [slotId]: null });
+    setChecked(false);
+  };
+
+  const handleCardClick = card => {
+    if (usedCards.has(card)) return;
+    setSelected(selected === card ? null : card);
+  };
+
+  const handleSlotClick = slotId => {
+    if (selected !== null) { placeCard(selected, slotId); return; }
+    if (slots[slotId]) { removeCard(slotId); }
+  };
+
+  const handleDrop = (e, slotId) => {
+    e.preventDefault();
+    const card = e.dataTransfer.getData("card");
+    if (card) placeCard(card, slotId);
+    setHovering(null);
+  };
+
+  const sanitize = v => v.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
+
+  const Blank = ({ slotId }) => {
+    const card    = slots[slotId];
+    const text    = texts[slotId];
+    const hover   = hovering === slotId;
+    const val     = blankVal(slotId);
+    const slotOk  = checked && correct;
+    const slotErr = checked && !correct && val;
+
+    const borderCol = slotOk  ? C.accentAlt + "aa"
+                    : slotErr ? "#d47e8a88"
+                    : hover || (selected && !card) ? C.accent + "99"
+                    : card  ? C.accent + "66"
+                    : text  ? C.accent + "55"
+                    : C.accent + "40";
+
+    const bgCol = slotOk  ? C.accentAlt + "0e"
+                : slotErr ? "#d47e8a0a"
+                : hover   ? C.accent + "12"
+                : card    ? C.accent + "09"
+                : "transparent";
+
+    if (card) {
+      return (
+        <div
+          onDragOver={e => { e.preventDefault(); setHovering(slotId); }}
+          onDragLeave={() => setHovering(null)}
+          onDrop={e => handleDrop(e, slotId)}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 5,
+            height: 30, padding: "0 8px 0 10px",
+            border: `1px solid ${borderCol}`,
+            borderRadius: DS.radius,
+            background: bgCol,
+            boxShadow: `0 0 10px ${C.glow}`,
+            fontFamily: F.mono, fontSize: 13, color: slotOk ? C.accentAlt : slotErr ? "#d47e8a" : C.accent,
+            position: "relative", bottom: 1,
+            userSelect: "none",
+            transition: "all 0.15s",
+          }}
+        >
+          {CARD_LABELS[card]}
+          <span
+            onClick={e => { e.stopPropagation(); removeCard(slotId); }}
+            style={{ fontSize: 9, color: C.dim, cursor: "pointer", lineHeight: 1, paddingLeft: 2 }}
+          >✕</span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        onDragOver={e => { e.preventDefault(); setHovering(slotId); }}
+        onDragLeave={() => setHovering(null)}
+        onDrop={e => handleDrop(e, slotId)}
+        style={{ display: "inline-flex", alignItems: "center", position: "relative", bottom: 1 }}
+      >
+        {selected ? (
+          <div
+            onClick={() => handleSlotClick(slotId)}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              minWidth: 44, height: 30, padding: "0 8px",
+              border: `1px dashed ${borderCol}`,
+              borderRadius: DS.radius,
+              background: bgCol,
+              boxShadow: hover ? `0 0 10px ${C.glow}` : "none",
+              cursor: "pointer",
+              fontFamily: F.mono, fontSize: 11, color: C.dim,
+              transition: "all 0.15s",
+            }}
+          >
+            <span style={{ fontSize: 9, letterSpacing: "0.04em" }}>drop here</span>
+          </div>
+        ) : (
+          <input
+            type="text"
+            value={text}
+            placeholder="type"
+            maxLength={8}
+            onChange={e => {
+              setTexts(t => ({ ...t, [slotId]: sanitize(e.target.value) }));
+              setChecked(false);
+            }}
+            style={{
+              width: Math.max(52, text.length * 9 + 20),
+              height: 30, padding: "0 8px",
+              border: `1px dashed ${borderCol}`,
+              borderRadius: DS.radius,
+              background: text ? C.accent + "09" : "transparent",
+              color: slotOk ? C.accentAlt : slotErr ? "#d47e8a" : C.accent,
+              fontFamily: F.mono, fontSize: 13,
+              textAlign: "center",
+              outline: "none",
+              transition: "all 0.15s",
+              caretColor: C.accent,
+            }}
+            onFocus={e => { e.target.style.borderColor = C.accent + "88"; e.target.style.borderStyle = "solid"; }}
+            onBlur={e => { e.target.style.borderColor = text ? C.accent + "55" : C.accent + "40"; e.target.style.borderStyle = "dashed"; }}
+          />
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Tag>FIE</Tag>
+          <Dots filled={diff} />
+        </div>
+        <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
+      </div>
+
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>
+        Complete the equation for mechanical work, where <em>F</em> is force, <em>d</em> displacement, and <em>θ</em> the angle between them.
+      </p>
+
+      <div style={{
+        fontFamily: F.mono, fontSize: 15, fontWeight: 300,
+        background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`,
+        borderRadius: DS.radius, padding: "14px 18px",
+        color: C.subtle, letterSpacing: "0.03em",
+        display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5,
+        lineHeight: 2.6, marginBottom: 18,
+      }}>
+        <span>W = F ·</span>
+        <Blank slotId={0} />
+        <span>· cos(</span>
+        <Blank slotId={1} />
+        <span>)</span>
+      </div>
+
+      <div style={{ marginBottom: 8 }}>
+        <Label>
+          {selected ? "tap a blank or drag to place — or type directly" : "card bank — tap to select · drag to place · or type in blank"}
+        </Label>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+        {CARDS.map(card => {
+          const inSlot = usedCards.has(card);
+          const isSel  = selected === card;
+          return (
+            <div
+              key={card}
+              draggable={!inSlot}
+              onDragStart={e => { e.dataTransfer.setData("card", card); }}
+              onDragEnd={() => {}}
+              onClick={() => handleCardClick(card)}
+              style={{
+                padding: "7px 16px",
+                border: `1px solid ${isSel ? C.accent + "aa" : inSlot ? C.border + "22" : C.border}`,
+                borderRadius: DS.radius,
+                background: isSel ? C.accent + "18" : "transparent",
+                color: inSlot ? C.muted : isSel ? C.accent : C.body,
+                fontFamily: F.mono, fontSize: 13, fontWeight: 300,
+                cursor: inSlot ? "default" : "grab",
+                opacity: inSlot ? 0.22 : 1,
+                boxShadow: isSel ? `0 0 14px ${C.glow}` : "none",
+                transition: "all 0.15s ease",
+                userSelect: "none",
+              }}
+            >
+              {CARD_LABELS[card]}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ marginBottom: 12, padding: "8px 12px", border: `1px solid ${C.border}`, borderRadius: DS.radius, background: C.elevated }}>
+        <Mono style={{ fontSize: 9, letterSpacing: "0.1em" }}>
+          FREE TEXT — type directly in any blank · letters & digits only · max 8 chars
+        </Mono>
+      </div>
+
+      {anyFilled && (
+        <div style={{ display: "flex", gap: 8 }}>
+          {!checked && allFilled && (
+            <button onClick={() => setChecked(true)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.accent}55`, background: "transparent", color: C.accent, cursor: "pointer" }}>
+              Check
+            </button>
+          )}
+          <button onClick={() => { setSlots({ 0: null, 1: null }); setTexts({ 0: "", 1: "" }); setSelected(null); setChecked(false); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {checked && correct && <Mono style={{ display: "block", marginTop: 10, color: C.accentAlt, fontSize: 10, letterSpacing: "0.1em" }}>✓ W = F · d · cos(θ)</Mono>}
+      {checked && !correct && <Mono style={{ display: "block", marginTop: 10, color: "#d47e8a", fontSize: 10, letterSpacing: "0.1em" }}>✗ review your answer</Mono>}
+    </div>
+  );
+}
+
+// ── Main component ──────────────────────────────────────────
+
+const TABS = ["scoring", "types", "difficulty", "timer", "structure"];
+
+const DIFFICULTY_DATA = [
+  { level: "Easy", pts: 3, dots: 1, desc: "Direct application of a single formula or concept. Numerical substitution, unit conversion, definition recall. No multi-step reasoning." },
+  { level: "Medium", pts: 4, dots: 2, desc: "Two-step reasoning or concept combination. May require algebraic manipulation or problem setup. Standard competition sub-problems." },
+  { level: "Hard", pts: 5, dots: 3, desc: "Multi-concept synthesis or non-obvious insight. Derivation steps, edge cases, or competition-level proofs. Procedure alone is insufficient." },
+];
+
+const STRUCTURE_DATA = [
+  { range: "< 15 Q", artifact: "Optional", timer: "No", note: "Group Easy → Medium → Hard." },
+  { range: "15–29 Q", artifact: "Offered", timer: "Optional", note: "Offer artifact before rendering inline." },
+  { range: "30+ Q", artifact: "Always", timer: "Always*", note: "Mixed difficulty, progress bar required. *Timer is mandatory — no exceptions." },
+];
+
+function ProbsetFormat() {
+  const [tab, setTab] = useState("types");
+
+  return (
+    <>
+      <style>{css}</style>
+      <Geo />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+
+        {/* Header */}
+        <div className="fade" style={{ marginBottom: 40 }}>
+          <Label style={{ display: "block", marginBottom: 10 }}>Project Specification · v2.0</Label>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}, 0 0 48px ${C.glow}` }}>
+            Problem Set<br /><em>Format</em>
+          </h1>
+          <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>
+            Canonical structure — all generated problem sets reference this spec.
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 28, flexWrap: "wrap" }}>
+          {TABS.map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: DS.radius, border: `1px solid ${tab === t ? C.accent + "55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" }}>
+              {t}
+            </button>
+          ))}
+        </div>
+        <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
+
+        {/* ── SCORING ── */}
+        {tab === "scoring" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 16 }}>Point Values</Label>
+              {DIFFICULTY_DATA.map(({ level, pts, dots, desc }) => (
+                <div key={level} style={{ display: "flex", gap: 16, padding: "14px 0", borderBottom: `1px solid ${C.border}`, alignItems: "flex-start" }}>
+                  <Dots filled={dots} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "baseline", marginBottom: 4 }}>
+                      <span style={{ fontFamily: F.serif, fontSize: 17, color: C.heading }}>{level}</span>
+                      <Mono style={{ color: C.accent }}>{pts} pts</Mono>
+                    </div>
+                    <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.6 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </Card>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 12 }}>Score Formula</Label>
+              <div style={{ fontFamily: F.mono, fontSize: 13, background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius, padding: "12px 16px", color: C.subtle }}>
+                <span style={{ color: C.accent }}>Total</span> = 3·(#Easy) + 4·(#Medium) + 5·(#Hard)
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ── TYPES ── */}
+        {tab === "types" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <Card>
+              <MCField
+                question="A particle moves along a straight line with displacement x(t) = 3t² − 2t + 1. The acceleration at t = 2 s is:"
+                choices={["3 m/s²", "6 m/s²", "10 m/s²", "12 m/s²"]}
+                correct={1}
+                pts={3} diff={1}
+              />
+            </Card>
+            <Card>
+              <TFField
+                statement="The dot product of two non-zero perpendicular vectors is always zero."
+                correct={true}
+                pts={3} diff={1}
+              />
+            </Card>
+            <Card>
+              <INTField
+                question="A 4 kg object is accelerated from rest over 5 m by a net force of 20 N on a frictionless surface. Express the final speed in m/s as an integer."
+                answer={5}
+                pts={4} diff={2}
+              />
+            </Card>
+            <Card>
+              <FIEField pts={5} diff={3} />
+            </Card>
+          </div>
+        )}
+
+        {/* ── DIFFICULTY ── */}
+        {tab === "difficulty" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {DIFFICULTY_DATA.map(({ level, pts, dots, desc }) => (
+              <Card key={level}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <Dots filled={dots} />
+                    <span style={{ fontFamily: F.serif, fontSize: 19, color: C.heading }}>{level}</span>
+                  </div>
+                  <Mono>{pts} pts</Mono>
+                </div>
+                <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, lineHeight: 1.65 }}>{desc}</p>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* ── TIMER ── */}
+        {tab === "timer" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Timer Behavior</Label>
+              {[
+                ["Rule", "ALWAYS on for exam-level sets (30+ Q). Non-negotiable."],
+                ["Default duration", "60 min / 30Q · 90 min / 45Q+"],
+                ["Display", "MM:SS · JetBrains Mono · fixed top-right"],
+                ["≥ 10s", "Accent blue  #7eb8d4"],
+                ["≤ 10s", "Accent sage  #a0d4b0"],
+                ["≤ 5s", "Dim red  #d47e8a · rapid morph"],
+                ["On expiry", "Inputs freeze · score summary shown"],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: "flex", gap: 16, padding: "9px 0", borderBottom: `1px solid ${C.border}` }}>
+                  <Mono style={{ minWidth: 130, color: C.dim }}>{k}</Mono>
+                  <span style={{ fontFamily: F.serif, fontSize: 14, color: C.body }}>{v}</span>
+                </div>
+              ))}
+            </Card>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 12 }}>Shape Animation — Clock-Linked</Label>
+              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, lineHeight: 1.7, marginBottom: 12 }}>
+                On each <strong style={{ color: C.body }}>tick</strong>: 6-point polygon snaps to new configuration in ~80ms (fast lerp). Shape then lingers for the remaining ~920ms. Produces a clock-like rhythm — snap, hold, snap, hold.
+              </p>
+              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, lineHeight: 1.7 }}>
+                Shapes: triangle ↔ square ↔ pentagon ↔ hexagon and organic variants. All strokes ≤ 0.8px, opacity ≤ 0.10. Morph pace accelerates in final 10s, rapid in final 5s.
+              </p>
+            </Card>
+          </div>
+        )}
+
+        {/* ── STRUCTURE ── */}
+        {tab === "structure" && (
+          <div className="fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 16 }}>Artifact & Timer Rules</Label>
+              {STRUCTURE_DATA.map(({ range, artifact, timer, note }) => (
+                <div key={range} style={{ display: "grid", gridTemplateColumns: "80px 80px 70px 1fr", gap: 12, padding: "13px 0", borderBottom: `1px solid ${C.border}`, alignItems: "start" }}>
+                  <Mono style={{ color: C.accent }}>{range}</Mono>
+                  <div><Label style={{ display: "block", marginBottom: 3 }}>Artifact</Label><span style={{ fontFamily: F.serif, fontSize: 13, color: artifact === "Always" ? C.accentAlt : C.body }}>{artifact}</span></div>
+                  <div><Label style={{ display: "block", marginBottom: 3 }}>Timer</Label><span style={{ fontFamily: F.serif, fontSize: 13, color: timer === "Always" ? C.accentAlt : C.body }}>{timer}</span></div>
+                  <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{note}</p>
+                </div>
+              ))}
+            </Card>
+            <Card>
+              <Label style={{ display: "block", marginBottom: 10 }}>Set Order</Label>
+              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, lineHeight: 1.7, marginBottom: 8 }}>
+                <strong style={{ color: C.body }}>Short / Standard:</strong> Grouped Easy → Medium → Hard.
+              </p>
+              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.dim, lineHeight: 1.7 }}>
+                <strong style={{ color: C.body }}>Exam-level:</strong> Mixed / interleaved to simulate real competition conditions.
+              </p>
+            </Card>
+          </div>
+        )}
+
+        <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
+          <Mono style={{ fontSize: 9 }}>probset-format · v2.0</Mono>
+          <Mono style={{ fontSize: 9, color: C.dim }}>all generated sets reference this spec</Mono>
+        </div>
+
+      </div>
+    </>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ProbsetFormat />);
+</script>
+</body>
+</html>
