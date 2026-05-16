@@ -123,39 +123,8 @@
 </head>
 <body>
 
-<!-- Geo background -->
-<svg class="geo" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="g1" cx="85%" cy="5%" r="35%">
-      <stop offset="0%" stop-color="#7eb8d4" stop-opacity="0.05" />
-      <stop offset="100%" stop-color="#7eb8d4" stop-opacity="0" />
-    </radialGradient>
-    <radialGradient id="g2" cx="5%" cy="95%" r="30%">
-      <stop offset="0%" stop-color="#a0d4b0" stop-opacity="0.04" />
-      <stop offset="100%" stop-color="#a0d4b0" stop-opacity="0" />
-    </radialGradient>
-    <pattern id="grid" width="80" height="60" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="60" x2="80" y2="60" stroke="#7eb8d4" stroke-width="0.4" />
-      <line x1="80" y1="0" x2="80" y2="60" stroke="#7eb8d4" stroke-width="0.4" />
-    </pattern>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#g1)" />
-  <rect width="100%" height="100%" fill="url(#g2)" />
-  <rect width="100%" height="100%" fill="url(#grid)" opacity="0.02" />
-  <g opacity="0.06" stroke="#7eb8d4" stroke-width="0.6" fill="none">
-    <polygon points="820,15 900,70 740,70" /><polygon points="900,70 960,15 960,125" />
-    <line x1="820" y1="15" x2="820" y2="125" /><line x1="740" y1="70" x2="960" y2="70" />
-  </g>
-  <g opacity="0.045" stroke="#a0d4b0" stroke-width="0.5" fill="none">
-    <circle cx="50" cy="95%" r="80" /><circle cx="50" cy="95%" r="140" />
-    <circle cx="50" cy="95%" r="200" /><circle cx="50" cy="95%" r="260" />
-  </g>
-  <g opacity="0.16" fill="#7eb8d4">
-    <circle cx="150" cy="180" r="1.5" /><circle cx="350" cy="420" r="1.5" />
-    <circle cx="560" cy="160" r="1.5" /><circle cx="680" cy="360" r="1.5" />
-    <circle cx="820" cy="280" r="1.5" /><circle cx="220" cy="560" r="1.5" />
-  </g>
-</svg>
+<!-- Dynamic geometry background -->
+<script src="project-template-files/geometry-bg.js"></script>
 
 <div class="wrap">
 

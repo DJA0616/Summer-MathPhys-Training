@@ -46,8 +46,9 @@ const GLOBAL_CSS = `
 // ═══════════════════════════════════════════════════════════════
 
 function Geo() {
+  if (typeof window !== "undefined" && window.__geoBgInstance) return null;
   return (
-    <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} xmlns="http://www.w3.org/2000/svg">
+    <svg className="geo-static" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="bk-g1" cx="85%" cy="5%" r="35%">
           <stop offset="0%" stopColor="#7eb8d4" stopOpacity="0.05" />
