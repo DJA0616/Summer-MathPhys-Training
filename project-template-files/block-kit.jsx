@@ -941,7 +941,8 @@ function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfi
   const [running, setRunning] = useState(false);
   const [frozen, setFrozen] = useState(false);
   const [pts, setPts] = useState(FRAMES[0]);
-  const ptsRef = useRef(FRAMES[0]);
+  const baseRef = useRef(FRAMES[0]);   // un-oscillated base shape
+  const ptsRef = useRef(FRAMES[0]);    // display points (oscillated)
   const snapRafRef = useRef(null);
   const floatRafRef = useRef(null);
   const snapActiveRef = useRef(false);
@@ -969,38 +970,14 @@ function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfi
     }
   }, [enabled]);
 
-  const snap = useCallback((idx) => {
-    if (snapRafRef.current) cancelAnimationFrame(snapRafRef.current);
-    snapActiveRef.current = true;
-    const from = FRAMES[(idx - 1 + FRAMES.length) % FRAMES.length];
-    const to = FRAMES[idx % FRAMES.length];
-    const amp = mergedPhases[phaseRef.current].floatAmp;
-    const phaseDiv = mergedPhases[phaseRef.current].floatPhaseDiv;
-    const dur = mergedPhases[phaseRef.current].transition;
-    const t0 = performance.now();
-    const step = now => {
-      const t = Math.min((now - t0) / dur, 1);
-      const cur = sCurvePts(from, to, t);
-      const curFloated = cur.map(([x, y], i) => [
-        x + amp * Math.cos(now / phaseDiv * Math.PI + i),
-        y + amp * Math.sin(now / phaseDiv * Math.PI + i),
-      ]);
-      ptsRef.current = curFloated;
-      setPts(curFloated.map(p => [...p]));
-      if (t < 1) snapRafRef.current = requestAnimationFrame(step);
-      else snapActiveRef.current = false;
-    };
-    snapRafRef.current = requestAnimationFrame(step);
-  }, []);
-
-  const float = useCallback((idx) => {
+  // Continuous float oscillation — runs on every render, reads live phaseRef
+  const floatLoop = useCallback(() => {
     if (floatRafRef.current) cancelAnimationFrame(floatRafRef.current);
-    const base = FRAMES[idx % FRAMES.length];
-    const amp = mergedPhases[phaseRef.current].floatAmp;
-    const phaseDiv = mergedPhases[phaseRef.current].floatPhaseDiv;
-    const t0 = performance.now();
     const step = now => {
       if (!snapActiveRef.current && floatRafRef.current) {
+        const amp = mergedPhases[phaseRef.current].floatAmp;
+        const phaseDiv = mergedPhases[phaseRef.current].floatPhaseDiv;
+        const base = baseRef.current;
         const cur = base.map(([x, y], i) => [
           x + amp * Math.cos(now / phaseDiv * Math.PI + i),
           y + amp * Math.sin(now / phaseDiv * Math.PI + i),
@@ -1013,7 +990,7 @@ function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfi
     floatRafRef.current = requestAnimationFrame(step);
   }, []);
 
-  // Tick every second
+  // Tick every second — snap morphs base then floatLoop oscillates it
   useEffect(() => {
     if (!running || timeLeft === 0 || !enabled) return;
     const id = setInterval(() => {
@@ -1027,17 +1004,40 @@ function TimerOverlay({ enabled, duration, onExpire, phaseThresholds, phaseConfi
         return t - 1;
       });
       tickRef.current++;
-      snap(tickRef.current);
+      const idx = tickRef.current;
+      // Snap: morph base from previous frame to current frame
+      if (snapRafRef.current) cancelAnimationFrame(snapRafRef.current);
+      snapActiveRef.current = true;
+      const from = baseRef.current;
+      const to = FRAMES[idx % FRAMES.length];
+      const amp = mergedPhases[phaseRef.current].floatAmp;
+      const phaseDiv = mergedPhases[phaseRef.current].floatPhaseDiv;
+      const dur = mergedPhases[phaseRef.current].transition;
+      const t0 = performance.now();
+      const step = now => {
+        const t = Math.min((now - t0) / dur, 1);
+        const morphed = sCurvePts(from, to, t);
+        baseRef.current = morphed;
+        const curFloated = morphed.map(([x, y], i) => [
+          x + amp * Math.cos(now / phaseDiv * Math.PI + i),
+          y + amp * Math.sin(now / phaseDiv * Math.PI + i),
+        ]);
+        ptsRef.current = curFloated;
+        setPts(curFloated.map(p => [...p]));
+        if (t < 1) snapRafRef.current = requestAnimationFrame(step);
+        else snapActiveRef.current = false;
+      };
+      snapRafRef.current = requestAnimationFrame(step);
     }, 1000);
     return () => clearInterval(id);
-  }, [running, timeLeft, enabled, snap, onExpire]);
+  }, [running, timeLeft, enabled, onExpire]);
 
-  // Float animation
+  // Float animation — restarts on phase change for fresh amp/speed
   useEffect(() => {
     if (!enabled || !running) return;
-    float(tickRef.current);
+    floatLoop();
     return () => { if (floatRafRef.current) cancelAnimationFrame(floatRafRef.current); };
-  }, [running, enabled, float]);
+  }, [running, enabled, phase, floatLoop]);
 
   // Cleanup
   useEffect(() => {
