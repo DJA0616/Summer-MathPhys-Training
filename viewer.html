@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSX Viewer — Summer MathPhys</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  #loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 16px; }
+  #loading .spinner { width: 24px; height: 24px; border: 2px solid #222; border-top-color: #7eb8d4; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading span { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #555; }
+  #error { display: none; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 14px; padding: 40px; text-align: center; }
+  #error h2 { font-family: 'EB Garamond', Georgia, serif; font-size: 22px; color: #efefef; font-weight: 500; }
+  #error pre { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #d47e8a; background: #111; border: 1px solid #222; border-radius: 4px; padding: 16px 20px; max-width: 720px; overflow-x: auto; white-space: pre-wrap; line-height: 1.6; }
+  #error a { color: #7eb8d4; text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><span>Loading JSX artifact</span></div>
+<div id="error"><h2>Render Error</h2><pre id="error-msg"></pre><a href="index.html">← Back to index</a></div>
+<div id="root"></div>
+
+<script>
+(async function() {
+  const params = new URLSearchParams(location.search);
+  const file = params.get('f');
+  if (!file) { showError('No file specified. Use ?f=path/to/file.jsx'); return; }
+
+  document.title = file.split('/').pop().replace(/\.jsx$/,'') + ' — Summer MathPhys';
+
+  try {
+    // ── Step 1: Load block-kit if this file uses it ─────
+    const source = await fetch(file).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}: ${file}`); return r.text(); });
+    const usesBlockKit = source.includes('ProbsetComposer') || source.includes('block-kit');
+
+    let blockKitExports = {};
+    if (usesBlockKit) {
+      blockKitExports = await loadBlockKit();
+    }
+
+    // ── Step 2: Resolve imports ─────────────────────────
+    let code = source;
+
+    // React imports → destructure from global React
+    code = code.replace(
+      /import\s+\{\s*([^}]+)\s*\}\s+from\s+["']react["'];?/g,
+      (_, names) => {
+        const vars = names.split(',').map(n => n.trim()).filter(Boolean);
+        // Only declare what's not already available
+        return `const { ${vars.join(', ')} } = React;`;
+      }
+    );
+
+    // block-kit imports → destructure from loaded exports
+    code = code.replace(
+      /import\s+\{\s*([^}]+)\s*\}\s+from\s+["'][^"']*block-kit[^"']*["'];?/g,
+      (_, names) => {
+        const vars = names.split(',').map(n => n.trim()).filter(Boolean);
+        return `const { ${vars.join(', ')} } = __blockkit;`;
+      }
+    );
+
+    // Remove any remaining bare import statements (side-effect imports, etc.)
+    code = code.replace(/import\s+[^;]+;/g, '');
+
+    // Capture default export function name
+    let defaultExportName = null;
+    code = code.replace(
+      /export\s+default\s+function\s+(\w+)/g,
+      (_, name) => { defaultExportName = name; return `function ${name}`; }
+    );
+
+    // Remove other export keywords
+    code = code.replace(/export\s+/g, '');
+
+    // ── Step 3: Transpile JSX ───────────────────────────
+    let transpiled;
+    try {
+      transpiled = Babel.transform(code, {
+        presets: [['react', { runtime: 'classic' }]],
+        filename: file,
+      }).code;
+    } catch (e) {
+      showError(`Babel transpile failed:\n${e.message}`);
+      return;
+    }
+
+    // ── Step 4: Execute ─────────────────────────────────
+    const __blockkit = blockKitExports;
+    const Component = new Function('React', 'ReactDOM', '__blockkit', transpiled + `\nreturn ${defaultExportName};`)(React, ReactDOM, __blockkit);
+
+    if (typeof Component !== 'function') {
+      showError(`Default export is not a component (got ${typeof Component}).\nEnsure the file exports a default function component.`);
+      return;
+    }
+
+    // ── Step 5: Render ──────────────────────────────────
+    document.getElementById('loading').style.display = 'none';
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(Component));
+  } catch (e) {
+    showError(`${e.message}\n\n${e.stack ? e.stack.split('\n').slice(0, 6).join('\n') : ''}`);
+  }
+
+  // ── Helpers ──────────────────────────────────────────
+  async function loadBlockKit() {
+    let src = await fetch('project-template-files/block-kit.jsx').then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}: block-kit.jsx`);
+      return r.text();
+    });
+
+    // Resolve React imports
+    src = src.replace(
+      /import\s+\{\s*([^}]+)\s*\}\s+from\s+["']react["'];?/g,
+      (_, names) => {
+        const vars = names.split(',').map(n => n.trim()).filter(Boolean);
+        return `const { ${vars.join(', ')} } = React;`;
+      }
+    );
+
+    // Replace the export block at end with assignment to a variable
+    src = src.replace(
+      /export\s+\{([^}]+)\}/g,
+      (_, names) => {
+        const vars = names.split(',').map(n => n.trim()).filter(Boolean);
+        return `const __bkExports = { ${vars.join(', ')} };`;
+      }
+    );
+
+    // Remove export keywords from declarations
+    src = src.replace(/export\s+(default\s+)?/g, '');
+
+    // Transpile
+    const transpiled = Babel.transform(src, {
+      presets: [['react', { runtime: 'classic' }]],
+      filename: 'block-kit.jsx',
+    }).code;
+
+    // Execute — block-kit doesn't return anything explicitly, we capture __bkExports
+    const fn = new Function('React', 'ReactDOM', transpiled + '\nreturn typeof __bkExports !== "undefined" ? __bkExports : {};');
+    return fn(React, ReactDOM);
+  }
+
+  function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'flex';
+    document.getElementById('error-msg').textContent = msg;
+  }
+})();
+</script>
+</body>
+</html>

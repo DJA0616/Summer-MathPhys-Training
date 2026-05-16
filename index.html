@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summer MathPhys Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0a; color: #c8c8c8;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 16px; line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .geo { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  .fade { animation: fadeUp 0.5s ease both; }
+
+  .hero { margin-bottom: 52px; }
+  .hero .label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: #555;
+    display: block; margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: clamp(28px, 5vw, 46px); font-weight: 500;
+    color: #efefef; letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 12px;
+    text-shadow: 0 0 24px rgba(126,184,212,0.5), 0 0 48px rgba(126,184,212,0.18);
+  }
+  .hero h1 em { font-style: italic; color: #7eb8d4; }
+  .hero .sub {
+    font-family: 'EB Garamond', Georgia, serif; font-size: 15px;
+    color: #555; font-style: italic; max-width: 520px;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: #7eb8d4;
+    margin-bottom: 6px;
+  }
+  .section-rule {
+    border: none; border-top: 1px solid rgba(126,184,212,0.27);
+    margin-bottom: 20px;
+  }
+
+  .grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
+
+  .card {
+    display: block; text-decoration: none; color: inherit;
+    background: #111; border: 1px solid #222; border-radius: 4px;
+    padding: 20px 24px; position: relative; overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(126,184,212,0.27), transparent);
+  }
+  .card:hover {
+    border-color: rgba(126,184,212,0.4);
+    box-shadow: 0 0 20px rgba(126,184,212,0.08);
+  }
+
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .card-title {
+    font-family: 'EB Garamond', Georgia, serif; font-size: 18px;
+    font-weight: 500; color: #efefef; letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-family: 'EB Garamond', Georgia, serif; font-size: 13px;
+    color: #666; line-height: 1.55;
+  }
+
+  .badge {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px; white-space: nowrap;
+    border: 1px solid #222; color: #555; flex-shrink: 0;
+  }
+  .badge-ps { border-color: rgba(126,184,212,0.3); color: #7eb8d4; }
+  .badge-lg { border-color: rgba(160,212,176,0.3); color: #a0d4b0; }
+  .badge-ref { border-color: rgba(212,126,138,0.25); color: #d47e8a; }
+
+  .card-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #444; letter-spacing: 0.08em; margin-top: 8px;
+  }
+
+  .footer {
+    margin-top: 52px; border-top: 1px solid #222; padding-top: 18px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .footer span {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #444;
+  }
+
+  .repo-link {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #7eb8d4; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .repo-link:hover { color: #a0d4b0; }
+</style>
+</head>
+<body>
+
+<!-- Geo background -->
+<svg class="geo" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="g1" cx="85%" cy="5%" r="35%">
+      <stop offset="0%" stop-color="#7eb8d4" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#7eb8d4" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="g2" cx="5%" cy="95%" r="30%">
+      <stop offset="0%" stop-color="#a0d4b0" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#a0d4b0" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="80" height="60" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="60" x2="80" y2="60" stroke="#7eb8d4" stroke-width="0.4" />
+      <line x1="80" y1="0" x2="80" y2="60" stroke="#7eb8d4" stroke-width="0.4" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#g1)" />
+  <rect width="100%" height="100%" fill="url(#g2)" />
+  <rect width="100%" height="100%" fill="url(#grid)" opacity="0.02" />
+  <g opacity="0.06" stroke="#7eb8d4" stroke-width="0.6" fill="none">
+    <polygon points="820,15 900,70 740,70" /><polygon points="900,70 960,15 960,125" />
+    <line x1="820" y1="15" x2="820" y2="125" /><line x1="740" y1="70" x2="960" y2="70" />
+  </g>
+  <g opacity="0.045" stroke="#a0d4b0" stroke-width="0.5" fill="none">
+    <circle cx="50" cy="95%" r="80" /><circle cx="50" cy="95%" r="140" />
+    <circle cx="50" cy="95%" r="200" /><circle cx="50" cy="95%" r="260" />
+  </g>
+  <g opacity="0.16" fill="#7eb8d4">
+    <circle cx="150" cy="180" r="1.5" /><circle cx="350" cy="420" r="1.5" />
+    <circle cx="560" cy="160" r="1.5" /><circle cx="680" cy="360" r="1.5" />
+    <circle cx="820" cy="280" r="1.5" /><circle cx="220" cy="560" r="1.5" />
+  </g>
+</svg>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero fade" style="animation-delay:0ms">
+    <span class="label">G10 Integrated Roadmap · Phase 2</span>
+    <h1>Summer<br><em>MathPhys</em> Training</h1>
+    <p class="sub">Interactive problem sets and learning guides in physics and mathematics — built with a composable block-kit architecture.</p>
+  </div>
+
+  <!-- Problem Sets -->
+  <div class="fade" style="animation-delay:100ms">
+    <div class="section-title">Problem Sets</div>
+    <hr class="section-rule">
+  </div>
+  <div class="grid">
+    <a class="card fade" style="animation-delay:140ms" href="viewer.html?f=problem_sets/G10_Trig_Bridge_Probset.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Trigonometry Fundamentals</div>
+          <div class="card-desc">20 problems covering SOH-CAH-TOA, special angles, identities, and real-world applications. Easy → Medium → Hard.</div>
+          <div class="card-meta">20 questions · 76 points</div>
+        </div>
+        <span class="badge badge-ps">Problem Set</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:180ms" href="viewer.html?f=problem_sets/G10_Trig_Bridge_ExamSet.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Trigonometry Exam Set</div>
+          <div class="card-desc">Exam-format trigonometry assessment with interleaved difficulty, timer enforced. Simulates competition conditions.</div>
+          <div class="card-meta">30+ questions · Timer enforced</div>
+        </div>
+        <span class="badge badge-ps">Exam Set</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:200ms" href="viewer.html?f=problem_sets/Trig_Bridge_L01_Probset.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Trig Bridge — Lecture 1 Problem Set</div>
+          <div class="card-desc">Companion problem set for Trig Bridge Lecture 1. Practice problems aligned with introductory trigonometry concepts.</div>
+          <div class="card-meta">Practice set</div>
+        </div>
+        <span class="badge badge-ps">Problem Set</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Learning Guides -->
+  <div class="fade" style="animation-delay:220ms">
+    <div class="section-title">Learning Guides</div>
+    <hr class="section-rule">
+  </div>
+  <div class="grid">
+    <a class="card fade" style="animation-delay:260ms" href="viewer.html?f=learning-guides/Trig_Bridge_L01.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Trigonometry Bridge — Lecture 1</div>
+          <div class="card-desc">Introduction to trigonometric ratios, unit circle, and the bridge from G9 geometry to G10 trig functions. Interactive fields and guided practice.</div>
+        </div>
+        <span class="badge badge-lg">Learning Guide</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:300ms" href="viewer.html?f=learning-guides/G10_Waves_L01.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Waves — Lecture 1</div>
+          <div class="card-desc">Wave properties, the wave equation v = f·λ, transverse vs. longitudinal, superposition, and standing waves. Interactive sliders and diagrams.</div>
+        </div>
+        <span class="badge badge-lg">Learning Guide</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:340ms" href="viewer.html?f=learning-guides/G10_Optics_L01.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Optics — Lecture 1</div>
+          <div class="card-desc">Reflection, refraction, Snell's law, total internal reflection, and lens basics. Ray diagrams and interactive angle exploration.</div>
+        </div>
+        <span class="badge badge-lg">Learning Guide</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:380ms" href="viewer.html?f=learning-guides/G10_Electrostatics_L01.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Electrostatics — Lecture 1</div>
+          <div class="card-desc">Electric charge, Coulomb's law, electric fields, and potential. Builds from G9 force concepts toward G10 field theory.</div>
+        </div>
+        <span class="badge badge-lg">Learning Guide</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:420ms" href="viewer.html?f=learning-guides/G10_Circuits_L01.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Circuits — Lecture 1</div>
+          <div class="card-desc">Current, voltage, resistance, Ohm's law, series and parallel circuits. Interactive circuit analysis with real-time feedback.</div>
+        </div>
+        <span class="badge badge-lg">Learning Guide</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Reference -->
+  <div class="fade" style="animation-delay:440ms">
+    <div class="section-title">Reference &amp; Templates</div>
+    <hr class="section-rule">
+  </div>
+  <div class="grid">
+    <a class="card fade" style="animation-delay:480ms" href="viewer.html?f=project-template-files/design-system.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Design System</div>
+          <div class="card-desc">Monochrome physics/math theme reference. Color palette, typography, accent usage rules, and layout primitives.</div>
+        </div>
+        <span class="badge badge-ref">Reference</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:500ms" href="viewer.html?f=project-template-files/Probset_Format_v2.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Probset Format v2.0</div>
+          <div class="card-desc">Canonical problem set specification. Scoring rules, answer field types, difficulty scale, timer behavior, and structure guidelines.</div>
+        </div>
+        <span class="badge badge-ref">Spec</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:520ms" href="viewer.html?f=project-template-files/timer-demo.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Timer Demo</div>
+          <div class="card-desc">Interactive exam timer with polygon morph animation. Three-phase color system: blue (>10s), sage (≤10s), red (≤5s).</div>
+        </div>
+        <span class="badge badge-ref">Demo</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:540ms" href="viewer.html?f=project-template-files/block-kit.jsx">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Block Kit</div>
+          <div class="card-desc">Master toolkit — DS, primitives, content blocks, answer fields, timer, and Composer. All artifacts import from here.</div>
+        </div>
+        <span class="badge badge-ref">Core</span>
+      </div>
+    </a>
+    <a class="card fade" style="animation-delay:560ms" href="project-template-files/plan-template.md">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Plan Template</div>
+          <div class="card-desc">Markdown schema for the planning phase of the two-phase pipeline. Fill this in, then compile to a block-kit CONFIG JSX artifact.</div>
+        </div>
+        <span class="badge badge-ref">Template</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Syllabuses -->
+  <div class="fade" style="animation-delay:580ms">
+    <div class="section-title">Syllabuses</div>
+    <hr class="section-rule">
+  </div>
+  <div class="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+    <a class="card fade" style="animation-delay:620ms; padding:14px 18px;" href="syllabuses/g9 math syllabus.md">
+      <div class="card-title" style="font-size:15px; margin-bottom:2px;">G9 Mathematics</div>
+      <div class="card-desc">Algebra, geometry, introductory trigonometry.</div>
+    </a>
+    <a class="card fade" style="animation-delay:640ms; padding:14px 18px;" href="syllabuses/g9 physics syllabus.md">
+      <div class="card-title" style="font-size:15px; margin-bottom:2px;">G9 Physics</div>
+      <div class="card-desc">Kinematics, forces, energy, circular motion.</div>
+    </a>
+    <a class="card fade" style="animation-delay:660ms; padding:14px 18px;" href="syllabuses/g10 math syllabus.md">
+      <div class="card-title" style="font-size:15px; margin-bottom:2px;">G10 Mathematics</div>
+      <div class="card-desc">Trigonometry, advanced algebra, pre-calculus.</div>
+    </a>
+    <a class="card fade" style="animation-delay:680ms; padding:14px 18px;" href="syllabuses/g10 physics syllabus.md">
+      <div class="card-title" style="font-size:15px; margin-bottom:2px;">G10 Physics</div>
+      <div class="card-desc">Waves, optics, electromagnetism, circuits.</div>
+    </a>
+    <a class="card fade" style="animation-delay:700ms; padding:14px 18px;" href="syllabuses/integrated_learning_roadmap.html">
+      <div class="card-title" style="font-size:15px; margin-bottom:2px;">Integrated Learning Roadmap</div>
+      <div class="card-desc">Full G9→G10 roadmap with Phase 1 &amp; 2 blocks.</div>
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer fade" style="animation-delay:760ms">
+    <span>Summer MathPhys Training · G10</span>
+    <span>block-kit architecture · v2.0</span>
+    <a class="repo-link" href="https://github.com/DJA0616/Summer-MathPhys-Training">GitHub</a>
+  </div>
+
+</div>
+</body>
+</html>
