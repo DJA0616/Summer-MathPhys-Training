@@ -792,7 +792,7 @@ const ProgStorage = (() => {
     try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
     catch { return {}; }
   };
-  const _write = (data) => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {} };
+  const _write = (data) => { try { localStorage.setItem(KEY, JSON.stringify(data)); console.log('ProgStorage _write OK'); } catch(e) { console.error('ProgStorage _write FAIL', e); } };
 
   return {
     load(file) {
