@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Highscores</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,7 +26,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel">
-const { useCallback, useContext, useEffect, useRef, useState, useTimer } = React;
+const { createContext, useCallback, useContext, useEffect, useRef, useState } = React;
 
 
 
@@ -371,7 +372,7 @@ function Spacer({ size = 16 }) {
 // ANSWER FIELD COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function MCField({ question, choices, correct, pts = 3, diff = 1, explain, animateIndex = 0, onResult }) {
+function MCField({ question, choices, correct, pts = 3, diff = 1, explain, animateIndex = 0, onResult, suppressExplain }) {
   const [selected, setSelected] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [showExplain, setShowExplain] = useState(false);
@@ -428,7 +429,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
           <button onClick={() => { setSelected(null); setRevealed(false); setShowExplain(false); setAttempts(0); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
             Clear
           </button>
-          {revealed && explain && (
+          {revealed && explain && !suppressExplain && (
             <button onClick={() => setShowExplain(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
               {showExplain ? "Hide" : "Explain"}
             </button>
@@ -508,7 +509,7 @@ function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 
   );
 }
 
-function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0, onResult }) {
+function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0, onResult, suppressHint }) {
   const [val, setVal] = useState("");
   const [checked, setChecked] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -596,7 +597,7 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
           <button onClick={() => { setVal(""); setChecked(false); setShowHint(false); setAttempts(0); }} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>
             Clear
           </button>
-          {hint && !checked && <button onClick={() => setShowHint(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showHint ? "Hide hint" : "Hint"}</button>}
+          {hint && !checked && !suppressHint && <button onClick={() => setShowHint(v => !v)} style={{ fontFamily: F.serif, fontSize: 13, padding: "5px 14px", borderRadius: DS.radius, border: `1px solid ${C.border}`, background: "transparent", color: C.subtle, cursor: "pointer" }}>{showHint ? "Hide hint" : "Hint"}</button>}
         </div>
       )}
       {showHint && hint && (
@@ -1238,8 +1239,8 @@ function HighscoresPage({ navLinks }) {
   });
 
   const defaultNav = [
-    { href: "index.html", label: "← Index" },
-    { href: "highscores.html", label: "Highscores" },
+    { href: "../index.html", label: "← Index" },
+    { href: "../highscores.html", label: "Highscores" },
   ];
 
   const links = navLinks || defaultNav;
@@ -1468,7 +1469,10 @@ function ProbsetComposer({ config, storageKey }) {
   const totalPoints = questionBlocks.reduce((sum, b) => sum + (b.pts ?? DIFFICULTY_PTS[b.diff] ?? 3), 0);
 
   const examMode = meta.examMode ?? questionCount >= 30;
+  const quizMode = meta.quizMode ?? false;
   const timerDuration = meta.timerDuration ?? (questionCount >= 45 ? 90 * 60 : 60 * 60);
+  const suppressExplain = quizMode && !frozen;
+  const suppressHint = quizMode && !frozen;
 
   const answeredCount = Object.values(results).filter(r => r.answered).length;
   const earnedPoints = Object.values(results).reduce((sum, r) => sum + (r.correct ? r.pts : 0), 0);
@@ -1535,11 +1539,11 @@ function ProbsetComposer({ config, storageKey }) {
       case "info-row":
         return <InfoRow key={i} label={block.label} value={block.value} accent={block.accent} />;
       case "mc":
-        return <MCField key={i} question={block.question} choices={block.choices} correct={block.correct} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} explain={block.explain} animateIndex={idx} onResult={onResult} />;
+        return <MCField key={i} question={block.question} choices={block.choices} correct={block.correct} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} explain={block.explain} animateIndex={idx} onResult={onResult} suppressExplain={suppressExplain} />;
       case "tf":
         return <TFField key={i} statement={block.statement} correct={block.correct} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 1} animateIndex={idx} onResult={onResult} />;
       case "int":
-        return <INTField key={i} question={block.question} answer={block.answer} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 2} hint={block.hint} animateIndex={idx} onResult={onResult} />;
+        return <INTField key={i} question={block.question} answer={block.answer} pts={pts} diff={DIFFICULTY_ORDER[block.diff] ?? block.diff ?? 2} hint={block.hint} animateIndex={idx} onResult={onResult} suppressHint={suppressHint} />;
       case "fie":
         return <FIEField key={i} question={block.question} equation={block.equation} cards={block.cards} slotCount={block.slotCount ?? 2} correct={block.correct} correctDisplay={block.correctDisplay} pts={pts} diff={block.diff ?? 3} animateIndex={idx} onResult={onResult} />;
       default:
@@ -1655,16 +1659,7 @@ function ProbsetComposer({ config, storageKey }) {
 // EXPORT
 // ═══════════════════════════════════════════════════════════════
 
-// exported: {
-  DS, C, F,
-  Geo, GLOBAL_CSS,
-  Card, Label, Mono, Dots, Tag, Rule, MathBlock, InfoRow, QuoteBlock, HintBox, SummaryBox,
-  Paragraph, SectionHeader, Diagram, SliderGraph, Equation, Hint, Example, Spacer,
-  MCField, TFField, INTField, FIEField,
-  TimerOverlay, useTimer,
-  ProbsetComposer, ProgStorage,
-  HighscoresPage,
-};
+// export block removed
 
 
 

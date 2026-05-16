@@ -75,12 +75,16 @@ $jsx = $jsx -replace 'export\s+var', 'var'
 $jsx = [regex]::Replace($jsx, 'export\s*\{[\s\S]*?\};', '// export block removed', 'Multiline')
 $jsx = $jsx -replace 'export\s+default\s+', '// exported default: '
 
+$isSubdir = $InputFile -match '[\\/]'
+$baseTag = if ($isSubdir) { "<base href=`"../`">" } else { "" }
+
 $html = @"
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+$baseTag
 <title>$componentName</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

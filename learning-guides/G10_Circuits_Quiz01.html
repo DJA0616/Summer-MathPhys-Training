@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="../">
 <title>G10CircuitsQuiz01</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1562,7 +1563,7 @@ function ProbsetComposer({ config, storageKey }) {
           display: "flex", alignItems: "center", gap: 16,
           padding: "8px 0", borderBottom: `1px solid ${C.border}`,
         }}>
-          <a href="../index.html" style={{
+          <a href="index.html" style={{
             fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
             color: C.dim, textDecoration: "none",
             padding: "3px 0", borderBottom: `1px solid transparent`,
@@ -1572,7 +1573,7 @@ function ProbsetComposer({ config, storageKey }) {
             onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
           >&larr; Index</a>
           <span style={{ color: C.muted, fontSize: 10 }}>|</span>
-          <a href="../highscores.html" style={{
+          <a href="highscores.html" style={{
             fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
             color: C.dim, textDecoration: "none",
             padding: "3px 0", borderBottom: `1px solid transparent`,
@@ -1644,8 +1645,8 @@ function ProbsetComposer({ config, storageKey }) {
           <div style={{ marginTop: 18, padding: "14px 18px", background: C.accentAlt + "08", border: `1px solid ${C.accentAlt}33`, borderLeft: `2px solid ${C.accentAlt}88`, borderRadius: DS.radius, textAlign: "center" }}>
             <p style={{ fontFamily: F.serif, fontSize: 15, color: C.accentAlt }}>All problems answered — {earnedPoints}/{totalPoints} points ({Math.round(earnedPoints / totalPoints * 100)}%)</p>
             <div style={{ display: "flex", gap: 20, justifyContent: "center", marginTop: 8 }}>
-              <a href="../index.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none" }}>&larr; Index</a>
-              <a href="../highscores.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none" }}>Highscores &rarr;</a>
+              <a href="index.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none" }}>&larr; Index</a>
+              <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 10, color: C.dim, textDecoration: "none" }}>Highscores &rarr;</a>
             </div>
           </div>
         )}
