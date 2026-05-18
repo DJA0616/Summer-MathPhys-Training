@@ -4,6 +4,8 @@ Thumbs.db
 *.log
 .claude/agent-memory/
 .claude/projects/
+.claude/worktrees/
+.claude/scheduled_tasks.lock
 
 # Tooling / agent scratch output
 .playwright-mcp/
