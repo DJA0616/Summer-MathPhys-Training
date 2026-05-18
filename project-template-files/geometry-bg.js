@@ -35,27 +35,31 @@
     gridMouseShift: 30, // max px grid origin shifts toward mouse
     gridParallax: 0.3,
 
-    // Constellation particles
-    particleCount: 28,
+    // Constellation particles — layered by z-depth for parallax
+    particleCount: 60,
     particleBaseRadius: 1.2,
     particleGlowRadius: 2.4,
     particleOpacity: 0.18,
-    particleConnectionDist: 180,
+    particleConnectionDist: 170,
     particleConnectionOpacity: 0.04,
     particleMouseReach: 200,
     particleMousePull: 0.015,
     particleDriftSpeed: 0.0003,
     particleDriftAmp: 40,
-    particleParallax: 0.5,
+    particleParallaxMin: 0.12, // far points scroll slowly
+    particleParallaxMax: 0.95, // near points scroll fast
 
-    // Morphing polygons — multiple instances with varied shape sequences
-    polygonInstances: 5,
+    // Morphing polygons — instances spawn, morph, fade out, respawn
+    polygonInstances: 6,
     polygonOpacity: 0.045,
     polygonStrokeWidth: 0.5,
     polygonMorphMin: 12000,  // ms per keyframe transition (min, randomized per instance)
     polygonMorphMax: 28000,
     polygonParallaxMin: 0.08,
     polygonParallaxMax: 0.22,
+    polygonLifeMin: 18000,   // ms total lifespan before fade-out + respawn
+    polygonLifeMax: 40000,
+    polygonFadeMs: 4000,     // fade-in / fade-out duration
 
     // Floating rays
     rayCount: 10,
@@ -69,7 +73,7 @@
     rayParallax: 0.2,
 
     // Orbiting nodes
-    orbiterCount: 5,
+    orbiterCount: 7,
     orbiterOpacity: 0.08,
     orbiterMouseSpeedup: 2.5,
     orbiterParallax: 0.4,
@@ -277,6 +281,8 @@
     createParticles() {
       this.particles = [];
       for (let i = 0; i < CFG.particleCount; i++) {
+        // depth: 0 = far (small, dim, slow), 1 = near (large, bright, fast)
+        const depth = Math.random();
         this.particles.push({
           bx: Math.random() * this.width, // base x (in viewport coords)
           by: Math.random() * this.docHeight, // base y (in document coords)
@@ -285,7 +291,10 @@
           driftRy: 15 + Math.random() * CFG.particleDriftAmp,
           speedX: (Math.random() - 0.5) * 2,
           speedY: (Math.random() - 0.5) * 2,
-          r: CFG.particleBaseRadius * (0.6 + Math.random() * 0.8),
+          depth: depth,
+          parallax: lerp(CFG.particleParallaxMin, CFG.particleParallaxMax, depth),
+          r: CFG.particleBaseRadius * (0.35 + depth * 1.15),
+          op: CFG.particleOpacity * (0.3 + depth * 0.95),
         });
       }
     }
@@ -309,26 +318,35 @@
 
     // ── Polygon Instances ──────────────────────────────────
 
+    // Build one polygon instance with a fresh shape, position, and lifecycle.
+    // staggered=true seeds a random initial age so instances don't all spawn together.
+    _makePoly(idx, staggered) {
+      const seq = ALL_SHAPES[Math.floor(Math.random() * ALL_SHAPES.length)];
+      const lifespan = CFG.polygonLifeMin + Math.random() * (CFG.polygonLifeMax - CFG.polygonLifeMin);
+      return {
+        sequence: seq,
+        // Scatter across viewport, biasing toward edges/corners
+        vx: 0.08 + Math.random() * 0.84,
+        vy: 0.08 + Math.random() * 0.84,
+        scale: 0.06 + Math.random() * 0.14,
+        morphMs: CFG.polygonMorphMin + Math.random() * (CFG.polygonMorphMax - CFG.polygonMorphMin),
+        parallax: CFG.polygonParallaxMin + Math.random() * (CFG.polygonParallaxMax - CFG.polygonParallaxMin),
+        opacity: CFG.polygonOpacity * (0.5 + Math.random() * 1.0),
+        frameIdx: Math.floor(Math.random() * seq.length),
+        morphElapsed: Math.random() * CFG.polygonMorphMax,
+        drawGhost: Math.random() > 0.4,
+        drawRays: Math.random() > 0.5,
+        accent: idx % 2 === 0 ? CFG.accent : CFG.accentAlt,
+        // Lifecycle: age advances each frame; instance fades in, holds, fades out, respawns.
+        lifespan: lifespan,
+        age: staggered ? Math.random() * lifespan : 0,
+      };
+    }
+
     createPolyInstances() {
       this.polyInstances = [];
       for (let i = 0; i < CFG.polygonInstances; i++) {
-        const seq = ALL_SHAPES[i % ALL_SHAPES.length];
-        const startFrame = Math.floor(Math.random() * seq.length);
-        this.polyInstances.push({
-          sequence: seq,
-          // Scatter across viewport, biasing toward edges/corners
-          vx: 0.08 + Math.random() * 0.84,
-          vy: 0.08 + Math.random() * 0.84,
-          scale: 0.06 + Math.random() * 0.14,
-          morphMs: CFG.polygonMorphMin + Math.random() * (CFG.polygonMorphMax - CFG.polygonMorphMin),
-          parallax: CFG.polygonParallaxMin + Math.random() * (CFG.polygonParallaxMax - CFG.polygonParallaxMin),
-          opacity: CFG.polygonOpacity * (0.5 + Math.random() * 1.0),
-          frameIdx: startFrame,
-          morphElapsed: Math.random() * CFG.polygonMorphMax,
-          drawGhost: Math.random() > 0.4,
-          drawRays: Math.random() > 0.5,
-          accent: i % 2 === 0 ? CFG.accent : CFG.accentAlt,
-        });
+        this.polyInstances.push(this._makePoly(i, true));
       }
     }
 
@@ -509,8 +527,23 @@
 
     drawMorphingPolygons(ctx, W, H) {
       const baseScale = Math.min(W, H);
+      const fade = CFG.polygonFadeMs;
 
-      this.polyInstances.forEach((inst) => {
+      this.polyInstances.forEach((inst, idx) => {
+        // Advance lifecycle. On death, respawn a fresh shape elsewhere.
+        inst.age += 16.67;
+        if (inst.age >= inst.lifespan) {
+          this.polyInstances[idx] = this._makePoly(idx, false);
+          return;
+        }
+        // Lifecycle alpha: fade in over `fade` ms, hold, fade out over `fade` ms.
+        let lifeAlpha = 1;
+        if (inst.age < fade) {
+          lifeAlpha = inst.age / fade;
+        } else if (inst.age > inst.lifespan - fade) {
+          lifeAlpha = Math.max(0, (inst.lifespan - inst.age) / fade);
+        }
+
         // Advance morph timer
         inst.morphElapsed += 16.67;
         if (inst.morphElapsed >= inst.morphMs) {
@@ -532,11 +565,12 @@
         ctx.rotate(rotate);
 
         const col = inst.accent;
+        const op = inst.opacity * lifeAlpha; // lifecycle-scaled opacity
 
         // Filled polygon
-        ctx.strokeStyle = hexToRgba(col, inst.opacity * 1.6);
+        ctx.strokeStyle = hexToRgba(col, op * 1.6);
         ctx.lineWidth = CFG.polygonStrokeWidth;
-        ctx.fillStyle = hexToRgba(col, inst.opacity * 0.3);
+        ctx.fillStyle = hexToRgba(col, op * 0.3);
         ctx.beginPath();
         morphed.forEach(([x, y], i) => {
           const fx = x * scale;
@@ -550,7 +584,7 @@
 
         // Ghost outer ring
         if (inst.drawGhost) {
-          ctx.strokeStyle = hexToRgba(col, inst.opacity * 0.5);
+          ctx.strokeStyle = hexToRgba(col, op * 0.5);
           ctx.lineWidth = 0.25;
           const outerScale = scale * 1.6;
           ctx.beginPath();
@@ -564,7 +598,7 @@
 
         // Radial lines from center to vertices
         if (inst.drawRays) {
-          ctx.strokeStyle = hexToRgba(col, inst.opacity * 0.7);
+          ctx.strokeStyle = hexToRgba(col, op * 0.7);
           ctx.lineWidth = 0.2;
           morphed.forEach(([x, y]) => {
             ctx.beginPath();
@@ -677,18 +711,18 @@
 
     drawConstellation(ctx, W, H, D) {
       const mouseOnScreen = this.mouse.x > 0 && this.mouse.y > 0;
-      const scrollOff = this.smoothScroll * CFG.particleParallax;
 
-      // Update and draw particles
+      // Update and draw particles — each scrolls at its own depth-based rate
       const positions = this.particles.map((p) => {
-        const driftX = Math.cos(this.time * CFG.particleDriftSpeed + p.phase) * p.driftRx;
-        const driftY = Math.sin(this.time * CFG.particleDriftSpeed * 1.3 + p.phase) * p.driftRy;
+        // Near particles drift a little more than far ones
+        const driftMul = 0.5 + p.depth * 0.8;
+        const driftX = Math.cos(this.time * CFG.particleDriftSpeed + p.phase) * p.driftRx * driftMul;
+        const driftY = Math.sin(this.time * CFG.particleDriftSpeed * 1.3 + p.phase) * p.driftRy * driftMul;
+        const scrollOff = this.smoothScroll * p.parallax;
         let x = p.bx + driftX;
         let y = p.by + driftY - scrollOff;
 
-        // Wrap if off-screen vertically (since doc height can be large)
-        const viewY = y + scrollOff; // actual document position
-        // Clamp to viewport (particles re-enter from other side)
+        // Wrap to viewport (particles re-enter from the other side)
         if (y < -50) y += D + 100;
         if (y > H + 50) y -= D + 100;
 
@@ -724,14 +758,14 @@
 
       // Draw particles
       positions.forEach(({ x, y, p }) => {
-        let glow = CFG.particleOpacity;
+        let glow = p.op;
         let radius = p.r;
 
         if (mouseOnScreen) {
           const d = dist(this.mouse.x, this.mouse.y, x, y);
           if (d < CFG.particleMouseReach) {
             const factor = 1 - d / CFG.particleMouseReach;
-            glow = CFG.particleOpacity + factor * 0.35;
+            glow = p.op + factor * 0.35;
             radius = p.r * (1 + factor * 1.8);
           }
         }
