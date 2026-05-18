@@ -409,7 +409,10 @@ const PARTS = [
     "Wave Properties",
     "Superposition of Waves" ],
     links: [
-      { label: "Lecture · Waves", href: "learning-guides/G10_Waves_L01.html", kind: "guide" } ] },
+      { label: "Lecture · Waves", href: "learning-guides/G10_Waves_L01.html", kind: "guide" },
+      { label: "Problem Set · Waves", href: "learning-guides/G10_Waves_PS01.html", kind: "probset" },
+      { label: "Quiz · Waves", href: "learning-guides/G10_Waves_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Waves & Sound", href: "problem_sets/G10_WavesSound_ExamSet.html", kind: "exam" } ] },
   { title: "Introduction to Simple Harmonic Motion", topics: [
     "Motion in Simple Harmonic Systems",
     "Energy and Simple Harmonic Motion",
@@ -422,7 +425,9 @@ const PARTS = [
     "The Doppler Effect" ],
     links: [
       { label: "Lecture · SHM", href: "learning-guides/G10_SHM_L01.html", kind: "guide" },
-      { label: "Problem Set · SHM", href: "learning-guides/G10_SHM_PS01.html", kind: "probset" } ] },
+      { label: "Problem Set · SHM", href: "learning-guides/G10_SHM_PS01.html", kind: "probset" },
+      { label: "Quiz · SHM", href: "learning-guides/G10_SHM_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Waves & Sound", href: "problem_sets/G10_WavesSound_ExamSet.html", kind: "exam" } ] },
   { title: "Light as an Electromagnetic Wave", topics: [
     "Law of Reflection",
     "Snell's Law of Refraction",
@@ -432,7 +437,9 @@ const PARTS = [
     "Concave and Convex Mirrors" ],
     links: [
       { label: "Lecture · Optics", href: "learning-guides/G10_Optics_L01.html", kind: "guide" },
-      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" } ] },
+      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" },
+      { label: "Quiz · Optics", href: "learning-guides/G10_Optics_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Optics", href: "problem_sets/G10_Optics_ExamSet.html", kind: "exam" } ] },
   { title: "Mirror and Lens Equation", topics: [
     "The Mirror Equation",
     "Introduction to Lenses",
@@ -442,14 +449,18 @@ const PARTS = [
     "The Thin Lens Equation" ],
     links: [
       { label: "Lecture · Optics", href: "learning-guides/G10_Optics_L01.html", kind: "guide" },
-      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" } ] },
+      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" },
+      { label: "Quiz · Optics", href: "learning-guides/G10_Optics_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Optics", href: "problem_sets/G10_Optics_ExamSet.html", kind: "exam" } ] },
   { title: "Electrostatic Charges and Charge Transfer", topics: [
     "Coulomb's Law",
     "Electric Field",
     "Vector Summation of Electric Fields" ],
     links: [
       { label: "Lecture · Electrostatics", href: "learning-guides/G10_Electrostatics_L01.html", kind: "guide" },
-      { label: "Problem Set · Electrostatics", href: "learning-guides/G10_Electrostatics_PS01.html", kind: "probset" } ] },
+      { label: "Problem Set · Electrostatics", href: "learning-guides/G10_Electrostatics_PS01.html", kind: "probset" },
+      { label: "Quiz · Electrostatics", href: "learning-guides/G10_Electrostatics_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Electricity", href: "problem_sets/G10_Electricity_ExamSet.html", kind: "exam" } ] },
   { title: "Electric Potential and Potential Energy", topics: [
     "Applications of Electrostatics",
     "Current",
@@ -460,7 +471,8 @@ const PARTS = [
     links: [
       { label: "Lecture · Circuits", href: "learning-guides/G10_Circuits_L01.html", kind: "guide" },
       { label: "Problem Set · Circuits", href: "learning-guides/G10_Circuits_PS01.html", kind: "probset" },
-      { label: "Quiz · Circuits", href: "learning-guides/G10_Circuits_Quiz01.html", kind: "quiz" } ] },
+      { label: "Quiz · Circuits", href: "learning-guides/G10_Circuits_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Electricity", href: "problem_sets/G10_Electricity_ExamSet.html", kind: "exam" } ] },
   { title: "Magnetic Materials", topics: [
     "Magnetic Field Lines",
     "Magnetic Field of a Current",
@@ -469,14 +481,18 @@ const PARTS = [
     "Magnetic Force on a Current" ],
     links: [
       { label: "Lecture · Magnetism", href: "learning-guides/G10_Magnetism_L01.html", kind: "guide" },
-      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" } ] },
+      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" },
+      { label: "Quiz · Magnetism", href: "learning-guides/G10_Magnetism_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Magnetism", href: "problem_sets/G10_Magnetism_ExamSet.html", kind: "exam" } ] },
   { title: "Motion of a Charge in a Magnetic Field", topics: [
     "Charged Particle Trajectories",
     "Faraday's Law",
     "Lenz's Law" ],
     links: [
       { label: "Lecture · Magnetism", href: "learning-guides/G10_Magnetism_L01.html", kind: "guide" },
-      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" } ] },
+      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" },
+      { label: "Quiz · Magnetism", href: "learning-guides/G10_Magnetism_Quiz01.html", kind: "quiz" },
+      { label: "Exam · Magnetism", href: "problem_sets/G10_Magnetism_ExamSet.html", kind: "exam" } ] },
 ];
 
 const CONFIG = {

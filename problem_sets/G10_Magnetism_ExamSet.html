@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="../">
-<title>PhysicsSyllabus</title>
+<title>G10MagnetismExamSet</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
@@ -1852,517 +1852,226 @@ function SyllabusComposer({ config }) {
 
 
 
-// ═══════════════════════════════════════════════════════════════
-// REFERENCE DATA — compiled by syllabus-researcher subagents.
-// Keyed by topic title. Each topic: [{ category, items: [{title,source,note}] }]
-// ═══════════════════════════════════════════════════════════════
-
-const REFS = {
-  "Graphical Addition of Vectors": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 3: Vectors", source: "Halliday, Resnick & Walker", note: "Geometric treatment of vector addition with diagrams." },
-      { title: "University Physics, Ch. 1: Units and Vectors", source: "Young & Freedman", note: "Parallelogram and polygon methods with worked examples." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Vector Addition", source: "Georgia State University", note: "Interactive visual explanations with adjustable angles and magnitudes." },
-      { title: "Vectors and Projectiles", source: "The Physics Classroom", note: "Step-by-step tutorials on head-to-tail addition and resultants." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Vector Addition", source: "Khan Academy (Physics)", note: "Animated explanations of graphical vector addition." },
-      { title: "MIT 8.01: Vectors and Kinematics", source: "MIT OpenCourseWare", note: "University-level treatment of vector geometry." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Training Material: Vectors", source: "IPhO Archive", note: "Competition-level vector problems emphasizing geometric insight." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1", source: "I.E. Irodov", note: "Challenging problem set on vector geometry." },
-      { title: "Physics Olympiad Problems Archive", source: "USAPhO & IPhO", note: "Past competition problems on vector graphical addition." } ] } ],
-  "Analytical Addition of Vectors": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 3: Component Method", source: "Halliday, Resnick & Walker", note: "Component decomposition, unit vectors, analytic addition." },
-      { title: "College Physics, Ch. 2: Kinematics and Vectors", source: "Serway & Vuille", note: "Cartesian components and vector algebra with applications." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Vector Components and Resolution", source: "Georgia State University", note: "Interactive tool for decomposing vectors with angle controls." },
-      { title: "PhET: Vector Addition", source: "University of Colorado Boulder", note: "Interactive simulation of component addition and resultants." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Vector Components and Magnitude", source: "Khan Academy", note: "Animated introduction to component decomposition." },
-      { title: "Vector Addition (Analytical)", source: "Professor Dave Explains, YouTube", note: "Intuitive explanation of the component method." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "F=ma Contest: Vector Problems", source: "AAPT", note: "High school competition problems on rapid analytic vector calculations." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1", source: "I.E. Irodov", note: "Rigorous problems on component addition and vector algebra." },
-      { title: "Berkeley Physics Problems with Solutions", source: "UC Berkeley", note: "Advanced problem set with detailed solutions." } ] } ],
-  "Motion Graphs": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 2: Straight-Line Motion", source: "Halliday, Resnick & Walker", note: "x-t, v-t, a-t graphs with slope and area interpretations." },
-      { title: "University Physics, Ch. 2: Straight-Line Motion", source: "Young & Freedman", note: "Comprehensive coverage of kinematic graphs and meaning." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Motion Graphs", source: "Georgia State University", note: "Interactive tools relating position, velocity, acceleration." },
-      { title: "Kinematic Graphs", source: "The Physics Classroom", note: "Tutorials on reading and interpreting motion graphs." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Motion Graphs", source: "Khan Academy (Physics)", note: "Step-by-step explanations of position-time and velocity-time graphs." },
-      { title: "Kinematics", source: "Crash Course Physics, YouTube", note: "Engaging visual introduction to motion graphs." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "F=ma: Kinematics and Motion Graph Problems", source: "AAPT", note: "Competition problems requiring graph interpretation." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1: Kinematics", source: "I.E. Irodov", note: "Challenging problems with non-uniform acceleration." },
-      { title: "A-Level Physics Problems: Kinematics", source: "AQA, Edexcel, OCR", note: "Exam-style problems on reading and constructing motion graphs." } ] } ],
-  "Relative Velocity": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 4: Two- and Three-Dimensional Motion", source: "Halliday, Resnick & Walker", note: "Relative velocity vectors and Galilean transformations." },
-      { title: "University Physics, Ch. 3: Two- or Three-Dimensional Motion", source: "Young & Freedman", note: "Relative velocity with river-crossing and airplane problems." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Relative Velocity", source: "Georgia State University", note: "Interactive simulations in boat-river and airplane-wind scenarios." },
-      { title: "Relative Velocity", source: "The Physics Classroom", note: "Conceptual explanations and worked examples." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Relative Velocity", source: "Khan Academy", note: "Animated explanation of velocity addition between frames." },
-      { title: "Relative Velocity", source: "Professor Dave Explains, YouTube", note: "Intuitive introduction with classic examples." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "USAPhO: Relative Motion Problems", source: "USAPhO Archive", note: "Competition-level problems in complex reference frames." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1", source: "I.E. Irodov", note: "Advanced problems with multiple moving reference frames." },
-      { title: "Berkeley Physics Problems with Solutions", source: "UC Berkeley", note: "Detailed solutions to relative velocity problems in 2D and 3D." } ] } ],
-  "Newton's Laws": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 5–6: Force and Motion", source: "Halliday, Resnick & Walker", note: "Foundational treatment of the three laws with experimental motivation." },
-      { title: "University Physics, Ch. 4–5: Forces and Motion", source: "Young & Freedman", note: "Emphasis on inertial frames and free-body diagrams." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Newton's Laws", source: "Georgia State University", note: "Interactive visualizations of force, mass, acceleration." },
-      { title: "Newton's Laws", source: "The Physics Classroom", note: "Conceptual tutorials on inertia, force, action-reaction." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Newton's Laws of Motion", source: "Khan Academy", note: "Clear explanations of all three laws with examples." },
-      { title: "MIT 8.01: Forces and Motion", source: "MIT OpenCourseWare", note: "University-level treatment with mathematical rigor." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "F=ma: Newton's Laws Problems", source: "AAPT", note: "Competition problems applying all three laws." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 2: Newton's Laws", source: "I.E. Irodov", note: "Rigorous problem set across diverse scenarios." },
-      { title: "International Physics Olympiad Archives", source: "IPhO", note: "Past problems emphasizing deep understanding of Newton's laws." } ] } ],
-  "Applications of Newton's Laws": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 6: Force and Motion (Applications)", source: "Halliday, Resnick & Walker", note: "Applications to friction, tension, pulleys, inclined planes." },
-      { title: "University Physics, Ch. 5–6: Applications of Newton's Laws", source: "Young & Freedman", note: "Friction models, normal force, and constraint forces." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Applications of Newton's Laws", source: "Georgia State University", note: "Interactive tools for friction, tension, inclined planes." },
-      { title: "Newton's Laws — Applications", source: "The Physics Classroom", note: "Tutorials on friction, normal force, tension, equilibrium." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Applications of Newton's Laws", source: "Khan Academy", note: "Friction, tension, inclined planes with free-body diagrams." },
-      { title: "MIT 8.01: Applications and Problem Solving", source: "MIT OpenCourseWare", note: "University-level problem-solving with constraint forces." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO: Applications of Newton's Laws", source: "International Physics Olympiad Archive", note: "Problems on friction, tension, and complex force scenarios." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 2", source: "I.E. Irodov", note: "Advanced problems on friction, pulleys, multi-body systems." },
-      { title: "USAPhO Past Problems", source: "USAPhO Archive", note: "Olympiad problems emphasizing applications of Newton's laws." } ] } ],
-  "Momentum and Impulse": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 9: Center of Mass and Momentum", source: "Halliday, Resnick & Walker", note: "Momentum, impulse-momentum theorem, conservation laws." },
-      { title: "University Physics, Ch. 8: Momentum, Impulse, and Collisions", source: "Young & Freedman", note: "Collision analysis and momentum conservation." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Momentum and Collisions", source: "Georgia State University", note: "Visualizations of elastic and inelastic collisions." },
-      { title: "Momentum and Collisions", source: "The Physics Classroom", note: "Tutorials on impulse, conservation, and collision types." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Momentum and Impulse", source: "Khan Academy", note: "Momentum conservation and the impulse-momentum theorem." },
-      { title: "Momentum and Collisions", source: "Crash Course Physics, YouTube", note: "Engaging visual introduction to momentum and impulse." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "F=ma: Momentum and Collisions Problems", source: "AAPT", note: "Competition problems on momentum conservation." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 3", source: "I.E. Irodov", note: "Rigorous problems on elastic, inelastic, and explosion scenarios." },
-      { title: "IPhO Archives: Collision Problems", source: "International Physics Olympiad", note: "Competition problems on momentum conservation in complex systems." } ] } ],
-  "Energy": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 7: Kinetic Energy and Work", source: "Halliday, Resnick & Walker", note: "Work, kinetic and potential energy, conservation." },
-      { title: "University Physics, Ch. 7–8: Work and Energy", source: "Young & Freedman", note: "Work-energy theorem, conservative forces, energy conservation." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Energy and Work", source: "Georgia State University", note: "Interactive tools for work, kinetic/potential energy, power." },
-      { title: "PhET: Energy Skate Park", source: "University of Colorado Boulder", note: "Simulation of potential/kinetic energy conversion with graphs." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Work and Energy", source: "Khan Academy", note: "Work, kinetic and potential energy, conservation." },
-      { title: "MIT 8.01: Energy and Work", source: "MIT OpenCourseWare", note: "University-level treatment of energy conservation and power." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO: Energy Conservation Problems", source: "International Physics Olympiad Archive", note: "Competition problems on energy conservation in complex systems." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 4: Work and Energy", source: "I.E. Irodov", note: "Advanced problems on work-energy calculations." },
-      { title: "USAPhO Past Problems: Energy", source: "USAPhO Archive", note: "Olympiad problems on energy in mechanics and oscillations." } ] } ],
-  "Rotational Motion": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 10: Rotation", source: "Halliday, Resnick & Walker", note: "Rotational kinematics, torque, moment of inertia, angular momentum." },
-      { title: "University Physics, Ch. 9–10: Rotation of Rigid Bodies", source: "Young & Freedman", note: "Rotational dynamics with rolling and gyroscope applications." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Rotational Motion", source: "Georgia State University", note: "Tools for angular velocity, torque, moment of inertia, energy." },
-      { title: "Rotational Motion", source: "The Physics Classroom", note: "Tutorials on rotational kinematics and dynamics." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Rotation of Rigid Bodies", source: "Khan Academy", note: "Angular motion, torque, moment of inertia, angular momentum." },
-      { title: "MIT 8.01: Rotational Dynamics", source: "MIT OpenCourseWare", note: "University-level treatment of rigid body rotation." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO: Rotational Motion Problems", source: "International Physics Olympiad Archive", note: "Problems on torque, angular momentum, coupled systems." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 5: Rotational Motion", source: "I.E. Irodov", note: "Rigorous problems on moment of inertia, torque, dynamics." },
-      { title: "USAPhO: Rotational Mechanics", source: "USAPhO Archive", note: "Olympiad problems on rolling, gyroscopes, rotational energy." } ] } ],
-  "Uniform Circular Motion": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 4: Circular Motion", source: "Halliday, Resnick & Walker", note: "Uniform circular motion, centripetal acceleration and force." },
-      { title: "University Physics, Ch. 3: Motion in a Circle", source: "Young & Freedman", note: "Applications to planetary motion and banked curves." } ] },
-    { category: "Online Resources", items: [
-      { title: "HyperPhysics: Circular Motion", source: "Georgia State University", note: "Simulations of centripetal acceleration, force, period." },
-      { title: "PhET: Centripetal Force", source: "University of Colorado Boulder", note: "Explore the relationship between force, speed, and radius." } ] },
-    { category: "Video Lectures", items: [
-      { title: "Circular Motion and Gravitation", source: "Khan Academy", note: "Centripetal acceleration, period, frequency." },
-      { title: "Circular Motion", source: "Professor Dave Explains, YouTube", note: "Intuitive introduction to centripetal force." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "F=ma: Circular Motion Problems", source: "AAPT", note: "Competition problems on centripetal force and orbital motion." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1: Circular Motion", source: "I.E. Irodov", note: "Advanced problems with complex constraints." },
-      { title: "IPhO: Circular Motion and Orbital Problems", source: "International Physics Olympiad Archive", note: "Problems on circular orbits and rotating frames." } ] } ],
-  "Gravitation": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 13: Gravitation", source: "Halliday, Resnick & Walker", note: "Newton's law of gravitation, orbital mechanics, potential." },
-      { title: "University Physics, Ch. 12: Gravitation", source: "Young & Freedman", note: "Gravitational fields, Kepler's laws, orbital energy." },
-      { title: "Classical Mechanics, Ch. 2: Central Force Motion", source: "Goldstein", note: "Advanced treatment of gravitational force and orbital dynamics." } ] },
-    { category: "Online Resources", items: [
-      { title: "Gravitation and Orbital Mechanics", source: "HyperPhysics (Georgia State University)", note: "Diagrams for gravitational force, orbital and escape velocity." },
-      { title: "Gravity Basics and Orbits", source: "Khan Academy", note: "Video lessons on gravitation and planetary motion." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.01: Classical Mechanics, Lectures 11–14", source: "MIT OpenCourseWare (Walter Lewin)", note: "In-depth lectures on gravitation and orbital mechanics." },
-      { title: "Gravitation: Crash Course Physics #26–27", source: "CrashCourse, YouTube", note: "Accessible explanations of Newton's law and orbits." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Gravitation & Orbits", source: "IPhO Archive (1967–present)", note: "Problems on gravitational fields, orbits, tidal forces." },
-      { title: "USAPhO: Gravitation Problems", source: "USA Physics Olympiad Archive", note: "Problems testing deep understanding of gravitational motion." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1.8: Gravitation", source: "I.E. Irodov", note: "Challenging problems on gravitational force, orbits, energy." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Thought-provoking problems requiring insight beyond formulas." } ] } ],
-  "Uniformly Accelerated Motion": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 2–3: Motion Along a Line", source: "Halliday, Resnick & Walker", note: "Kinematics, constant acceleration, free fall." },
-      { title: "University Physics, Ch. 2: Straight-Line Motion", source: "Young & Freedman", note: "Kinematic equations, average and instantaneous acceleration." },
-      { title: "Physics for Scientists and Engineers, Ch. 2", source: "Serway & Jewett", note: "Emphasis on graphical analysis and problem-solving." } ] },
-    { category: "Online Resources", items: [
-      { title: "Kinematic Equations Interactive Simulator", source: "PhET (University of Colorado)", note: "Visualize position, velocity, and acceleration graphs in real time." },
-      { title: "The Physics Classroom: Kinematics", source: "The Physics Classroom", note: "Lessons on acceleration, kinematic equations, free fall." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.01: Classical Mechanics, Lectures 1–3", source: "MIT OpenCourseWare (Walter Lewin)", note: "Rigorous introduction to kinematics." },
-      { title: "Motion & Forces: Crash Course Physics #3–5", source: "CrashCourse, YouTube", note: "Acceleration, Newton's laws, kinematic equations." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "F=ma Exam: Kinematics Problems", source: "AAPT", note: "Multiple-choice kinematics problems at olympiad level." },
-      { title: "IPhO Problems: One-Dimensional Motion", source: "International Physics Olympiad Archive", note: "Kinematics problems combining multiple concepts." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 1.1–1.2: Kinematics", source: "I.E. Irodov", note: "Problems with uniform acceleration, relative motion, graphs." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Non-standard kinematics problems building physical intuition." } ] } ],
-  "Introduction to Waves": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 16: Waves I", source: "Halliday, Resnick & Walker", note: "Wave properties, wave equation, superposition, energy transport." },
-      { title: "University Physics, Ch. 15: Mechanical Waves", source: "Young & Freedman", note: "Wave motion, sinusoidal waves, interference." },
-      { title: "Physics for Scientists and Engineers, Ch. 13", source: "Serway & Jewett", note: "Wave properties with mathematical formulation." } ] },
-    { category: "Online Resources", items: [
-      { title: "Wave on a String Simulation", source: "PhET (University of Colorado)", note: "Explore amplitude, frequency, wavelength, superposition." },
-      { title: "HyperPhysics: Waves and Sound", source: "HyperPhysics (Georgia State University)", note: "Concept maps illustrating wave properties and behavior." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.03: Vibrations and Waves, Lectures 1–5", source: "MIT OpenCourseWare", note: "University-level treatment of wave mechanics." },
-      { title: "Waves: Crash Course Physics #16–17", source: "CrashCourse, YouTube", note: "Wave properties, frequency, wavelength, behavior." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Wave Motion and Vibrations", source: "International Physics Olympiad Archive", note: "Problems on wave propagation, interference, resonance." },
-      { title: "USAPhO: Wave and Sound Problems", source: "USA Physics Olympiad Archive", note: "Olympiad problems on waves and oscillations." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 2.1–2.3: Waves", source: "I.E. Irodov", note: "Problems on wave motion, equations, phenomena." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Creative wave problems requiring deeper reasoning." } ] } ],
-  "Introduction to Simple Harmonic Motion": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 15: Oscillations", source: "Halliday, Resnick & Walker", note: "SHM, energy in oscillations, damped/driven oscillations." },
-      { title: "University Physics, Ch. 14: Oscillations", source: "Young & Freedman", note: "SHM with energy methods and phase analysis." },
-      { title: "Physics for Scientists and Engineers, Ch. 12", source: "Serway & Jewett", note: "Differential equations and energy conservation." } ] },
-    { category: "Online Resources", items: [
-      { title: "Masses and Springs Simulation", source: "PhET (University of Colorado)", note: "Explore SHM with springs; adjust mass and spring constant." },
-      { title: "Pendulum Lab", source: "PhET (University of Colorado)", note: "Investigate period dependence on length and angle." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.03: Vibrations and Waves, Lectures 6–10", source: "MIT OpenCourseWare", note: "Harmonic motion, coupled oscillators, resonance." },
-      { title: "Simple Harmonic Motion: Crash Course Physics #15", source: "CrashCourse, YouTube", note: "SHM with energy and graphical representations." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Oscillations and Harmonic Motion", source: "International Physics Olympiad Archive", note: "Problems on SHM, coupled oscillators, resonance." },
-      { title: "F=ma Exam: Oscillations Problems", source: "AAPT", note: "Problems on SHM at secondary level." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 3: Oscillations", source: "I.E. Irodov", note: "Challenging oscillation problems from basic to advanced." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Non-standard SHM problems building physical intuition." } ] } ],
-  "Light as an Electromagnetic Wave": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 33–34: EM Waves and Light", source: "Halliday, Resnick & Walker", note: "EM wave properties, speed of light, reflection, refraction." },
-      { title: "University Physics, Ch. 31–32: EM Waves and Optics", source: "Young & Freedman", note: "EM waves, reflection, refraction, Snell's law." },
-      { title: "Optics, Ch. 1–2: Nature of Light", source: "Eugene Hecht", note: "Light as electromagnetic radiation with historical context." } ] },
-    { category: "Online Resources", items: [
-      { title: "Bending Light Simulation", source: "PhET (University of Colorado)", note: "Explore reflection and refraction; visualize Snell's law." },
-      { title: "Geometric Optics: Mirrors and Lenses", source: "The Physics Classroom", note: "Reflection, refraction, and image formation with diagrams." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.02: Electricity and Magnetism, Lectures 30–34", source: "MIT OpenCourseWare", note: "Electromagnetic waves and light from first principles." },
-      { title: "Light Waves: Crash Course Physics #39", source: "CrashCourse, YouTube", note: "Light as an electromagnetic wave with modern context." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Optics and Light", source: "International Physics Olympiad Archive", note: "Problems on reflection, refraction, diffraction, interference." },
-      { title: "USAPhO: Optics and Light Problems", source: "USA Physics Olympiad Archive", note: "Problems on geometric and wave optics." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 5: Optics", source: "I.E. Irodov", note: "Optics problems from basic reflection to wave phenomena." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Creative optics problems requiring insight." } ] } ],
-  "Mirror and Lens Equation": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 34: Images and Optical Instruments", source: "Halliday, Resnick & Walker", note: "Mirror and lens equations with image formation analysis." },
-      { title: "University Physics, Ch. 34: Geometric Optics", source: "Young & Freedman", note: "Spherical mirrors and lenses with sign conventions." },
-      { title: "Optics, Ch. 3–4: Geometric Optics", source: "Eugene Hecht", note: "Rigorous mathematical treatment of mirror/lens equations." } ] },
-    { category: "Online Resources", items: [
-      { title: "Geometric Optics Simulation", source: "PhET (University of Colorado)", note: "Visualize object/image relationships with mirror and lens equations." },
-      { title: "Mirrors and Lenses", source: "The Physics Classroom", note: "Mirror equation, lens equation, image characteristics." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.02: Geometric Optics Lectures", source: "MIT OpenCourseWare", note: "Derivation and application of mirror and lens equations." },
-      { title: "Mirrors and Lenses: Crash Course Physics #40", source: "CrashCourse, YouTube", note: "Mirror/lens equations and ray diagrams." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Geometric Optics", source: "International Physics Olympiad Archive", note: "Problems on mirror/lens systems and optical instruments." },
-      { title: "USAPhO: Optics and Lenses Problems", source: "USA Physics Olympiad Archive", note: "Problems combining mirror/lens equations with other concepts." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 5.2: Lenses and Mirrors", source: "I.E. Irodov", note: "Problems on single and combined optical systems." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Non-standard problems on mirror/lens equations." } ] } ],
-  "Electrostatic Charges and Charge Transfer": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 21: Coulomb's Law and Electric Fields", source: "Halliday, Resnick & Walker", note: "Electric charge, Coulomb's law, electric field superposition." },
-      { title: "University Physics, Ch. 21–22: Electric Charge and Field", source: "Young & Freedman", note: "Charge interactions, Coulomb's law, charge distributions." },
-      { title: "Introduction to Electrodynamics, Ch. 2: Electrostatics", source: "David J. Griffiths", note: "Rigorous treatment of Coulomb's law with vector calculus." } ] },
-    { category: "Online Resources", items: [
-      { title: "Charges and Fields Simulation", source: "PhET (University of Colorado)", note: "Visualize electric fields from point charges and distributions." },
-      { title: "HyperPhysics: Electrostatics", source: "HyperPhysics (Georgia State University)", note: "Concept maps for Coulomb's law and electric fields." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.02: Electricity and Magnetism, Lectures 1–5", source: "MIT OpenCourseWare (Walter Lewin)", note: "Introduction to electrostatics from first principles." },
-      { title: "Electrostatics: Crash Course Physics #25", source: "CrashCourse, YouTube", note: "Electric charge and Coulomb's law." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Electrostatics", source: "International Physics Olympiad Archive", note: "Problems on Coulomb's law, fields, charge distributions." },
-      { title: "USAPhO: Electrostatics Problems", source: "USA Physics Olympiad Archive", note: "Problems on charge interactions and fields." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 4.1: Electrostatics", source: "I.E. Irodov", note: "Problems on Coulomb's law, fields, charge configurations." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Creative electrostatics problems building intuition." } ] } ],
-  "Electric Potential and Potential Energy": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 24: Electric Potential", source: "Halliday, Resnick & Walker", note: "Electric potential, potential difference, work-energy relations." },
-      { title: "University Physics, Ch. 23: Electric Potential", source: "Young & Freedman", note: "Potential, equipotentials, potential energy with applications." },
-      { title: "Introduction to Electrodynamics, Ch. 2: Electrostatics", source: "David J. Griffiths", note: "Rigorous treatment of potential and energy relationships." } ] },
-    { category: "Online Resources", items: [
-      { title: "Charges and Fields (Potential)", source: "PhET (University of Colorado)", note: "Visualize potential energy and equipotential surfaces." },
-      { title: "HyperPhysics: Electric Potential", source: "HyperPhysics (Georgia State University)", note: "Concept maps for potential and energy conservation." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.02: Electricity and Magnetism, Lectures 6–8", source: "MIT OpenCourseWare (Walter Lewin)", note: "Electric potential and energy conservation." },
-      { title: "Electric Potential: Crash Course Physics #27", source: "CrashCourse, YouTube", note: "Electric potential and potential energy." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Electric Potential and Energy", source: "International Physics Olympiad Archive", note: "Problems on potential, energy, and capacitors." },
-      { title: "USAPhO: Electric Potential Problems", source: "USA Physics Olympiad Archive", note: "Problems on potential energy and work in fields." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 4.2: Electric Potential", source: "I.E. Irodov", note: "Problems on potential, energy, capacitor systems." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Non-standard problems on potential concepts." } ] } ],
-  "Magnetic Materials": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 28–29: Magnetic Fields and Forces", source: "Halliday, Resnick & Walker", note: "Magnetic fields, force on charges and currents, Lorentz force." },
-      { title: "University Physics, Ch. 27–28: Magnetic Field and Forces", source: "Young & Freedman", note: "Magnetic fields, forces on conductors, magnetic torque." },
-      { title: "Introduction to Electrodynamics, Ch. 5: Magnetostatics", source: "David J. Griffiths", note: "Rigorous treatment of magnetic fields and materials." } ] },
-    { category: "Online Resources", items: [
-      { title: "Magnets and Electromagnets Simulation", source: "PhET (University of Colorado)", note: "Explore field patterns around magnets and current-carrying conductors." },
-      { title: "HyperPhysics: Magnetism", source: "HyperPhysics (Georgia State University)", note: "Concept maps for magnetic fields, forces, magnetization." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.02: Electricity and Magnetism, Lectures 13–17", source: "MIT OpenCourseWare (Walter Lewin)", note: "Magnetic fields and forces on moving charges." },
-      { title: "Magnetism: Crash Course Physics #32", source: "CrashCourse, YouTube", note: "Magnetic fields and magnetic forces." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Magnetism and Magnetic Materials", source: "International Physics Olympiad Archive", note: "Problems on magnetic fields, forces, material properties." },
-      { title: "USAPhO: Magnetism Problems", source: "USA Physics Olympiad Archive", note: "Problems on magnetic fields and forces." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 4.3: Magnetism", source: "I.E. Irodov", note: "Problems on magnetic fields, forces, magnetization." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Creative magnetism problems on field and force concepts." } ] } ],
-  "Motion of a Charge in a Magnetic Field": [
-    { category: "Textbooks", items: [
-      { title: "Fundamentals of Physics, Ch. 28: Force on Moving Charges", source: "Halliday, Resnick & Walker", note: "Lorentz force, circular and cyclotron motion." },
-      { title: "University Physics, Ch. 27: Magnetic Force on Moving Charges", source: "Young & Freedman", note: "Charged-particle motion, cyclotron, mass spectrometer." },
-      { title: "Introduction to Electrodynamics, Ch. 7: Electrodynamics", source: "David J. Griffiths", note: "Faraday's law, Lenz's law, and electromagnetic induction." } ] },
-    { category: "Online Resources", items: [
-      { title: "Faraday's Law Simulation", source: "PhET (University of Colorado)", note: "Visualize induction, flux change, and induced current." },
-      { title: "HyperPhysics: Charged Particle Motion", source: "HyperPhysics (Georgia State University)", note: "Concept maps for Lorentz force and particle trajectories." } ] },
-    { category: "Video Lectures", items: [
-      { title: "MIT 8.02: Electricity and Magnetism, Lectures 14–16", source: "MIT OpenCourseWare (Walter Lewin)", note: "Particle motion in magnetic fields and induction." },
-      { title: "Charged Particles in Magnetic Fields: Crash Course #33", source: "CrashCourse, YouTube", note: "Circular and cyclotron motion." } ] },
-    { category: "Contest & Olympiad", items: [
-      { title: "IPhO Problems: Charged Particle Motion in Fields", source: "International Physics Olympiad Archive", note: "Problems on trajectories, cyclotrons, induction." },
-      { title: "USAPhO: Charged Particle Motion", source: "USA Physics Olympiad Archive", note: "Problems on trajectories and electromagnetic interactions." } ] },
-    { category: "Problem Sources", items: [
-      { title: "Problems in General Physics, Ch. 4.4: Motion in EM Fields", source: "I.E. Irodov", note: "Challenging problems on trajectories and field interactions." },
-      { title: "200 Puzzling Physics Problems", source: "Gnädig, Honyek & Riley", note: "Non-standard problems on field-particle interactions." } ] } ],
-};
-
-// ═══════════════════════════════════════════════════════════════
-// CURRICULUM — major topics with their subtopics, in study order.
-// ═══════════════════════════════════════════════════════════════
-
-const PARTS = [
-  { title: "Graphical Addition of Vectors", topics: [
-    "Parallelogram Method of Adding Vectors",
-    "Polygon Method of Adding Vectors" ] },
-  { title: "Analytical Addition of Vectors", topics: [
-    "Resolving a Vector Into Components",
-    "Component Method of Adding Vectors" ] },
-  { title: "Motion Graphs", topics: [
-    "Position-Time Graphs",
-    "Velocity-Time Graphs",
-    "Acceleration-Time Graphs",
-    "Area Under Motion Graphs" ] },
-  { title: "Relative Velocity", topics: [
-    "Relative Velocity and Reference Frames",
-    "Relative Velocity in One and Two Dimensions" ] },
-  { title: "Newton's Laws", topics: [
-    "Newton's First Law of Motion",
-    "Newton's Second Law of Motion",
-    "Newton's Third Law of Motion" ] },
-  { title: "Applications of Newton's Laws", topics: [
-    "Gravitational Force",
-    "Normal Force and Apparent Weight",
-    "Static and Kinetic Friction",
-    "Tension and Atwood's Machine",
-    "Inclined Plane" ] },
-  { title: "Momentum and Impulse", topics: [
-    "Momentum",
-    "Impulse",
-    "Impulse-Momentum Theorem",
-    "Conservation of Momentum",
-    "Elastic and Inelastic Collisions" ],
-    links: [
-      { label: "Lecture · Momentum", href: "learning-guides/G10_Momentum_L01.html", kind: "guide" },
-      { label: "Problem Set · Momentum", href: "learning-guides/G10_Momentum_PS01.html", kind: "probset" } ] },
-  { title: "Energy", topics: [
-    "Work and Power",
-    "Kinetic Energy and the Work-Energy Theorem",
-    "Gravitational and Elastic Potential Energy",
-    "Conservation of Mechanical Energy" ],
-    links: [
-      { label: "Lecture · Energy", href: "learning-guides/G10_Energy_L01.html", kind: "guide" },
-      { label: "Problem Set · Energy", href: "learning-guides/G10_Energy_PS01.html", kind: "probset" } ] },
-  { title: "Rotational Motion", topics: [
-    "Rotational Kinematic Quantities",
-    "Newton's Second Law for Rotational Motion",
-    "Torque and Equilibrium",
-    "Rotational Kinetic Energy",
-    "Angular Momentum" ],
-    links: [
-      { label: "Lecture · Rotation", href: "learning-guides/G10_Rotation_L01.html", kind: "guide" },
-      { label: "Problem Set · Rotation", href: "learning-guides/G10_Rotation_PS01.html", kind: "probset" } ] },
-  { title: "Uniform Circular Motion", topics: [
-    "Centripetal Acceleration",
-    "Centripetal Force",
-    "Horizontal Circular Motion",
-    "Vertical Circular Motion",
-    "Banked Curves" ],
-    links: [
-      { label: "Lecture · Circular Motion", href: "learning-guides/G10_CircularMotion_L01.html", kind: "guide" },
-      { label: "Problem Set · Circular Motion", href: "learning-guides/G10_CircularMotion_PS01.html", kind: "probset" } ] },
-  { title: "Gravitation", topics: [
-    "Universal Law of Gravitation",
-    "Gravitational Field",
-    "Kepler's Laws of Planetary Motion",
-    "Satellites in Circular Orbits" ] },
-  { title: "Uniformly Accelerated Motion", topics: [
-    "Kinematic Equations for Uniformly Accelerated Motion",
-    "Uniformly Accelerated 1D Motion",
-    "Uniformly Accelerated 2D Motion",
-    "Uniformly Accelerated Rotational Motion" ] },
-  { title: "Introduction to Waves", topics: [
-    "Wave Intensity",
-    "Wave Speed",
-    "The Wave Equation",
-    "Wave Properties",
-    "Superposition of Waves" ],
-    links: [
-      { label: "Lecture · Waves", href: "learning-guides/G10_Waves_L01.html", kind: "guide" },
-      { label: "Problem Set · Waves", href: "learning-guides/G10_Waves_PS01.html", kind: "probset" },
-      { label: "Quiz · Waves", href: "learning-guides/G10_Waves_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Waves & Sound", href: "problem_sets/G10_WavesSound_ExamSet.html", kind: "exam" } ] },
-  { title: "Introduction to Simple Harmonic Motion", topics: [
-    "Motion in Simple Harmonic Systems",
-    "Energy and Simple Harmonic Motion",
-    "Sinusoidal Nature of Simple Harmonic Motion",
-    "Period of a Simple Pendulum",
-    "Sound as a Wave",
-    "Wave and Musical Properties",
-    "Sound Reflection",
-    "Sound Refraction and Diffraction",
-    "The Doppler Effect" ],
-    links: [
-      { label: "Lecture · SHM", href: "learning-guides/G10_SHM_L01.html", kind: "guide" },
-      { label: "Problem Set · SHM", href: "learning-guides/G10_SHM_PS01.html", kind: "probset" },
-      { label: "Quiz · SHM", href: "learning-guides/G10_SHM_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Waves & Sound", href: "problem_sets/G10_WavesSound_ExamSet.html", kind: "exam" } ] },
-  { title: "Light as an Electromagnetic Wave", topics: [
-    "Law of Reflection",
-    "Snell's Law of Refraction",
-    "Total Internal Reflection",
-    "Apparent Depth",
-    "Introduction to Mirrors",
-    "Concave and Convex Mirrors" ],
-    links: [
-      { label: "Lecture · Optics", href: "learning-guides/G10_Optics_L01.html", kind: "guide" },
-      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" },
-      { label: "Quiz · Optics", href: "learning-guides/G10_Optics_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Optics", href: "problem_sets/G10_Optics_ExamSet.html", kind: "exam" } ] },
-  { title: "Mirror and Lens Equation", topics: [
-    "The Mirror Equation",
-    "Introduction to Lenses",
-    "Image Formation by Converging Lenses",
-    "Image Formation by Diverging Lenses",
-    "Concave and Convex Lenses",
-    "The Thin Lens Equation" ],
-    links: [
-      { label: "Lecture · Optics", href: "learning-guides/G10_Optics_L01.html", kind: "guide" },
-      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" },
-      { label: "Quiz · Optics", href: "learning-guides/G10_Optics_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Optics", href: "problem_sets/G10_Optics_ExamSet.html", kind: "exam" } ] },
-  { title: "Electrostatic Charges and Charge Transfer", topics: [
-    "Coulomb's Law",
-    "Electric Field",
-    "Vector Summation of Electric Fields" ],
-    links: [
-      { label: "Lecture · Electrostatics", href: "learning-guides/G10_Electrostatics_L01.html", kind: "guide" },
-      { label: "Problem Set · Electrostatics", href: "learning-guides/G10_Electrostatics_PS01.html", kind: "probset" },
-      { label: "Quiz · Electrostatics", href: "learning-guides/G10_Electrostatics_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Electricity", href: "problem_sets/G10_Electricity_ExamSet.html", kind: "exam" } ] },
-  { title: "Electric Potential and Potential Energy", topics: [
-    "Applications of Electrostatics",
-    "Current",
-    "Resistivity and Resistance",
-    "Ohm's Law",
-    "Resistors and Resistor Combinations",
-    "Circuits" ],
-    links: [
-      { label: "Lecture · Circuits", href: "learning-guides/G10_Circuits_L01.html", kind: "guide" },
-      { label: "Problem Set · Circuits", href: "learning-guides/G10_Circuits_PS01.html", kind: "probset" },
-      { label: "Quiz · Circuits", href: "learning-guides/G10_Circuits_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Electricity", href: "problem_sets/G10_Electricity_ExamSet.html", kind: "exam" } ] },
-  { title: "Magnetic Materials", topics: [
-    "Magnetic Field Lines",
-    "Magnetic Field of a Current",
-    "Field Configurations",
-    "Magnetic Force on a Moving Charge",
-    "Magnetic Force on a Current" ],
-    links: [
-      { label: "Lecture · Magnetism", href: "learning-guides/G10_Magnetism_L01.html", kind: "guide" },
-      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" },
-      { label: "Quiz · Magnetism", href: "learning-guides/G10_Magnetism_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Magnetism", href: "problem_sets/G10_Magnetism_ExamSet.html", kind: "exam" } ] },
-  { title: "Motion of a Charge in a Magnetic Field", topics: [
-    "Charged Particle Trajectories",
-    "Faraday's Law",
-    "Lenz's Law" ],
-    links: [
-      { label: "Lecture · Magnetism", href: "learning-guides/G10_Magnetism_L01.html", kind: "guide" },
-      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" },
-      { label: "Quiz · Magnetism", href: "learning-guides/G10_Magnetism_Quiz01.html", kind: "quiz" },
-      { label: "Exam · Magnetism", href: "problem_sets/G10_Magnetism_ExamSet.html", kind: "exam" } ] },
-];
-
 const CONFIG = {
   meta: {
-    kicker: "Physics · Syllabus",
-    title: "Physics <em>Syllabus</em>",
-    subtitle: "A continuous progression through mechanics, waves, optics, and electromagnetism. Each topic carries a curated reference set for deeper exploration.",
-    navLinks: [{ label: "Mathematics", href: "syllabuses/Mathematics_Syllabus.html" }],
+    title: "Exam Set<br /><em>Magnetism</em>",
+    subtitle: "30 problems · Magnetic Fields · Forces · Induction",
+    topic: "G10 Magnetism",
+    examMode: true,
   },
-  parts: PARTS.map(p => ({ ...p, references: REFS[p.title] || [] })),
+  blocks: [
+    // ── EASY (1 dot, 3 pts) ──────────────────────────────
+    { type: "section-header", title: "Easy", subtitle: "Direct application · 3 pts each" },
+
+    // E1
+    { type: "tf", diff: "easy",
+      statement: "Magnetic field lines always form closed loops — they have no beginning or end.",
+      correct: true,
+      explain: "Unlike electric field lines (which start on + charges and end on − charges), B-field lines form closed loops because there are no magnetic monopoles." },
+
+    // E2
+    { type: "mc", diff: "easy",
+      question: "Which SI unit is used to measure magnetic field strength B?",
+      choices: ["Weber (Wb)", "Tesla (T)", "Henry (H)", "Farad (F)"],
+      correct: 1,
+      explain: "The tesla (T) is the SI unit of magnetic flux density B. 1 T = 1 N/(A·m)." },
+
+    // E3
+    { type: "tf", diff: "easy",
+      statement: "A stationary charged particle placed in a magnetic field experiences a magnetic force.",
+      correct: false,
+      explain: "The Lorentz magnetic force is F = qvB sinθ. With v = 0, the force is zero. Magnetic forces only act on moving charges." },
+
+    // E4
+    { type: "mc", diff: "easy",
+      question: "A charged particle moves exactly parallel to a uniform magnetic field (θ = 0°). What is the magnetic force on it?",
+      choices: ["qvB", "qvB/2", "qvB√2", "Zero"],
+      correct: 3,
+      explain: "F = qvB sinθ = qvB sin(0°) = 0. The cross product v × B vanishes when v is parallel to B." },
+
+    // E5
+    { type: "int", diff: "easy",
+      question: "A long straight wire carries 8.0 A. What is the magnetic field at 0.20 m from the wire, in μT? (μ₀ = 4π×10⁻⁷ T·m/A)",
+      answer: 8,
+      hint: "B = μ₀I/(2πr) = (4π×10⁻⁷)(8.0)/(2π×0.20) = (8×10⁻⁷)/(0.20) = 8×10⁻⁶ T = 8 μT." },
+
+    // E6
+    { type: "mc", diff: "easy",
+      question: "A solenoid has 400 turns and a length of 0.50 m, carrying 2.0 A. What is the magnetic field inside? (μ₀ = 4π×10⁻⁷ T·m/A)",
+      choices: ["4.0×10⁻⁴ T", "8.0×10⁻⁴ T", "2.0×10⁻³ T", "4.0×10⁻³ T"],
+      correct: 2,
+      explain: "n = N/L = 400/0.50 = 800 m⁻¹. B = μ₀nI = (4π×10⁻⁷)(800)(2.0) ≈ 2.01×10⁻³ T ≈ 2.0 mT." },
+
+    // E7
+    { type: "tf", diff: "easy",
+      statement: "Ferromagnetic materials such as iron can be permanently magnetized.",
+      correct: true,
+      explain: "Ferromagnetic materials (Fe, Ni, Co) have magnetic domains that align in an external field and stay aligned afterward, producing a permanent magnet." },
+
+    // E8
+    { type: "mc", diff: "easy",
+      question: "A current-carrying wire experiences a force F = BIL sinθ. If the current is doubled while B and L remain constant at θ = 90°, the force:",
+      choices: ["Stays the same", "Doubles", "Quadruples", "Halves"],
+      correct: 1,
+      explain: "F = BIL sin90° = BIL. F is directly proportional to I, so doubling I doubles F." },
+
+    // E9
+    { type: "int", diff: "easy",
+      question: "A magnetic flux Φ = 0.60 Wb passes perpendicularly through a loop of area 0.030 m². What is the magnetic field B in tesla?",
+      answer: 20,
+      hint: "Φ = BA cos0° = BA. B = Φ/A = 0.60/0.030 = 20 T." },
+
+    // E10
+    { type: "mc", diff: "easy",
+      question: "A coil with N = 25 turns experiences a flux change ΔΦ = 0.004 Wb in 0.10 s. What is the magnitude of the induced EMF?",
+      choices: ["0.010 V", "0.100 V", "0.400 V", "1.000 V"],
+      correct: 3,
+      explain: "ε = N|ΔΦ/Δt| = 25 × (0.004/0.10) = 25 × 0.04 = 1.0 V." },
+
+    // ── MEDIUM (2 dots, 4 pts) ────────────────────────────
+    { type: "section-header", title: "Medium", subtitle: "Two-step reasoning · 4 pts each" },
+
+    // M1
+    { type: "mc", diff: "medium",
+      question: "An alpha particle (q = +2e, m = 6.64×10⁻²⁷ kg) moves at 3.0×10⁶ m/s perpendicular to a 0.50 T field. What is the radius of its circular path? (e = 1.6×10⁻¹⁹ C)",
+      choices: ["0.062 m", "0.124 m", "0.249 m", "0.031 m"],
+      correct: 1,
+      explain: "q = 2e = 3.2×10⁻¹⁹ C. r = mv/(qB) = (6.64×10⁻²⁷ × 3.0×10⁶)/(3.2×10⁻¹⁹ × 0.50) = 1.992×10⁻²⁰/1.6×10⁻¹⁹ = 0.124 m." },
+
+    // M2
+    { type: "int", diff: "medium",
+      question: "Two long parallel wires 0.12 m apart carry 5.0 A each in the same direction. What is the force per unit length between them, in μN/m? (μ₀ = 4π×10⁻⁷ T·m/A, round to nearest integer)",
+      answer: 42,
+      hint: "F/L = μ₀I₁I₂/(2πd) = (4π×10⁻⁷)(25)/(2π×0.12) = (2×10⁻⁷×25)/0.12 = 5×10⁻⁶/0.12 ≈ 4.17×10⁻⁵ N/m = 41.7 μN/m ≈ 42 μN/m. Same direction → attractive force." },
+
+    // M3
+    { type: "mc", diff: "medium",
+      question: "A conducting rod of length 0.60 m moves at 5.0 m/s perpendicular to a 0.40 T field. What is the induced (motional) EMF?",
+      choices: ["0.48 V", "0.60 V", "1.20 V", "2.40 V"],
+      correct: 2,
+      explain: "ε = BLv = (0.40)(0.60)(5.0) = 1.20 V. The rod sweeps through area L·v·dt each second, so dΦ/dt = BLv." },
+
+    // M4
+    { type: "tf", diff: "medium",
+      statement: "The period of a charged particle moving in a uniform magnetic field is independent of the particle's speed.",
+      correct: true,
+      explain: "T = 2πm/(qB). The period depends only on m/q and B. Faster particles trace larger circles but complete one orbit in the same time — the cyclotron principle." },
+
+    // M5
+    { type: "mc", diff: "medium",
+      question: "A current loop (N = 1, I = 2.0 A, area = 0.015 m²) sits in a uniform 0.80 T field. What is the maximum torque on the loop?",
+      choices: ["0.012 N·m", "0.024 N·m", "0.048 N·m", "0.096 N·m"],
+      correct: 1,
+      explain: "Maximum torque when the loop plane is parallel to B (θ = 90°): τ = NIAB = (1)(2.0)(0.015)(0.80) = 0.024 N·m." },
+
+    // M6
+    { type: "int", diff: "medium",
+      question: "A solenoid of length 0.25 m has 500 turns and carries 2.0 A. What is the magnetic field inside, in mT? (μ₀ = 4π×10⁻⁷ T·m/A, round to 1 decimal place)",
+      answer: 5,
+      hint: "n = 500/0.25 = 2000 m⁻¹. B = μ₀nI = (4π×10⁻⁷)(2000)(2.0) = 16π×10⁻⁴ ≈ 5.03×10⁻³ T = 5.0 mT." },
+
+    // M7
+    { type: "mc", diff: "medium",
+      question: "A transformer steps voltage from 120 V (primary) to 480 V (secondary). If the primary has 100 turns, how many secondary turns are needed?",
+      choices: ["25", "100", "400", "1200"],
+      correct: 2,
+      explain: "N_s/N_p = V_s/V_p → N_s = 100 × (480/120) = 400 turns. This is a step-up transformer — more secondary turns means higher secondary voltage." },
+
+    // M8
+    { type: "tf", diff: "medium",
+      statement: "When a bar magnet is pulled away from a coil, the face of the coil nearest the magnet becomes a south pole (by Lenz's Law).",
+      correct: true,
+      explain: "As the magnet retreats, flux through the coil decreases. By Lenz's Law the induced current opposes the decrease, so it reinforces the original flux direction — making the near face a south pole to attract and oppose the retreating magnet." },
+
+    // M9
+    { type: "int", diff: "medium",
+      question: "A proton (q = 1.6×10⁻¹⁹ C, m = 1.67×10⁻²⁷ kg) moves in a circular orbit of radius 0.030 m in a 0.60 T field. What is the proton's speed in units of 10⁶ m/s? Round to the nearest integer.",
+      answer: 2,
+      hint: "v = qBr/m = (1.6×10⁻¹⁹)(0.60)(0.030)/(1.67×10⁻²⁷) = 2.88×10⁻²¹/1.67×10⁻²⁷ ≈ 1.72×10⁶ m/s ≈ 2×10⁶ m/s." },
+
+    // M10
+    { type: "mc", diff: "medium",
+      question: "A 10-turn coil of area 0.050 m² is placed perpendicular to a magnetic field that increases uniformly from 0 to 1.2 T in 0.30 s. What is the induced EMF?",
+      choices: ["0.60 V", "1.50 V", "2.00 V", "4.00 V"],
+      correct: 2,
+      explain: "ΔΦ = A·ΔB = (0.050)(1.2) = 0.060 Wb. ε = N·ΔΦ/Δt = 10 × 0.060/0.30 = 10 × 0.20 = 2.00 V." },
+
+    // M11
+    { type: "tf", diff: "medium",
+      statement: "Parallel currents (currents in the same direction) attract each other, while antiparallel currents repel.",
+      correct: true,
+      explain: "Wire 1's B-field at wire 2 points perpendicular to wire 2. The right-hand rule for F = IL × B on wire 2 gives attraction for parallel currents and repulsion for antiparallel currents." },
+
+    // M12
+    { type: "mc", diff: "medium",
+      question: "A 0.30 m wire carries 4.0 A at an angle of 30° to a 0.60 T field. What is the force on the wire?",
+      choices: ["0.22 N", "0.36 N", "0.43 N", "0.72 N"],
+      correct: 1,
+      explain: "F = BIL sinθ = (0.60)(4.0)(0.30) sin30° = 0.72 × 0.5 = 0.36 N." },
+
+    // ── HARD (3 dots, 5 pts) ──────────────────────────────
+    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 5 pts each" },
+
+    // H1
+    { type: "mc", diff: "hard",
+      question: "A proton and an electron enter the same uniform magnetic field with the same speed perpendicular to B. How does the radius of the proton's circular path compare to the electron's? (m_p/m_e ≈ 1836)",
+      choices: ["Smaller by a factor of 1836", "Larger by a factor of 1836", "Equal", "Larger by a factor of √1836"],
+      correct: 1,
+      explain: "r = mv/(qB). Both have the same |q|, v, and B, so r ∝ m. r_p/r_e = m_p/m_e ≈ 1836. The proton's orbit is about 1836× larger." },
+
+    // H2
+    { type: "int", diff: "hard",
+      question: "A velocity selector has crossed fields E = 6000 V/m and B = 0.30 T. What is the speed (in units of 10⁴ m/s) of particles that pass through undeflected?",
+      answer: 2,
+      hint: "Undeflected when electric force = magnetic force: qE = qvB → v = E/B = 6000/0.30 = 2.0×10⁴ m/s. This is independent of the particle's charge or mass." },
+
+    // H3
+    { type: "mc", diff: "hard",
+      question: "A 0.40 m rod slides on frictionless rails at constant speed 3.0 m/s in a 0.50 T field (perpendicular to rod and motion). Circuit resistance = 1.5 Ω. What external force maintains constant speed?",
+      choices: ["0.040 N", "0.080 N", "0.120 N", "0.200 N"],
+      correct: 1,
+      explain: "ε = BLv = (0.50)(0.40)(3.0) = 0.60 V. I = ε/R = 0.60/1.5 = 0.40 A. Magnetic braking force: F = BIL = (0.50)(0.40)(0.40) = 0.080 N. External force must equal the braking force to maintain constant speed." },
+
+    // H4
+    { type: "int", diff: "hard",
+      question: "A rectangular coil (N = 150 turns, area = 0.040 m²) rotates at 50 rev/s in a uniform 0.60 T field. What is the peak EMF in volts? Round to the nearest integer. (Use π ≈ 3.14159)",
+      answer: 1131,
+      hint: "ω = 2π×50 = 100π ≈ 314.16 rad/s. ε_peak = NBAω = (150)(0.60)(0.040)(314.16) = 3.6 × 314.16 ≈ 1131 V." },
+
+    // H5
+    { type: "mc", diff: "hard",
+      question: "Two long parallel wires carry the same current I in opposite directions separated by distance d. At the point exactly midway between them, the total magnetic field magnitude is:",
+      choices: ["Zero", "μ₀I/(πd)", "μ₀I/(2πd)", "2μ₀I/(πd)"],
+      correct: 3,
+      explain: "At the midpoint (r = d/2 from each wire), each wire produces B = μ₀I/(2π·d/2) = μ₀I/(πd). For antiparallel currents, both fields point in the same direction at the midpoint (right-hand rule). Total B = 2 × μ₀I/(πd) = 2μ₀I/(πd)." },
+
+    // H6
+    { type: "mc", diff: "hard",
+      question: "A flat circular coil (N = 50 turns, radius = 0.080 m) lies in a plane making a 30° angle with a 1.2 T uniform field. What is the total magnetic flux linkage NΦ through the coil?",
+      choices: ["0.121 Wb", "0.302 Wb", "0.603 Wb", "0.241 Wb"],
+      correct: 2,
+      explain: "The angle between B and the coil's normal is 90° − 30° = 60°. A = π(0.080)² ≈ 0.02011 m². Φ per turn = BA cosθ = (1.2)(0.02011)cos60° = (1.2)(0.02011)(0.5) = 0.01207 Wb. NΦ = 50 × 0.01207 ≈ 0.603 Wb." },
+
+    // H7
+    { type: "int", diff: "hard",
+      question: "A proton enters a uniform 0.40 T field and traces a semicircle, exiting 0.060 m from its entry point (the diameter). What was its kinetic energy in units of 10⁻¹⁶ J? (m_p = 1.67×10⁻²⁷ kg, e = 1.6×10⁻¹⁹ C, round to nearest integer)",
+      answer: 11,
+      hint: "r = 0.030 m. v = qBr/m = (1.6×10⁻¹⁹)(0.40)(0.030)/(1.67×10⁻²⁷) ≈ 1.149×10⁶ m/s. KE = ½mv² = ½(1.67×10⁻²⁷)(1.149×10⁶)² ≈ 1.10×10⁻¹⁵ J = 11.0×10⁻¹⁶ J ≈ 11 (in units of 10⁻¹⁶ J)." },
+
+    // H8
+    { type: "tf", diff: "hard",
+      statement: "In an ideal transformer with 100% efficiency, increasing the turns ratio N_s/N_p also increases the power delivered to the secondary coil.",
+      correct: false,
+      explain: "An ideal transformer conserves power: P_p = V_p I_p = V_s I_s = P_s. A higher turns ratio steps up voltage but steps down current proportionally. Total power through the transformer is fixed by the source — the turns ratio redistributes voltage and current, not power." },
+  ],
 };
 
-function PhysicsSyllabus() {
-  return <SyllabusComposer config={CONFIG} />;
+function G10MagnetismExamSet() {
+  return <ProbsetComposer config={CONFIG} />;
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<PhysicsSyllabus />);
+ReactDOM.createRoot(document.getElementById('root')).render(<G10MagnetismExamSet />);
 </script>
 </body>
 </html>
