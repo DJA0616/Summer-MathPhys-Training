@@ -4,3 +4,15 @@ Thumbs.db
 *.log
 .claude/agent-memory/
 .claude/projects/
+
+# Tooling / agent scratch output
+.playwright-mcp/
+agent_workspace/
+Sample Problems/
+
+# Dev snapshots & test screenshots
+*-snapshot.yml
+examset-header-timer.png
+index-geo-test.png
+*-syllabus-top.png
+*-syllabus-refs.png
