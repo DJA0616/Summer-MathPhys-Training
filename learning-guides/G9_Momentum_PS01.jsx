@@ -5,7 +5,7 @@ const CONFIG = {
     title: "Momentum &amp;<br /><em>Impulse</em>",
     subtitle: "15 questions · Impulse · Conservation · Collisions",
     topic: "G10 Momentum and Impulse — Problem Set 01",
-    navLinks: [{ href: "learning-guides/G10_Momentum_L01.html", label: "Learning Guide" }],
+    navLinks: [{ href: "learning-guides/G9_Momentum_L01.html", label: "Learning Guide" }],
   },
   blocks: [
     { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },

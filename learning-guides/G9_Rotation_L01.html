@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="../">
-<title>G10RotationPS01</title>
+<title>G10RotationL01</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
@@ -1852,124 +1852,184 @@ function SyllabusComposer({ config }) {
 
 
 
-const CONFIG = {
-  meta: {
-    title: "Rotational Motion",
-    subtitle: "Kinematics · Torque · Energy · Angular Momentum",
-    topic: "G10 Rotational Motion — Problem Set 01",
-    navLinks: [{ href: "learning-guides/G10_Rotation_L01.html", label: "Learning Guide" }],
-  },
-  blocks: [
-    { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },
 
-    // E1
-    { type: "mc", diff: "easy", pts: 3,
-      question: "A wheel rotates at constant angular velocity ω = 5.0 rad/s. What is its angular displacement after 2.0 s?",
-      choices: ["2.5 rad", "5.0 rad", "10 rad", "20 rad"],
-      correct: 2,
-      explain: "θ = ωt = (5.0)(2.0) = 10 rad. At constant ω there is no angular acceleration, so the kinematic simplifies to θ = ωt." },
+const MAIN_TABS = ["lecture", "practice", "reference"];
+const PART_LABELS = ["I · Rotational Kinematics", "II · Torque & Newton's 2nd Law", "III · Rotational Energy & Angular Momentum"];
 
-    // E2
-    { type: "tf", diff: "easy", pts: 3,
-      statement: "The moment of inertia of a solid cylinder rotating about its central axis is I = MR².",
-      correct: false,
-      explain: "False. The correct formula for a solid cylinder about its central axis is I = ½MR². Only a thin ring (hoop) has I = MR², because all of its mass sits at the outer radius." },
+function G10RotationL01() {
+  const [tab, setTab] = useState("lecture");
+  const [part, setPart] = useState(0);
 
-    // E3
-    { type: "int", diff: "easy", pts: 3,
-      question: "A disk starts from rest and reaches ω = 12 rad/s after rotating through 24 rad. What is the angular acceleration α in rad/s²?",
-      answer: 3,
-      hint: "Use ω² = ω₀² + 2αθ: (12)² = 0 + 2α(24) → 144 = 48α → α = 3 rad/s²." },
+  const tabBtn = t => ({ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: "4px", border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" });
+  const partBtn = i => ({ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: "4px", border: `1px solid ${part === i ? C.accent+"55" : C.border}`, background: part === i ? C.accent+"11" : "transparent", color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s" });
+  const navBtn = (accent = false) => ({ fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: "4px", border: `1px solid ${accent ? C.accent+"55" : C.border}`, background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer" });
 
-    // E4
-    { type: "mc", diff: "easy", pts: 3,
-      question: "Torque is defined as τ = rF sin θ. For which angle θ between the force and the lever arm is the torque maximum?",
-      choices: ["0°", "45°", "90°", "180°"],
-      correct: 2,
-      explain: "sin(90°) = 1 is the maximum value of the sine function. When force is perpendicular to the lever arm, all of the force contributes to rotation and none is wasted along the arm." },
+  return (<>
+    <style>{GLOBAL_CSS}</style><Geo />
+    <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
 
-    // E5
-    { type: "int", diff: "easy", pts: 3,
-      question: "A spinning top has angular momentum L = 0.50 kg·m²/s and moment of inertia I = 0.010 kg·m². What is its angular velocity ω in rad/s?",
-      answer: 50,
-      hint: "L = Iω → ω = L/I = 0.50/0.010 = 50 rad/s." },
+      {/* Navbar */}
+      <div className="bk-fade" style={{ display: "flex", gap: 12, marginBottom: 36, fontFamily: F.mono, fontSize: 10 }}>
+        <a href="index.html" style={{ color: C.dim, textDecoration: "none" }}>← Index</a>
+        <span style={{ color: C.muted }}>|</span>
+        <a href="highscores.html" style={{ color: C.dim, textDecoration: "none" }}>Highscores</a>
+        <span style={{ color: C.muted }}>|</span>
+        <a href="learning-guides/G9_Rotation_PS01.html" style={{ color: C.dim, textDecoration: "none" }}>Problem Set →</a>
+      </div>
 
-    { type: "section-header", title: "Medium", subtitle: "Two-step reasoning · 5 problems · 20 pts" },
+      <div className="bk-fade" style={{ marginBottom: 36 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}><Tag>Physics</Tag><Tag accent>Rotational Motion</Tag><Tag>Block 9</Tag></div>
+        <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}` }}>Rotational Motion &<br /><em>Angular Mechanics</em></h1>
+        <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>Every kinematic and dynamic law of linear motion has a rotational counterpart. Once you see the analogy, two sets of equations collapse into one unified framework.</p>
+      </div>
 
-    // M1
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A force F = 20 N is applied perpendicular to a lever arm of length r = 0.50 m. The moment of inertia about the pivot is I = 0.40 kg·m². What is the resulting angular acceleration?",
-      choices: ["12.5 rad/s²", "25 rad/s²", "40 rad/s²", "50 rad/s²"],
-      correct: 1,
-      explain: "τ = rF sin(90°) = (0.50)(20) = 10 N·m. Then τ = Iα → α = τ/I = 10/0.40 = 25 rad/s²." },
+      <Card style={{ marginBottom: 24 }}>
+        <Label style={{ display: "block", marginBottom: 12 }}>What This Covers</Label>
+        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+          Rotational motion describes how objects spin about a fixed axis. The mathematics mirrors linear mechanics exactly: angle replaces displacement, angular velocity replaces velocity, torque replaces force, and moment of inertia replaces mass. Every formula you know has a <strong style={{ fontWeight: 500, color: C.accent }}>rotational twin</strong>.
+        </p>
+        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
+          The math integration is <strong style={{ fontWeight: 500, color: C.accent }}>symmetry and analogy</strong>: rotational quantities form a complete, self-consistent algebra. Conservation of angular momentum — the rotational analogue of momentum conservation — governs everything from figure skaters to planetary orbits.
+        </p>
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>{PART_LABELS.map((p, i) => <Tag key={i}>{p}</Tag>)}</div>
+      </Card>
 
-    // M2
-    { type: "int", diff: "medium", pts: 4,
-      question: "Two masses balance on a seesaw pivoted at its center. Mass m₁ = 3.0 kg sits at r₁ = 0.80 m from the pivot. Mass m₂ = 4.0 kg is on the opposite side. At what distance r₂ from the pivot (in m, to two decimal places — enter the value × 100 as an integer, e.g., 60 for 0.60 m) should m₂ be placed for rotational equilibrium?",
-      answer: 60,
-      hint: "Στ = 0: m₁g·r₁ = m₂g·r₂. (3.0)(0.80) = (4.0)r₂. r₂ = 2.4/4.0 = 0.60 m → enter 60." },
+      <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>{MAIN_TABS.map(t => <button key={t} onClick={() => setTab(t)} style={tabBtn(t)}>{t}</button>)}</div>
+      <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
 
-    // M3
-    { type: "tf", diff: "medium", pts: 4,
-      statement: "If a spinning ice skater pulls her arms inward (reducing moment of inertia I), her angular velocity ω will decrease.",
-      correct: false,
-      explain: "False. Angular momentum L = Iω is conserved when no external torque acts. If I decreases, ω must increase to keep L constant: ω₂ = (I₁/I₂)ω₁ > ω₁." },
+      {tab === "lecture" && (
+        <div className="bk-fade">
+          <div style={{ display: "flex", gap: 3, marginBottom: 22, flexWrap: "wrap" }}>{PART_LABELS.map((lbl, i) => <button key={i} onClick={() => setPart(i)} style={partBtn(i)}>{lbl}</button>)}</div>
 
-    // M4 — corrected: I = ½(1.0)(0.20)² = 0.020 kg·m², KE = ½(0.020)(100) = 1.0 J
-    { type: "mc", diff: "medium", pts: 4,
-      question: "A solid disk (I = ½MR²) with M = 1.0 kg and R = 0.20 m rotates at ω = 10 rad/s. What is its rotational kinetic energy?",
-      choices: ["1.0 J", "2.0 J", "4.0 J", "10 J"],
-      correct: 0,
-      explain: "I = ½MR² = ½(1.0)(0.20)² = ½(1.0)(0.04) = 0.020 kg·m². KE_rot = ½Iω² = ½(0.020)(10)² = ½(0.020)(100) = 1.0 J." },
+          {part === 0 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <SummaryBox intro="Rotational kinematics is the geometry of spinning — three quantities (θ, ω, α) describe how a rigid body rotates, governed by equations that are exact analogues of linear kinematics with no new physics needed." points={["Angular displacement θ (rad): the 'distance' in rotation. One revolution = 2π rad.", "Angular velocity ω = dθ/dt (rad/s): how fast the body spins. Every point on a rigid body shares the same ω.", "Angular acceleration α = dω/dt (rad/s²): how quickly the spin rate changes.", "For a point at radius r: v = ωr (tangential speed) and a_t = αr (tangential acceleration)."]} />
 
-    // M5
-    { type: "int", diff: "medium", pts: 4,
-      question: "A torque of 12 N·m is applied to a wheel (I = 2.0 kg·m²) starting from rest for 3.0 s. What is the final angular velocity ω in rad/s?",
-      answer: 18,
-      hint: "α = τ/I = 12/2.0 = 6.0 rad/s². ω = ω₀ + αt = 0 + (6.0)(3.0) = 18 rad/s." },
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Kinematic Equations (constant α)</Label>
+              <MathBlock>{"ω  = ω₀ + αt\n\nθ  = ω₀t + ½αt²\n\nω² = ω₀² + 2αθ\n\nUnits:\nθ — radians (rad)\nω — rad/s\nα — rad/s²\n\n1 revolution = 2π rad ≈ 6.283 rad"}</MathBlock>
+              {[["ω = ω₀ + αt", "Angular velocity from rest — direct parallel to v = v₀ + at"], ["θ = ω₀t + ½αt²", "Angle swept from rest — parallel to x = v₀t + ½at²"], ["ω² = ω₀² + 2αθ", "Velocity–displacement relation — no time variable needed"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
 
-    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 5 problems · 25 pts" },
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Linear–Rotational Correspondence</Label>
+              <MathBlock>{"Linear          Rotational\n─────────────────────────────────\nx  (m)    ↔    θ  (rad)\nv  (m/s)  ↔    ω  (rad/s)\na  (m/s²) ↔    α  (rad/s²)\nm  (kg)   ↔    I  (kg·m²)\nF  (N)    ↔    τ  (N·m)\np  (kg·m/s) ↔  L  (kg·m²/s)\n\nFor a point at radius r:\n  v = ωr\n  a_t = αr\n  a_c = ω²r  (centripetal)"}</MathBlock>
+              {[["v = ωr", "Tangential speed — a point far from the axis moves faster"], ["a_t = αr", "Tangential acceleration — proportional to angular acceleration and radius"], ["a_c = ω²r", "Centripetal acceleration — always present in circular motion, directed inward"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
 
-    // H1
-    { type: "mc", diff: "hard", pts: 5,
-      question: "A solid sphere (I = ⅖MR²) rolls from rest down a frictionless ramp of height h. Using energy conservation, which expression gives the final speed v_cm of the center of mass?",
-      choices: ["v = √(gh)", "v = √(1.25 gh)", "v = √(10gh/7)", "v = √(2gh)"],
-      correct: 2,
-      explain: "mgh = ½mv_cm² + ½(⅖mR²)(v_cm/R)² = ½mv_cm² + ⅕mv_cm² = (7/10)mv_cm². Cancel m: v_cm² = (10/7)gh → v = √(10gh/7) ≈ 1.195√(gh). A sliding block on a frictionless ramp gives √(2gh) — the sphere is slower because energy goes into rotation." },
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Worked Example — Disk from Rest</Label>
+              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 10 }}>
+                A disk starts from rest with α = 2.0 rad/s². After 5.0 s, find ω and θ.
+              </p>
+              {[["ω = ω₀ + αt", "= 0 + (2.0)(5.0) = 10 rad/s"], ["θ = ω₀t + ½αt²", "= 0 + ½(2.0)(25) = 25 rad ≈ 3.98 rev"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
 
-    // H2 — corrected: τ = 0.080 N·m gives α = 4.0 rad/s², t = 20/4 = 5 s
-    { type: "int", diff: "hard", pts: 5,
-      question: "A hollow cylinder (thin-walled, I = MR²) with M = 2.0 kg and R = 0.10 m spins at ω₀ = 20 rad/s. A friction brake applies a torque of 0.080 N·m opposing rotation. How many seconds until the cylinder stops?",
-      answer: 5,
-      hint: "I = MR² = (2.0)(0.10)² = 0.020 kg·m². α = −τ/I = −0.080/0.020 = −4.0 rad/s². Time to stop: t = ω₀/|α| = 20/4.0 = 5 s." },
+            <HintBox variant="comp"><p><strong>Competition shortcut:</strong> When a problem gives ω₀, ω_f, and θ — but not t — reach immediately for ω² = ω₀² + 2αθ. This eliminates time from the calculation entirely, just as v² = v₀² + 2ax does in linear kinematics. In multi-body problems, every point on a rigid body has the same α and ω, but different tangential speeds v = ωr — exploit this to relate the motion of different points.</p></HintBox>
 
-    // H3
-    { type: "tf", diff: "hard", pts: 5,
-      statement: "An object in rotational equilibrium (Στ = 0) must have zero angular velocity.",
-      correct: false,
-      explain: "False. Rotational equilibrium means zero net torque, which implies zero angular acceleration (α = 0), not zero angular velocity. The object can spin at any constant ω — just as a car cruising at constant speed has zero net force but nonzero velocity." },
+            <Card><MCField question="A wheel starts from rest and reaches ω = 12 rad/s after rotating through 24 rad. What is the angular acceleration α (in rad/s²)?" choices={["1.0 rad/s²", "2.0 rad/s²", "3.0 rad/s²", "6.0 rad/s²"]} correct={2} diff="easy" pts={3} explain="Use ω² = ω₀² + 2αθ: 144 = 0 + 2α(24) → α = 144/48 = 3.0 rad/s²." /></Card>
+          </div>)}
 
-    // H4
-    { type: "int", diff: "hard", pts: 5,
-      question: "Disk A (I_A = 0.030 kg·m²) rotates at ω_A = 8.0 rad/s. Disk B (I_B = 0.020 kg·m²) is at rest. They are pressed together on the same axis and friction brings them to a common final ω. What is the final angular velocity in rad/s? Enter the answer × 10 as an integer (e.g., 48 for 4.8 rad/s).",
-      answer: 48,
-      hint: "Conservation of angular momentum: I_A·ω_A + I_B·0 = (I_A + I_B)·ω_f. (0.030)(8.0) = (0.050)ω_f. ω_f = 0.24/0.050 = 4.8 rad/s → enter 48." },
+          {part === 1 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <SummaryBox intro="Torque is the rotational analogue of force — it causes angular acceleration. The key equation τ = Iα is Newton's Second Law for rotation, where moment of inertia I plays the role of mass." points={["Torque τ = rF sin θ (N·m): force × lever arm × sin(angle). Maximum when force is perpendicular (θ = 90°).", "Moment of inertia I = Σmᵢrᵢ² (kg·m²): resistance to angular acceleration. Depends on mass distribution, not just total mass.", "Newton's 2nd for rotation: τ = Iα — same torque on larger I gives less angular acceleration.", "Rotational equilibrium: Στ = 0 — net torque is zero. The body may still spin at constant ω."]} />
 
-    // H5 — corrected: τ = 1.0 N·m, θ = 4.0 rad → W = 4 J → ω = 4.0 rad/s
-    { type: "mc", diff: "hard", pts: 5,
-      question: "A torque τ = 1.0 N·m acts on a body initially at rest through an angular displacement θ = 4.0 rad. The moment of inertia is I = 0.50 kg·m². What is the final angular velocity?",
-      choices: ["2.0 rad/s", "4.0 rad/s", "6.0 rad/s", "8.0 rad/s"],
-      correct: 1,
-      explain: "Work done by torque: W = τθ = (1.0)(4.0) = 4.0 J. Work–energy theorem: W = ½Iω² − 0. 4.0 = ½(0.50)ω² = 0.25ω². ω² = 16. ω = 4.0 rad/s." },
-  ],
-};
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Torque</Label>
+              <MathBlock>{"τ = r × F = rF sin θ\n\nτ — torque (N·m)\nr — distance from axis to force application point (m)\nF — applied force (N)\nθ — angle between r and F\n\nMaximum torque:  θ = 90°  (force ⊥ lever arm)\nZero torque:     θ = 0°   (force along r)\n\nSign: CCW = positive, CW = negative"}</MathBlock>
+              {[["τ = rF (⊥)", "Simplified form when force is perpendicular to lever arm"], ["τ = rF sin θ", "General form — includes the angle between force and radius vector"], ["Lever arm", "Perpendicular distance from axis to line of action of force"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
 
-function G10RotationPS01() {
-  return <ProbsetComposer config={CONFIG} />;
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Moment of Inertia</Label>
+              <MathBlock>{"Point mass at r:      I = mr²\n\nSolid cylinder/disk:  I = ½MR²\nSolid sphere:         I = ⅖MR²\nThin spherical shell: I = ⅔MR²\nThin ring/hoop:       I = MR²\n\nParallel-axis theorem:\n  I = I_cm + Md²\n  (I_cm = moment about center of mass)\n  (d = distance to new axis)"}</MathBlock>
+              {[["I = ½MR² (cylinder)", "Half of the mass contributes as if at radius R — mass near center matters less"], ["I = MR² (hoop)", "All mass at radius R — maximum I for a given M and R"], ["I = ⅖MR² (sphere)", "Sphere distributes mass inward — smaller I than cylinder of same M and R"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Newton's Second Law for Rotation</Label>
+              <MathBlock>{"τ_net = I · α\n\nAnalogy:\n  τ ↔ F\n  I ↔ m\n  α ↔ a\n\nFor equilibrium:\n  Στ = 0  (rotational)\n  ΣF = 0  (translational)"}</MathBlock>
+              {[["τ = Iα", "The fundamental equation of rotational dynamics"], ["α = τ/I", "For fixed torque: greater I means smaller angular acceleration"], ["Στ = 0", "Rotational equilibrium — constant ω, not necessarily zero ω"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <HintBox variant="comp"><p><strong>Parallel-axis theorem (olympiad tool):</strong> I = I_cm + Md². The moment of inertia about any axis equals the moment about the parallel axis through the center of mass, plus Md². Example: a uniform rod about one end has I_end = ⅟₁₂ML² + M(L/2)² = ⅟₁₂ML² + ¼ML² = ⅓ML². Recognizing when the axis is not through the center of mass — and applying this theorem — dramatically simplifies multi-body rotation problems.</p></HintBox>
+
+            <Card><MCField question="A force F = 20 N is applied perpendicular to a lever arm of length r = 0.50 m. The moment of inertia about the pivot is I = 0.40 kg·m². What is the angular acceleration?" choices={["12.5 rad/s²", "25 rad/s²", "40 rad/s²", "50 rad/s²"]} correct={1} diff="medium" pts={4} explain="τ = rF sin(90°) = (0.50)(20) = 10 N·m. α = τ/I = 10/0.40 = 25 rad/s²." /></Card>
+          </div>)}
+
+          {part === 2 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <SummaryBox intro="Rotational energy and angular momentum complete the dynamical framework. Conservation of angular momentum — when no external torque acts — is one of the most powerful conservation laws in physics, governing everything from spinning tops to galaxies." points={["Rotational KE = ½Iω² — spinning objects store energy in their rotation.", "For rolling objects: KE_total = ½mv_cm² + ½Iω². Rolling constraint: v_cm = ωR.", "Angular momentum L = Iω (kg·m²/s) — rotational analogue of p = mv.", "Conservation of L: if τ_net = 0, then Iω = constant (e.g., ice skater pulling in arms)."]} />
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Rotational Kinetic Energy & Work</Label>
+              <MathBlock>{"KE_rot = ½Iω²\n\nWork by constant torque:\n  W = τθ\n\nWork–energy theorem:\n  W_net = ΔKE_rot = ½Iω_f² − ½Iω_i²\n\nRolling without slipping (v_cm = ωR):\n  KE_total = ½mv_cm² + ½Iω²\n           = ½mv_cm²(1 + I/mR²)"}</MathBlock>
+              {[["KE_rot = ½Iω²", "Direct parallel to ½mv² — same form, mass replaced by I, speed by ω"], ["W = τθ", "Work by torque over angle θ — parallel to W = Fd for linear motion"], ["v_cm = ωR", "Rolling constraint — couples translation and rotation into one equation"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Angular Momentum & Conservation</Label>
+              <MathBlock>{"L = Iω\n\nτ = dL/dt\n\nConservation (τ_net = 0):\n  L_i = L_f\n  I₁ω₁ = I₂ω₂\n\nIce skater example:\n  I₁ = 3.0 kg·m², ω₁ = 1.5 rad/s\n  I₂ = 1.2 kg·m²\n  ω₂ = (I₁/I₂)ω₁ = (3.0/1.2)(1.5) = 3.75 rad/s"}</MathBlock>
+              {[["L = Iω", "Angular momentum — harder to stop a fast, massive spinner"], ["τ = dL/dt", "Torque is the rate of change of angular momentum — parallel to F = dp/dt"], ["I₁ω₁ = I₂ω₂", "Conservation: decrease I → increase ω, and vice versa"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <Card>
+              <Label style={{ display: "block", marginBottom: 14 }}>Rolling Down a Ramp — Energy Method</Label>
+              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 10 }}>
+                A solid sphere (I = ⅖MR²) rolls from rest down a ramp of height h = 0.20 m. Find v_cm at the bottom.
+              </p>
+              {[["mgh = ½mv_cm² + ½Iω²", "Energy conservation — PE converts to KE_trans + KE_rot"], ["ω = v_cm/R", "Rolling constraint substitution"], ["v_cm² = (10/7)gh", "Algebra: 1 = ½ + ⅕ = 7/10 factor"], ["v_cm ≈ 1.69 m/s", "For h = 0.20 m: v_cm = √(10/7 × 10 × 0.20) ≈ 1.69 m/s"]].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
+            </Card>
+
+            <HintBox variant="comp"><p><strong>Rolling-race insight:</strong> The ratio of final speeds down a ramp depends only on the shape of the object, not its mass or radius. For rolling without slipping, v_cm² = 2gh/(1 + I/mR²). A solid cylinder (I = ½mR²) gives v_cm² = (4/3)gh; a solid sphere (I = ⅖mR²) gives (10/7)gh; a hoop (I = mR²) gives gh. The sphere wins because more of its mass is near the center — less energy goes into rotation. Angular momentum as a vector: L points along the rotation axis by the right-hand rule. Vectorial conservation enables gyroscopic precession and makes 3D collision problems tractable at olympiad level.</p></HintBox>
+
+            <Card><MCField question="A figure skater with I₁ = 3.0 kg·m² spins at ω₁ = 1.5 rad/s. She pulls her arms in, reducing I₂ = 1.2 kg·m². What is her new angular velocity (rad/s)?" choices={["0.60 rad/s", "1.5 rad/s", "3.0 rad/s", "3.75 rad/s"]} correct={3} diff="medium" pts={4} explain="Conservation of angular momentum (no external torque): I₁ω₁ = I₂ω₂. ω₂ = (3.0/1.2)(1.5) = 2.5 × 1.5 = 3.75 rad/s. Smaller I → larger ω." /></Card>
+          </div>)}
+
+          <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
+            {part > 0 ? <button onClick={() => setPart(p => p - 1)} style={navBtn(false)}>← {PART_LABELS[part - 1]}</button> : <span />}
+            {part < 2 ? <button onClick={() => setPart(p => p + 1)} style={navBtn(true)}>{PART_LABELS[part + 1]} →</button> : <button onClick={() => setTab("practice")} style={navBtn(true)}>Practice →</button>}
+          </div>
+        </div>
+      )}
+
+      {tab === "practice" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <Card><Label style={{ display: "block", marginBottom: 6 }}>Problem Set · Rotational Motion</Label><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>6 problems · Easy → Medium · 23 pts total</p></Card>
+
+        <Card><MCField question="A wheel rotates at constant ω = 5.0 rad/s. What is its angular displacement after 2.0 s?" choices={["2.5 rad", "5.0 rad", "10 rad", "20 rad"]} correct={2} diff="easy" pts={3} explain="θ = ωt = 5.0 × 2.0 = 10 rad. At constant angular velocity, θ grows linearly with time." /></Card>
+
+        <Card><INTField question="A disk starts from rest and reaches ω = 12 rad/s after rotating through 24 rad. What is the angular acceleration α in rad/s²?" answer={3} diff="easy" pts={3} hint="Use ω² = ω₀² + 2αθ: 144 = 0 + 2α(24) → α = 144/48 = 3 rad/s²." /></Card>
+
+        <Card><INTField question="A spinning top has angular momentum L = 0.50 kg·m²/s and moment of inertia I = 0.010 kg·m². What is its angular velocity ω in rad/s?" answer={50} diff="easy" pts={3} hint="L = Iω → ω = L/I = 0.50/0.010 = 50 rad/s." /></Card>
+
+        <Card><MCField question="A force F = 20 N acts perpendicular to a lever arm r = 0.50 m. Moment of inertia I = 0.40 kg·m². What is the angular acceleration?" choices={["12.5 rad/s²", "25 rad/s²", "40 rad/s²", "50 rad/s²"]} correct={1} diff="medium" pts={4} explain="τ = rF = (0.50)(20) = 10 N·m. α = τ/I = 10/0.40 = 25 rad/s²." /></Card>
+
+        <Card><INTField question="A torque of 12 N·m is applied to a wheel (I = 2.0 kg·m²) for 3.0 s starting from rest. Find the final angular velocity ω in rad/s." answer={18} diff="medium" pts={4} hint="α = τ/I = 12/2.0 = 6.0 rad/s². ω = ω₀ + αt = 0 + (6.0)(3.0) = 18 rad/s." /></Card>
+
+        <Card><MCField question="Two masses balance on a seesaw: m₁ = 3.0 kg at r₁ = 0.80 m. How far from the pivot must m₂ = 4.0 kg be placed for rotational equilibrium?" choices={["0.40 m", "0.60 m", "0.80 m", "1.07 m"]} correct={1} diff="medium" pts={4} explain="Στ = 0: m₁g·r₁ = m₂g·r₂. (3.0)(0.80) = (4.0)r₂. r₂ = 2.4/4.0 = 0.60 m." /></Card>
+      </div>)}
+
+      {tab === "reference" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Card>
+          <Label style={{ display: "block", marginBottom: 14 }}>Kinematics & Dynamics</Label>
+          <MathBlock>{"Kinematics (constant α):\n  ω  = ω₀ + αt\n  θ  = ω₀t + ½αt²\n  ω² = ω₀² + 2αθ\n\nPoint at radius r:\n  v = ωr,   a_t = αr,   a_c = ω²r\n\nTorque & Newton's 2nd:\n  τ = rF sin θ\n  τ = Iα\n  Στ = 0  (equilibrium)"}</MathBlock>
+        </Card>
+        <Card>
+          <Label style={{ display: "block", marginBottom: 14 }}>Energy, Momentum & Moments of Inertia</Label>
+          <MathBlock>{"Energy:\n  KE_rot = ½Iω²\n  W = τθ  (constant torque)\n  KE_roll = ½mv_cm² + ½Iω²  (v_cm = ωR)\n\nAngular Momentum:\n  L = Iω\n  τ = dL/dt\n  I₁ω₁ = I₂ω₂  (τ_net = 0)\n\nMoments of Inertia:\n  Point mass:        I = mr²\n  Solid cylinder:    I = ½MR²\n  Solid sphere:      I = ⅖MR²\n  Thin shell:        I = ⅔MR²\n  Thin ring/hoop:    I = MR²\n  Parallel-axis:     I = I_cm + Md²"}</MathBlock>
+        </Card>
+      </div>)}
+
+      <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
+        <Mono style={{ fontSize: 9 }}>rotational motion · torque · angular momentum · block 9</Mono>
+        <div style={{ display: "flex", gap: 12 }}>
+          <a href="index.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>← Index</a>
+          <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>Highscores →</a>
+        </div>
+      </div>
+    </div>
+  </>);
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<G10RotationPS01 />);
+ReactDOM.createRoot(document.getElementById('root')).render(<G10RotationL01 />);
 </script>
 </body>
 </html>

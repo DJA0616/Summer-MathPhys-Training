@@ -22,7 +22,7 @@ export default function G10RotationL01() {
         <span style={{ color: C.muted }}>|</span>
         <a href="highscores.html" style={{ color: C.dim, textDecoration: "none" }}>Highscores</a>
         <span style={{ color: C.muted }}>|</span>
-        <a href="learning-guides/G10_Rotation_PS01.html" style={{ color: C.dim, textDecoration: "none" }}>Problem Set →</a>
+        <a href="learning-guides/G9_Rotation_PS01.html" style={{ color: C.dim, textDecoration: "none" }}>Problem Set →</a>
       </div>
 
       <div className="bk-fade" style={{ marginBottom: 36 }}>

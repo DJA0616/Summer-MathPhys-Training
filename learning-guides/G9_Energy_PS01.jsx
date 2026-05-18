@@ -5,7 +5,7 @@ const CONFIG = {
     title: "Energy",
     subtitle: "Work · Power · KE · PE · Conservation",
     topic: "G10 Energy — Problem Set 01",
-    navLinks: [{ href: "learning-guides/G10_Energy_L01.html", label: "Learning Guide" }],
+    navLinks: [{ href: "learning-guides/G9_Energy_L01.html", label: "Learning Guide" }],
   },
   blocks: [
     { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },

@@ -5,7 +5,7 @@ const CONFIG = {
     title: "Rotational Motion",
     subtitle: "Kinematics · Torque · Energy · Angular Momentum",
     topic: "G10 Rotational Motion — Problem Set 01",
-    navLinks: [{ href: "learning-guides/G10_Rotation_L01.html", label: "Learning Guide" }],
+    navLinks: [{ href: "learning-guides/G9_Rotation_L01.html", label: "Learning Guide" }],
   },
   blocks: [
     { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },

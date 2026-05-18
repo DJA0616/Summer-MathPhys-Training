@@ -5,7 +5,7 @@ const CONFIG = {
     title: "Uniform Circular Motion",
     subtitle: "Centripetal Force · Vertical Circles · Banked Curves",
     topic: "G10 Uniform Circular Motion — Problem Set 01",
-    navLinks: [{ href: "learning-guides/G10_CircularMotion_L01.html", label: "Learning Guide" }],
+    navLinks: [{ href: "learning-guides/G9_CircularMotion_L01.html", label: "Learning Guide" }],
   },
   blocks: [
     { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },
