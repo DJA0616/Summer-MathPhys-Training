@@ -487,7 +487,11 @@ const PARTS = [
     "Right Triangle Trigonometry",
     "Wrapping and Trigonometric Functions",
     "Trigonometric Function Values",
-    "Graphs and Properties of Basic Trigonometric Functions" ] },
+    "Graphs and Properties of Basic Trigonometric Functions" ],
+    links: [
+      { label: "Lecture · Trig Bridge", href: "learning-guides/Trig_Bridge_L01.html", kind: "guide" },
+      { label: "Problem Set · Trigonometry", href: "problem_sets/G10_Trig_Bridge_Probset.html", kind: "probset" },
+      { label: "Exam Set · Trigonometry", href: "problem_sets/G10_Trig_Bridge_ExamSet.html", kind: "probset" } ] },
   { title: "Inverse Trigonometric Functions", topics: [
     "Basic Inverse Trigonometric Functions",
     "Graphs of Basic Inverse Trigonometric Functions" ] },

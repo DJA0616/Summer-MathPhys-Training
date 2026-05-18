@@ -362,24 +362,36 @@ const PARTS = [
     "Impulse",
     "Impulse-Momentum Theorem",
     "Conservation of Momentum",
-    "Elastic and Inelastic Collisions" ] },
+    "Elastic and Inelastic Collisions" ],
+    links: [
+      { label: "Lecture · Momentum", href: "learning-guides/G10_Momentum_L01.html", kind: "guide" },
+      { label: "Problem Set · Momentum", href: "learning-guides/G10_Momentum_PS01.html", kind: "probset" } ] },
   { title: "Energy", topics: [
     "Work and Power",
     "Kinetic Energy and the Work-Energy Theorem",
     "Gravitational and Elastic Potential Energy",
-    "Conservation of Mechanical Energy" ] },
+    "Conservation of Mechanical Energy" ],
+    links: [
+      { label: "Lecture · Energy", href: "learning-guides/G10_Energy_L01.html", kind: "guide" },
+      { label: "Problem Set · Energy", href: "learning-guides/G10_Energy_PS01.html", kind: "probset" } ] },
   { title: "Rotational Motion", topics: [
     "Rotational Kinematic Quantities",
     "Newton's Second Law for Rotational Motion",
     "Torque and Equilibrium",
     "Rotational Kinetic Energy",
-    "Angular Momentum" ] },
+    "Angular Momentum" ],
+    links: [
+      { label: "Lecture · Rotation", href: "learning-guides/G10_Rotation_L01.html", kind: "guide" },
+      { label: "Problem Set · Rotation", href: "learning-guides/G10_Rotation_PS01.html", kind: "probset" } ] },
   { title: "Uniform Circular Motion", topics: [
     "Centripetal Acceleration",
     "Centripetal Force",
     "Horizontal Circular Motion",
     "Vertical Circular Motion",
-    "Banked Curves" ] },
+    "Banked Curves" ],
+    links: [
+      { label: "Lecture · Circular Motion", href: "learning-guides/G10_CircularMotion_L01.html", kind: "guide" },
+      { label: "Problem Set · Circular Motion", href: "learning-guides/G10_CircularMotion_PS01.html", kind: "probset" } ] },
   { title: "Gravitation", topics: [
     "Universal Law of Gravitation",
     "Gravitational Field",
@@ -395,7 +407,9 @@ const PARTS = [
     "Wave Speed",
     "The Wave Equation",
     "Wave Properties",
-    "Superposition of Waves" ] },
+    "Superposition of Waves" ],
+    links: [
+      { label: "Lecture · Waves", href: "learning-guides/G10_Waves_L01.html", kind: "guide" } ] },
   { title: "Introduction to Simple Harmonic Motion", topics: [
     "Motion in Simple Harmonic Systems",
     "Energy and Simple Harmonic Motion",
@@ -405,42 +419,64 @@ const PARTS = [
     "Wave and Musical Properties",
     "Sound Reflection",
     "Sound Refraction and Diffraction",
-    "The Doppler Effect" ] },
+    "The Doppler Effect" ],
+    links: [
+      { label: "Lecture · SHM", href: "learning-guides/G10_SHM_L01.html", kind: "guide" },
+      { label: "Problem Set · SHM", href: "learning-guides/G10_SHM_PS01.html", kind: "probset" } ] },
   { title: "Light as an Electromagnetic Wave", topics: [
     "Law of Reflection",
     "Snell's Law of Refraction",
     "Total Internal Reflection",
     "Apparent Depth",
     "Introduction to Mirrors",
-    "Concave and Convex Mirrors" ] },
+    "Concave and Convex Mirrors" ],
+    links: [
+      { label: "Lecture · Optics", href: "learning-guides/G10_Optics_L01.html", kind: "guide" },
+      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" } ] },
   { title: "Mirror and Lens Equation", topics: [
     "The Mirror Equation",
     "Introduction to Lenses",
     "Image Formation by Converging Lenses",
     "Image Formation by Diverging Lenses",
     "Concave and Convex Lenses",
-    "The Thin Lens Equation" ] },
+    "The Thin Lens Equation" ],
+    links: [
+      { label: "Lecture · Optics", href: "learning-guides/G10_Optics_L01.html", kind: "guide" },
+      { label: "Problem Set · Optics", href: "learning-guides/G10_Optics_PS01.html", kind: "probset" } ] },
   { title: "Electrostatic Charges and Charge Transfer", topics: [
     "Coulomb's Law",
     "Electric Field",
-    "Vector Summation of Electric Fields" ] },
+    "Vector Summation of Electric Fields" ],
+    links: [
+      { label: "Lecture · Electrostatics", href: "learning-guides/G10_Electrostatics_L01.html", kind: "guide" },
+      { label: "Problem Set · Electrostatics", href: "learning-guides/G10_Electrostatics_PS01.html", kind: "probset" } ] },
   { title: "Electric Potential and Potential Energy", topics: [
     "Applications of Electrostatics",
     "Current",
     "Resistivity and Resistance",
     "Ohm's Law",
     "Resistors and Resistor Combinations",
-    "Circuits" ] },
+    "Circuits" ],
+    links: [
+      { label: "Lecture · Circuits", href: "learning-guides/G10_Circuits_L01.html", kind: "guide" },
+      { label: "Problem Set · Circuits", href: "learning-guides/G10_Circuits_PS01.html", kind: "probset" },
+      { label: "Quiz · Circuits", href: "learning-guides/G10_Circuits_Quiz01.html", kind: "quiz" } ] },
   { title: "Magnetic Materials", topics: [
     "Magnetic Field Lines",
     "Magnetic Field of a Current",
     "Field Configurations",
     "Magnetic Force on a Moving Charge",
-    "Magnetic Force on a Current" ] },
+    "Magnetic Force on a Current" ],
+    links: [
+      { label: "Lecture · Magnetism", href: "learning-guides/G10_Magnetism_L01.html", kind: "guide" },
+      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" } ] },
   { title: "Motion of a Charge in a Magnetic Field", topics: [
     "Charged Particle Trajectories",
     "Faraday's Law",
-    "Lenz's Law" ] },
+    "Lenz's Law" ],
+    links: [
+      { label: "Lecture · Magnetism", href: "learning-guides/G10_Magnetism_L01.html", kind: "guide" },
+      { label: "Problem Set · Magnetism", href: "learning-guides/G10_Magnetism_PS01.html", kind: "probset" } ] },
 ];
 
 const CONFIG = {

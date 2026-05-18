@@ -1723,8 +1723,9 @@ function ReferenceList({ groups = [] }) {
 }
 
 // --- SyllabusPart ---
-// One major topic: title + Curriculum/References subtabs.
-function SyllabusPart({ index, title, topics = [], references = [], animateIndex = 0 }) {
+// One major topic: title + linked materials + Curriculum/References subtabs.
+// links = [{ label, href, kind: "guide"|"probset"|"quiz" }]
+function SyllabusPart({ index, title, topics = [], references = [], links = [], animateIndex = 0 }) {
   const curriculum = (
     <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 7 }}>
       {topics.map((t, i) => (
@@ -1735,13 +1736,31 @@ function SyllabusPart({ index, title, topics = [], references = [], animateIndex
       ))}
     </ul>
   );
+  const linkColor = (kind) => kind === "guide" ? C.accentAlt : kind === "quiz" ? C.err : C.accent;
   return (
     <Card style={{ animationDelay: `${animateIndex * 50}ms` }}>
       <div className="bk-fade" style={{ animationDelay: `${animateIndex * 50}ms` }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: links.length ? 10 : 14 }}>
           {index != null && <Mono style={{ fontSize: 11, color: C.accent }}>{String(index).padStart(2, "0")}</Mono>}
           <h2 style={{ fontFamily: F.serif, fontSize: 19, fontWeight: 500, color: C.heading, letterSpacing: "-0.01em" }}>{title}</h2>
         </div>
+        {links.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 }}>
+            {links.map((l, i) => {
+              const col = linkColor(l.kind);
+              return (
+                <a key={i} href={l.href} style={{
+                  fontFamily: F.mono, fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase",
+                  padding: "4px 9px", borderRadius: DS.radius, textDecoration: "none",
+                  border: `1px solid ${col}44`, color: col, transition: "all 0.2s",
+                }}
+                  onMouseEnter={e => { e.target.style.background = col + "14"; e.target.style.borderColor = col + "88"; }}
+                  onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = col + "44"; }}
+                >{l.label}</a>
+              );
+            })}
+          </div>
+        )}
         <SubTabs tabs={[
           { label: "Curriculum", content: curriculum },
           { label: "References", content: <ReferenceList groups={references} /> },
@@ -1810,7 +1829,7 @@ function SyllabusComposer({ config }) {
         {/* Parts */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {parts.map((p, i) => (
-            <SyllabusPart key={i} index={i + 1} title={p.title} topics={p.topics} references={p.references} animateIndex={i} />
+            <SyllabusPart key={i} index={i + 1} title={p.title} topics={p.topics} references={p.references} links={p.links} animateIndex={i} />
           ))}
         </div>
 
@@ -2320,7 +2339,11 @@ const PARTS = [
     "Right Triangle Trigonometry",
     "Wrapping and Trigonometric Functions",
     "Trigonometric Function Values",
-    "Graphs and Properties of Basic Trigonometric Functions" ] },
+    "Graphs and Properties of Basic Trigonometric Functions" ],
+    links: [
+      { label: "Lecture · Trig Bridge", href: "learning-guides/Trig_Bridge_L01.html", kind: "guide" },
+      { label: "Problem Set · Trigonometry", href: "problem_sets/G10_Trig_Bridge_Probset.html", kind: "probset" },
+      { label: "Exam Set · Trigonometry", href: "problem_sets/G10_Trig_Bridge_ExamSet.html", kind: "probset" } ] },
   { title: "Inverse Trigonometric Functions", topics: [
     "Basic Inverse Trigonometric Functions",
     "Graphs of Basic Inverse Trigonometric Functions" ] },
