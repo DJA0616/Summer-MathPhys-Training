@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="../">
-<title>G10CircularMotionL01</title>
+<title>G10EnergyPS01</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
@@ -1853,225 +1853,109 @@ function SyllabusComposer({ config }) {
 
 
 
+const CONFIG = {
+  meta: {
+    title: "Energy",
+    subtitle: "Work · Power · KE · PE · Conservation",
+    topic: "G10 Energy — Problem Set 01",
+    navLinks: [{ href: "learning-guides/G9_Energy_L01.html", label: "Learning Guide" }],
+  },
+  blocks: [
+    { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },
 
-const MAIN_TABS = ["lecture", "practice", "reference"];
-const PART_LABELS = ["I · Centripetal Acceleration & Force", "II · Horizontal Circular Motion", "III · Vertical Circles & Banked Curves"];
+    { type: "mc", diff: "easy", pts: 3,
+      question: "A 2 kg book is lifted vertically 1.5 m at constant velocity. How much work is done against gravity?",
+      choices: ["15 J", "29.4 J", "3 J", "0 J"],
+      correct: 1,
+      explain: "W = mgh = (2)(9.8)(1.5) = 29.4 J. At constant velocity the lifting force equals gravity, so all work goes into gravitational PE." },
 
-function G10CircularMotionL01() {
-  const [tab, setTab] = useState("lecture");
-  const [part, setPart] = useState(0);
+    { type: "int", diff: "easy", pts: 3,
+      question: "A 4 kg block is pushed along a frictionless surface with a constant force of 10 N in the direction of motion. Over a distance of 3 m, how much work is done (in joules)?",
+      answer: 30,
+      hint: "W = Fd cosθ = (10)(3)(cos 0°) = 30 J. Force is parallel to displacement." },
 
-  const tabBtn = t => ({ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: "4px", border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" });
-  const partBtn = i => ({ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: "4px", border: `1px solid ${part === i ? C.accent+"55" : C.border}`, background: part === i ? C.accent+"11" : "transparent", color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s" });
-  const navBtn = (accent = false) => ({ fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: "4px", border: `1px solid ${accent ? C.accent+"55" : C.border}`, background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer" });
+    { type: "tf", diff: "easy", pts: 3,
+      statement: "Kinetic energy is always positive (or zero), regardless of the direction of motion.",
+      correct: true,
+      explain: "KE = ½mv² depends on the square of speed. Since v² ≥ 0 always, KE ≥ 0. Direction has no effect on KE." },
 
-  return (<>
-    <style>{GLOBAL_CSS}</style><Geo />
-    <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+    { type: "mc", diff: "easy", pts: 3,
+      question: "A spring with spring constant 100 N/m is stretched 0.2 m. How much elastic potential energy is stored?",
+      choices: ["2 J", "4 J", "20 J", "10 J"],
+      correct: 0,
+      explain: "PE_s = ½kx² = ½(100)(0.2²) = ½(100)(0.04) = 2 J. Compressing the same spring by 0.2 m stores the same energy — PE_s depends on x², not the sign of x." },
 
-      {/* Navbar */}
-      <div className="bk-fade" style={{ display: "flex", gap: 12, marginBottom: 36, fontFamily: F.mono, fontSize: 10 }}>
-        <a href="index.html" style={{ color: C.dim, textDecoration: "none" }}>← Index</a>
-        <span style={{ color: C.muted }}>|</span>
-        <a href="highscores.html" style={{ color: C.dim, textDecoration: "none" }}>Highscores</a>
-        <span style={{ color: C.muted }}>|</span>
-        <a href="learning-guides/G10_CircularMotion_PS01.html" style={{ color: C.dim, textDecoration: "none" }}>Problem Set →</a>
-      </div>
+    { type: "int", diff: "easy", pts: 3,
+      question: "If a motor does 500 J of work in 4 seconds, what is its average power in watts?",
+      answer: 125,
+      hint: "P = W/Δt = 500/4 = 125 W." },
 
-      <div className="bk-fade" style={{ marginBottom: 36 }}>
-        <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}><Tag>Physics</Tag><Tag accent>Mechanics</Tag><Tag>Block 8</Tag></div>
-        <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}` }}>Uniform Circular Motion &<br /><em>Centripetal Dynamics</em></h1>
-        <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>Constant speed does not mean constant velocity. Direction-change is acceleration — and every curve demands a force to maintain it.</p>
-      </div>
+    { type: "section-header", title: "Medium", subtitle: "Multi-step reasoning · 5 problems · 20 pts" },
 
-      <Card style={{ marginBottom: 24 }}>
-        <Label style={{ display: "block", marginBottom: 12 }}>What This Covers</Label>
-        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
-          An object moving in a circle at constant speed is not in equilibrium — its velocity vector is continuously rotating. The acceleration responsible for this rotation always points <strong style={{ fontWeight: 500, color: C.accent }}>toward the center</strong>, and Newton's second law demands a real, inward force to sustain it. We call this the <strong style={{ fontWeight: 500, color: C.accent }}>centripetal force</strong>.
-        </p>
-        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
-          The math integration is <strong style={{ fontWeight: 500, color: C.accent }}>vector decomposition</strong>: every circular-motion problem reduces to resolving real forces along the radial (inward) and tangential directions, then applying F = ma radially.
-        </p>
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>{["I · Centripetal Acceleration & Force", "II · Horizontal Circular Motion", "III · Vertical Circles & Banked Curves"].map((p, i) => <Tag key={i}>{p}</Tag>)}</div>
-      </Card>
+    { type: "mc", diff: "medium", pts: 4,
+      question: "A 3 kg block starts from rest and is accelerated by a net force of 12 N over 2 m on a frictionless surface. What is its final kinetic energy?",
+      choices: ["6 J", "12 J", "24 J", "36 J"],
+      correct: 2,
+      explain: "W_net = Fd = (12)(2) = 24 J. By the work-energy theorem, ΔKE = W_net. Starting from rest, KE_f = 24 J. No need to find acceleration." },
 
-      <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>{MAIN_TABS.map(t => <button key={t} onClick={() => setTab(t)} style={tabBtn(t)}>{t}</button>)}</div>
-      <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
+    { type: "int", diff: "medium", pts: 4,
+      question: "A ball of mass 0.5 kg is thrown upward with an initial speed of 20 m/s. Using energy conservation (no air resistance), at what height (in metres) will its speed be 10 m/s? (Use g = 10 m/s²)",
+      answer: 15,
+      hint: "½mv_i² = ½mv_f² + mgh → h = (v_i² − v_f²)/(2g) = (400 − 100)/20 = 15 m." },
 
-      {tab === "lecture" && (
-        <div className="bk-fade">
-          <div style={{ display: "flex", gap: 3, marginBottom: 22, flexWrap: "wrap" }}>{PART_LABELS.map((lbl, i) => <button key={i} onClick={() => setPart(i)} style={partBtn(i)}>{lbl}</button>)}</div>
+    { type: "tf", diff: "medium", pts: 4,
+      statement: "A force perpendicular to the direction of motion does zero work on the object.",
+      correct: true,
+      explain: "W = Fd cosθ. When θ = 90°, cos 90° = 0, so W = 0. Classic example: centripetal force in circular motion does no work — speed stays constant." },
 
-          {part === 0 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <SummaryBox
-              intro="An object in uniform circular motion has constant speed but changing direction — meaning it accelerates. This centripetal acceleration always points toward the center of the circle. Newton's second law then requires a real inward force of the same direction."
-              points={[
-                "Centripetal acceleration: aᶜ = v²/r = ω²r. Points inward; perpendicular to velocity.",
-                "Angular velocity: ω = v/r = 2π/T = 2πf. Relates linear and rotational descriptions.",
-                "Centripetal force: Fᶜ = maᶜ = mv²/r = mω²r. This is the net inward force — not a new kind of force.",
-                "Because Fᶜ ⊥ v always, centripetal force does zero work. Speed stays constant.",
-              ]}
-            />
+    { type: "mc", diff: "medium", pts: 4,
+      question: "A 2 kg box slides down a frictionless incline from rest, descending a vertical height of 5 m. What is its speed at the bottom? (Use g = 10 m/s²)",
+      choices: ["5 m/s", "7.1 m/s", "10 m/s", "20 m/s"],
+      correct: 2,
+      explain: "Conservation of energy: mgh = ½mv² → v = √(2gh) = √(2 × 10 × 5) = √100 = 10 m/s. The incline angle is irrelevant — only the vertical drop determines speed on a frictionless surface." },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Centripetal Acceleration</Label>
-              <MathBlock>{"aᶜ = v²/r = ω²r = 4π²r/T²\n\nv  — linear speed (m/s)\nr  — radius of circle (m)\nω  — angular velocity (rad/s)\nT  — period (s), f — frequency (Hz)\n\nDirection: always toward center (inward)\nMagnitude: constant in uniform circular motion"}</MathBlock>
-              {[
-                ["aᶜ = v²/r", "Larger speed or tighter curve → stronger centripetal acceleration"],
-                ["aᶜ = ω²r", "Equivalent form using angular velocity; useful when ω or T is given"],
-                ["aᶜ = 4π²r/T²", "Best form when period T is known directly (orbits, pendulums)"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    { type: "int", diff: "medium", pts: 4,
+      question: "A 60 kg person climbs stairs to a height of 4 m in 8 seconds at constant speed. How much power do their muscles deliver (in watts)? (Use g = 10 m/s²)",
+      answer: 300,
+      hint: "W = mgh = (60)(10)(4) = 2400 J. P = W/Δt = 2400/8 = 300 W." },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Centripetal Force</Label>
-              <MathBlock>{"Fᶜ = m·aᶜ = mv²/r = mω²r\n\nProvided by real forces:\n  Tension T           — ball on string, conical pendulum\n  Normal force N      — car on loop, roller coaster\n  Friction f          — car on flat curve\n  Gravity mg          — satellite in orbit\n  Combination         — banked curve, inclined tracks"}</MathBlock>
-              {[
-                ["Fᶜ is net inward force", "'Centripetal' names the role, not a new force — always identify the real source"],
-                ["Work done = 0", "Fᶜ ⊥ v at every instant → no work, no change in kinetic energy"],
-                ["Tangential release", "If the inward force vanishes (string snaps), object flies off tangentially — not outward"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 5 problems · 25 pts" },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Angular Velocity & Period</Label>
-              <MathBlock>{"ω = v/r = 2π/T = 2πf\n\nT = 2πr/v = 2π/ω      period (s)\nf = 1/T                frequency (Hz)\n\nConversion: 1 rev = 2π rad\n  1 rpm = 2π/60 rad/s ≈ 0.1047 rad/s"}</MathBlock>
-              {[
-                ["ω = 2π/T", "Angular velocity from period — most common in exam problems"],
-                ["v = ωr", "Bridge between angular and linear description of the same motion"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    { type: "mc", diff: "hard", pts: 5,
+      question: "A 1.5 kg block on a horizontal surface is pushed by a force of 8 N at 30° above the horizontal. The block moves 4 m. Friction is negligible. How much work is done by the applied force?",
+      choices: ["32 J", "32 cos(30°) ≈ 27.7 J", "48 J", "48 cos(30°) ≈ 41.6 J"],
+      correct: 1,
+      explain: "W = Fd cosθ = (8)(4)(cos 30°) = 32 × 0.866 ≈ 27.7 J. Only the horizontal component of force (F cosθ) does work — the vertical component lifts against the normal force but does no work along the displacement." },
 
-            <HintBox variant="comp">
-              <p><strong>The Illusion of Centrifugal Force:</strong> In the rotating reference frame of the object, a fictitious outward "centrifugal force" appears to push the object away from the center. This force is not real — it exists only because the frame is non-inertial. In the inertial (ground) frame, only real forces act, always pointing <em>inward</em>. Olympiad problems exploit this: a ball "pushed outward" in a rotating bucket is actually following a straight line as the bucket curves beneath it.</p>
-            </HintBox>
+    { type: "int", diff: "hard", pts: 5,
+      question: "A 0.8 kg ball falls from rest from a height of 20 m and bounces to a height of 12 m. How much mechanical energy (in joules) is lost in the collision? (Use g = 10 m/s²)",
+      answer: 64,
+      hint: "Initial PE: mgh₁ = (0.8)(10)(20) = 160 J. Final PE: mgh₂ = (0.8)(10)(12) = 96 J. Energy lost = 160 − 96 = 64 J." },
 
-            <Card><MCField question="An object moves in a circle of radius 2 m at constant speed 6 m/s. What is the centripetal acceleration?" choices={["3 m/s²", "9 m/s²", "18 m/s²", "36 m/s²"]} correct={2} diff="easy" pts={3} explain="aᶜ = v²/r = 36/2 = 18 m/s²." /></Card>
-          </div>)}
+    { type: "tf", diff: "hard", pts: 5,
+      statement: "In a system where only conservative forces act, the total mechanical energy can change over time.",
+      correct: false,
+      explain: "False. Conservative forces (gravity, spring) conserve mechanical energy — the total KE + PE remains constant. Only non-conservative forces (friction, air resistance) reduce mechanical energy, converting it to heat." },
 
-          {part === 1 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <SummaryBox
-              intro="In horizontal circular motion the object moves in a flat circle. There is no vertical acceleration, so forces balance vertically. The net horizontal force — tension, friction, or the horizontal component of normal force — provides the centripetal force."
-              points={[
-                "Ball on string (horizontal): Tension provides Fᶜ entirely. Tsinθ = mv²/r; Tcosθ = mg.",
-                "Car on flat road: Static friction provides Fᶜ. Maximum speed before skidding: v_max = √(μₛgr).",
-                "Conical pendulum: Period T = 2π√(Lcosθ/g). Independent of mass; depends only on geometry.",
-                "If centripetal force is insufficient, object skids or flies tangentially — never outward in an arc.",
-              ]}
-            />
+    { type: "mc", diff: "hard", pts: 5,
+      question: "A 2 kg block is launched horizontally along a rough table at 6 m/s. The coefficient of kinetic friction is 0.3. How far does it slide before stopping? (Use g = 10 m/s²)",
+      choices: ["6 m", "5 m", "4 m", "3 m"],
+      correct: 0,
+      explain: "Initial KE = ½(2)(6²) = 36 J. Friction force f = μmg = (0.3)(2)(10) = 6 N. Work by friction = −fd = −36 J → d = 36/6 = 6 m. Energy method avoids computing deceleration and using kinematics." },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Ball on String — Conical Pendulum</Label>
-              <MathBlock>{"String length L, angle θ from vertical:\n\nVertical:    T·cosθ = mg\nHorizontal:  T·sinθ = mv²/r = mω²r\n\nr = L·sinθ      (radius of circle)\n\nDividing: tanθ = v²/(rg) = ω²r/g\n\nPeriod:  T_period = 2π√(L·cosθ / g)"}</MathBlock>
-              {[
-                ["T = mg/cosθ", "Tension always exceeds weight in a conical pendulum"],
-                ["r = L sinθ", "Radius shrinks as string becomes more vertical (θ → 0)"],
-                ["T_period independent of m", "Period determined by geometry alone — useful for precision timing"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    { type: "int", diff: "hard", pts: 5,
+      question: "A 1200 kg car accelerates from 5 m/s to 20 m/s. A constant friction force of 500 N opposes motion. The net work done on the car is 225 kJ. How far does it travel (in metres)?",
+      answer: 300,
+      hint: "ΔKE = ½m(v_f² − v_i²) = ½(1200)(400 − 25) = 225 000 J. W_net = W_engine − W_friction = F_engine·d − 500d = 225 000 J. Also W_net = F_net·d, so d = 225 000 / F_net. Net force = F_engine − 500; noting ΔKE fixes d = 300 m." },
+  ],
+};
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Car on Flat Road</Label>
-              <MathBlock>{"Normal force: N = mg   (flat road, no vertical acceleration)\n\nFriction provides centripetal force:\n  f = μₛ·N = μₛ·mg ≥ mv²/r\n\nMaximum speed before skidding:\n  v_max = √(μₛ·g·r)\n\nCentripetal acceleration at v_max:\n  aᶜ = μₛ·g    (independent of mass!)"}</MathBlock>
-              {[
-                ["v_max = √(μₛgr)", "Maximum cornering speed depends on friction, gravity, and radius — not car mass"],
-                ["aᶜ = μₛg", "Maximum lateral acceleration is always the friction coefficient times g"],
-                ["Road camber matters", "A flat road relies entirely on friction; a banked road can steer with normal force"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <HintBox variant="comp">
-              <p><strong>Energy + Force Integration:</strong> Competition problems often combine circular-motion force analysis with energy conservation. For example: find the minimum initial speed for a ball to maintain contact around a loop. The strategy is always (1) identify the constraint (T ≥ 0 or N ≥ 0), (2) write the radial force equation at the critical point, (3) link speeds via energy conservation. This two-step coupling unlocks most olympiad circular-motion problems.</p>
-            </HintBox>
-
-            <Card><MCField question="A car enters a flat, unbanked circular curve of radius 80 m. The coefficient of static friction is 0.6. What is the maximum speed before skidding (approx.)?" choices={["12 m/s", "21.9 m/s", "48 m/s", "69 m/s"]} correct={1} diff="medium" pts={4} explain="v_max = √(μₛgr) = √(0.6 × 10 × 80) = √480 ≈ 21.9 m/s." /></Card>
-          </div>)}
-
-          {part === 2 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <SummaryBox
-              intro="In vertical circular motion, gravity acts along the radial direction at the top and bottom — adding to or subtracting from the centripetal requirement. Banked curves use the slope geometry to redirect normal force inward, reducing reliance on friction."
-              points={[
-                "Top of loop: N + mg = mv²/r (both inward). Minimum speed: v_min = √(gr) when N = 0.",
-                "Bottom of loop: N − mg = mv²/r (N inward, mg outward). N = mg + mv²/r > mg always.",
-                "Energy links top and bottom: ½mv_bot² = ½mv_top² + mg(2r).",
-                "Banked curve (no friction): tanθ = v²/(rg). Normal force alone steers the car.",
-              ]}
-            />
-
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Vertical Circle — Top & Bottom</Label>
-              <MathBlock>{"At the TOP (both N and mg point toward center):\n  N + mg = mv²/r\n  N = m(v²/r − g)\n  → N = 0 at v_min = √(gr)   [contact lost below this]\n\nAt the BOTTOM (N up, mg down):\n  N − mg = mv²/r\n  N = mg + mv²/r   [always greater than mg]\n\nEnergy conservation (no friction):\n  ½v_bot² = ½v_top² + g(2r)\n  v_top² = v_bot² − 4gr"}</MathBlock>
-              {[
-                ["v_min,top = √(gr)", "Critical minimum — gravity alone provides all the centripetal force at this speed"],
-                ["N_bottom > mg", "You feel heavier at the bottom of a loop — normal force exceeds weight"],
-                ["Top is the critical point", "If the object makes it around the top, it will complete the loop — the bottom always has excess speed"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Banked Curves</Label>
-              <MathBlock>{"No friction — force balance:\n  N·cosθ = mg          (vertical)\n  N·sinθ = mv²/r       (horizontal, centripetal)\n\nDivide → ideal banking angle:\n  tanθ = v²/(rg)\n\nNormal force:\n  N = mg / cosθ   (always > mg)\n\nWith friction (above ideal speed):\n  Friction acts DOWN the slope (opposes tendency to slide up)\n\nWith friction (below ideal speed):\n  Friction acts UP the slope (opposes tendency to slide down)"}</MathBlock>
-              {[
-                ["tanθ = v²/(rg)", "Ideal angle: the horizontal component of N alone provides Fᶜ — no friction needed"],
-                ["N = mg/cosθ", "Banked-road normal force always exceeds flat-road normal force for same weight"],
-                ["Faster → friction down slope", "Above ideal speed: car tends to slide up the bank; friction pulls it back down"],
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <HintBox variant="comp">
-              <p><strong>Minimum Height for Loop Completion:</strong> A classic olympiad problem — a ball starts from rest at height h above the bottom of a loop of radius r. Find the minimum h such that the ball completes the loop. Strategy: at the top, N = 0 gives v_top² = gr. Energy: gh = ½v_top² + g(2r) = ½gr + 2gr = (5/2)gr. So <strong>h_min = 5r/2</strong>. The factor 5/2 is exact and very frequently tested.</p>
-            </HintBox>
-
-            <Card><MCField question="A roller coaster cart (mass 1000 kg) enters a vertical loop of radius 8 m at the bottom with speed 20 m/s. Using energy conservation, what is the approximate speed at the top? (g = 10 m/s²)" choices={["6 m/s", "9 m/s", "12 m/s", "18 m/s"]} correct={1} diff="medium" pts={4} explain="v_top² = v_bot² − 4gr = 400 − 4(10)(8) = 400 − 320 = 80. v_top = √80 ≈ 8.9 ≈ 9 m/s." /></Card>
-          </div>)}
-
-          <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
-            {part > 0 ? <button onClick={() => setPart(p => p - 1)} style={navBtn(false)}>← {PART_LABELS[part - 1]}</button> : <span />}
-            {part < 2 ? <button onClick={() => setPart(p => p + 1)} style={navBtn(true)}>{PART_LABELS[part + 1]} →</button> : <button onClick={() => setTab("practice")} style={navBtn(true)}>Practice →</button>}
-          </div>
-        </div>
-      )}
-
-      {tab === "practice" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <Card><Label style={{ display: "block", marginBottom: 6 }}>Problem Set · Circular Motion</Label><p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>6 problems · Easy → Medium · 22 pts total</p></Card>
-
-        <Card><MCField question="An object moves in a circle of radius 2 m at constant speed 6 m/s. What is the centripetal acceleration?" choices={["3 m/s²", "9 m/s²", "18 m/s²", "36 m/s²"]} correct={2} diff="easy" pts={3} explain="aᶜ = v²/r = 36/2 = 18 m/s²." /></Card>
-
-        <Card><INTField question="A mass of 0.5 kg moves in a horizontal circle of radius 1 m at speed 4 m/s. What is the centripetal force in newtons?" answer={8} diff="easy" pts={3} hint="Fᶜ = mv²/r = (0.5)(16)/1 = 8 N." /></Card>
-
-        <Card><INTField question="At the top of a vertical loop of radius 10 m, what is the minimum speed (in m/s) to maintain contact with the track? Use g = 10 m/s²." answer={10} diff="easy" pts={3} hint="v_min = √(gr) = √(10 × 10) = 10 m/s. Below this, N would go negative — meaning contact is lost." /></Card>
-
-        <Card><MCField question="A car enters a flat, unbanked circular curve of radius 80 m. The coefficient of static friction is 0.6. What is the maximum speed before skidding (approx.)?" choices={["12 m/s", "21.9 m/s", "48 m/s", "69 m/s"]} correct={1} diff="medium" pts={4} explain="v_max = √(μₛgr) = √(0.6 × 10 × 80) = √480 ≈ 21.9 m/s." /></Card>
-
-        <Card><MCField question="A 2 kg mass is attached to a 1 m string and swung in a vertical circle. At the bottom, the tension is 50 N. What is the speed at the bottom (approx.)?" choices={["2 m/s", "3.8 m/s", "4.5 m/s", "5 m/s"]} correct={1} diff="medium" pts={4} explain="T = mg + mv²/r → 50 = 20 + 2v² → v² = 15 → v ≈ 3.87 m/s ≈ 3.8 m/s." /></Card>
-
-        <Card><INTField question="A roller coaster cart enters a vertical loop of radius 8 m at the bottom with speed 20 m/s. Using energy conservation, what is the speed at the top in m/s (rounded to nearest integer)?" answer={9} diff="medium" pts={4} hint="v_top² = v_bot² − 4gr = 400 − 320 = 80. v_top = √80 ≈ 8.9 ≈ 9 m/s." /></Card>
-      </div>)}
-
-      {tab === "reference" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <Card>
-          <Label style={{ display: "block", marginBottom: 14 }}>Centripetal Motion — Core Formulas</Label>
-          <MathBlock>{"aᶜ = v²/r = ω²r = 4π²r/T²     centripetal acceleration\nFᶜ = maᶜ = mv²/r = mω²r        centripetal force\n\nω = v/r = 2π/T = 2πf           angular velocity\nT = 2πr/v = 2π/ω               period\n\nConical pendulum:\n  T·cosθ = mg,  T·sinθ = mv²/r\n  T_period = 2π√(L·cosθ/g)\n\nCar on flat road:\n  v_max = √(μₛ·g·r)"}</MathBlock>
-        </Card>
-        <Card>
-          <Label style={{ display: "block", marginBottom: 14 }}>Vertical Circles & Banked Curves</Label>
-          <MathBlock>{"Vertical circle — top:\n  N + mg = mv²/r\n  v_min = √(gr)   when N = 0\n\nVertical circle — bottom:\n  N = mg + mv²/r    (N > mg always)\n\nEnergy between top & bottom:\n  v_top² = v_bot² − 4gr\n  h_min to complete loop = 5r/2\n\nBanked curve (no friction):\n  tanθ = v²/(rg)\n  N = mg/cosθ"}</MathBlock>
-        </Card>
-      </div>)}
-
-      <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
-        <Mono style={{ fontSize: 9 }}>circular motion · centripetal · vertical circles · banked curves · block 8</Mono>
-        <div style={{ display: "flex", gap: 12 }}>
-          <a href="index.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>← Index</a>
-          <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>Highscores →</a>
-        </div>
-      </div>
-    </div>
-  </>);
+function G10EnergyPS01() {
+  return <ProbsetComposer config={CONFIG} />;
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<G10CircularMotionL01 />);
+ReactDOM.createRoot(document.getElementById('root')).render(<G10EnergyPS01 />);
 </script>
 </body>
 </html>

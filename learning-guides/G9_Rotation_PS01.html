@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="../">
-<title>G10EnergyL01</title>
+<title>G10RotationPS01</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0a0a0a; color: #c8c8c8; font-family: 'EB Garamond', Georgia, serif; font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
@@ -1853,324 +1853,124 @@ function SyllabusComposer({ config }) {
 
 
 
+const CONFIG = {
+  meta: {
+    title: "Rotational Motion",
+    subtitle: "Kinematics · Torque · Energy · Angular Momentum",
+    topic: "G10 Rotational Motion — Problem Set 01",
+    navLinks: [{ href: "learning-guides/G9_Rotation_L01.html", label: "Learning Guide" }],
+  },
+  blocks: [
+    { type: "section-header", title: "Easy", subtitle: "Direct formula application · 5 problems · 15 pts" },
 
-const MAIN_TABS = ["lecture", "practice", "reference"];
-const PART_LABELS = ["I · Work & Power", "II · Kinetic Energy & Work-Energy Theorem", "III · Potential Energy & Conservation"];
+    // E1
+    { type: "mc", diff: "easy", pts: 3,
+      question: "A wheel rotates at constant angular velocity ω = 5.0 rad/s. What is its angular displacement after 2.0 s?",
+      choices: ["2.5 rad", "5.0 rad", "10 rad", "20 rad"],
+      correct: 2,
+      explain: "θ = ωt = (5.0)(2.0) = 10 rad. At constant ω there is no angular acceleration, so the kinematic simplifies to θ = ωt." },
 
-function G10EnergyL01() {
-  const [tab, setTab] = useState("lecture");
-  const [part, setPart] = useState(0);
+    // E2
+    { type: "tf", diff: "easy", pts: 3,
+      statement: "The moment of inertia of a solid cylinder rotating about its central axis is I = MR².",
+      correct: false,
+      explain: "False. The correct formula for a solid cylinder about its central axis is I = ½MR². Only a thin ring (hoop) has I = MR², because all of its mass sits at the outer radius." },
 
-  const tabBtn = t => ({ fontFamily: F.serif, fontSize: 13, padding: "5px 13px", borderRadius: "4px", border: `1px solid ${tab === t ? C.accent+"55" : "transparent"}`, background: "transparent", color: tab === t ? C.accent : C.subtle, cursor: "pointer", transition: "all 0.2s" });
-  const partBtn = i => ({ fontFamily: F.mono, fontSize: 9, letterSpacing: "0.1em", padding: "4px 10px", borderRadius: "4px", border: `1px solid ${part === i ? C.accent+"55" : C.border}`, background: part === i ? C.accent+"11" : "transparent", color: part === i ? C.accent : C.dim, cursor: "pointer", transition: "all 0.2s" });
-  const navBtn = (accent = false) => ({ fontFamily: F.serif, fontSize: 13, padding: "6px 16px", borderRadius: "4px", border: `1px solid ${accent ? C.accent+"55" : C.border}`, background: "transparent", color: accent ? C.accent : C.subtle, cursor: "pointer" });
+    // E3
+    { type: "int", diff: "easy", pts: 3,
+      question: "A disk starts from rest and reaches ω = 12 rad/s after rotating through 24 rad. What is the angular acceleration α in rad/s²?",
+      answer: 3,
+      hint: "Use ω² = ω₀² + 2αθ: (12)² = 0 + 2α(24) → 144 = 48α → α = 3 rad/s²." },
 
-  return (<>
-    <style>{GLOBAL_CSS}</style><Geo />
-    <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+    // E4
+    { type: "mc", diff: "easy", pts: 3,
+      question: "Torque is defined as τ = rF sin θ. For which angle θ between the force and the lever arm is the torque maximum?",
+      choices: ["0°", "45°", "90°", "180°"],
+      correct: 2,
+      explain: "sin(90°) = 1 is the maximum value of the sine function. When force is perpendicular to the lever arm, all of the force contributes to rotation and none is wasted along the arm." },
 
-      {/* Navbar */}
-      <div className="bk-fade" style={{ display: "flex", gap: 12, marginBottom: 36, fontFamily: F.mono, fontSize: 10 }}>
-        <a href="index.html" style={{ color: C.dim, textDecoration: "none" }}>← Index</a>
-        <span style={{ color: C.muted }}>|</span>
-        <a href="highscores.html" style={{ color: C.dim, textDecoration: "none" }}>Highscores</a>
-        <span style={{ color: C.muted }}>|</span>
-        <a href="learning-guides/G10_Energy_PS01.html" style={{ color: C.dim, textDecoration: "none" }}>Problem Set →</a>
-      </div>
+    // E5
+    { type: "int", diff: "easy", pts: 3,
+      question: "A spinning top has angular momentum L = 0.50 kg·m²/s and moment of inertia I = 0.010 kg·m². What is its angular velocity ω in rad/s?",
+      answer: 50,
+      hint: "L = Iω → ω = L/I = 0.50/0.010 = 50 rad/s." },
 
-      <div className="bk-fade" style={{ marginBottom: 36 }}>
-        <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}><Tag>Physics</Tag><Tag accent>Energy</Tag><Tag>Block 7–9</Tag></div>
-        <h1 style={{ fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500, color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}` }}>Energy &<br /><em>Conservation Laws</em></h1>
-        <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic" }}>Energy is the universal currency of physics. Work is how it transfers; power measures how fast. Conservation is the constraint that makes hard problems tractable.</p>
-      </div>
+    { type: "section-header", title: "Medium", subtitle: "Two-step reasoning · 5 problems · 20 pts" },
 
-      <Card style={{ marginBottom: 24 }}>
-        <Label style={{ display: "block", marginBottom: 12 }}>What This Covers</Label>
-        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
-          Energy appears in every branch of physics. At the G10 level we study its <strong style={{ fontWeight: 500, color: C.accent }}>mechanical forms</strong> — kinetic, gravitational potential, and elastic potential — and the principle that connects them: conservation of mechanical energy.
-        </p>
-        <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
-          The mathematics is <strong style={{ fontWeight: 500, color: C.accent }}>algebraic and geometric</strong>: quadratic formulas for kinetic and spring energy, linear formulas for gravitational PE, and the work integral for variable forces. The physics insight is that energy bookkeeping often replaces force analysis.
-        </p>
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>{PART_LABELS.map((p, i) => <Tag key={i}>{p}</Tag>)}</div>
-      </Card>
+    // M1
+    { type: "mc", diff: "medium", pts: 4,
+      question: "A force F = 20 N is applied perpendicular to a lever arm of length r = 0.50 m. The moment of inertia about the pivot is I = 0.40 kg·m². What is the resulting angular acceleration?",
+      choices: ["12.5 rad/s²", "25 rad/s²", "40 rad/s²", "50 rad/s²"],
+      correct: 1,
+      explain: "τ = rF sin(90°) = (0.50)(20) = 10 N·m. Then τ = Iα → α = τ/I = 10/0.40 = 25 rad/s²." },
 
-      <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>{MAIN_TABS.map(t => <button key={t} onClick={() => setTab(t)} style={tabBtn(t)}>{t}</button>)}</div>
-      <div style={{ borderTop: `1px solid ${C.accent}44`, marginBottom: 28 }} />
+    // M2
+    { type: "int", diff: "medium", pts: 4,
+      question: "Two masses balance on a seesaw pivoted at its center. Mass m₁ = 3.0 kg sits at r₁ = 0.80 m from the pivot. Mass m₂ = 4.0 kg is on the opposite side. At what distance r₂ from the pivot (in m, to two decimal places — enter the value × 100 as an integer, e.g., 60 for 0.60 m) should m₂ be placed for rotational equilibrium?",
+      answer: 60,
+      hint: "Στ = 0: m₁g·r₁ = m₂g·r₂. (3.0)(0.80) = (4.0)r₂. r₂ = 2.4/4.0 = 0.60 m → enter 60." },
 
-      {tab === "lecture" && (
-        <div className="bk-fade">
-          <div style={{ display: "flex", gap: 3, marginBottom: 22, flexWrap: "wrap" }}>{PART_LABELS.map((lbl, i) => <button key={i} onClick={() => setPart(i)} style={partBtn(i)}>{lbl}</button>)}</div>
+    // M3
+    { type: "tf", diff: "medium", pts: 4,
+      statement: "If a spinning ice skater pulls her arms inward (reducing moment of inertia I), her angular velocity ω will decrease.",
+      correct: false,
+      explain: "False. Angular momentum L = Iω is conserved when no external torque acts. If I decreases, ω must increase to keep L constant: ω₂ = (I₁/I₂)ω₁ > ω₁." },
 
-          {part === 0 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <SummaryBox
-              intro="Work is the mechanism of energy transfer — the product of force and displacement along the direction of motion. Power measures how quickly that transfer happens."
-              points={[
-                "Work: W = Fd cosθ. Only the component of force parallel to displacement does work. Work can be positive, negative, or zero.",
-                "Zero work: force perpendicular to motion (e.g., centripetal force, normal force on flat ground).",
-                "Average power: P = W/Δt. Instantaneous power: P = Fv cosφ. Both measured in watts (W = J/s).",
-                "Sign of work matters: positive work adds energy; negative work removes it. Net work = change in KE."
-              ]}
-            />
+    // M4 — corrected: I = ½(1.0)(0.20)² = 0.020 kg·m², KE = ½(0.020)(100) = 1.0 J
+    { type: "mc", diff: "medium", pts: 4,
+      question: "A solid disk (I = ½MR²) with M = 1.0 kg and R = 0.20 m rotates at ω = 10 rad/s. What is its rotational kinetic energy?",
+      choices: ["1.0 J", "2.0 J", "4.0 J", "10 J"],
+      correct: 0,
+      explain: "I = ½MR² = ½(1.0)(0.20)² = ½(1.0)(0.04) = 0.020 kg·m². KE_rot = ½Iω² = ½(0.020)(10)² = ½(0.020)(100) = 1.0 J." },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Work — Definition & Formula</Label>
-              <MathBlock>{"W = F · d · cos θ\n\nF = force (N)\nd = displacement (m)\nθ = angle between force vector and displacement\nW = joules (J)\n\nSpecial cases:\n  θ = 0°  → W = Fd        (force aids motion)\n  θ = 90° → W = 0         (perpendicular, no work)\n  θ = 180° → W = −Fd      (force opposes motion)"}</MathBlock>
-              {[
-                ["W > 0", "Force has a component along motion — object speeds up or gains energy"],
-                ["W = 0", "Force is perpendicular to motion, or object doesn't move"],
-                ["W < 0", "Force opposes motion — object loses energy (e.g., friction, gravity on rising object)"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    // M5
+    { type: "int", diff: "medium", pts: 4,
+      question: "A torque of 12 N·m is applied to a wheel (I = 2.0 kg·m²) starting from rest for 3.0 s. What is the final angular velocity ω in rad/s?",
+      answer: 18,
+      hint: "α = τ/I = 12/2.0 = 6.0 rad/s². ω = ω₀ + αt = 0 + (6.0)(3.0) = 18 rad/s." },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Power — Average and Instantaneous</Label>
-              <MathBlock>{"P_avg = W / Δt          average power\n\nP = F · v · cos φ      instantaneous power\n     = dW/dt\n\nUnits: P — watts (W = J/s)\n       1 horsepower = 746 W\n\nExample: lifting 50 kg through 10 m in 5 s:\n  W = mgh = 50 × 9.8 × 10 = 4900 J\n  P = 4900 / 5 = 980 W"}</MathBlock>
-              {[
-                ["P = W/Δt", "Same work done faster → greater power required"],
-                ["P = Fv", "At constant force, power grows linearly with speed"],
-                ["1 kW", "A typical human's sustained power output is ~100 W; a car engine ~75–150 kW"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    { type: "section-header", title: "Hard", subtitle: "Multi-concept synthesis · 5 problems · 25 pts" },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Work on an Incline — Worked Example</Label>
-              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
-                A 10 kg box is pushed up a frictionless 30° incline at constant velocity over 4 m. The applied force is parallel to the incline.
-              </p>
-              <MathBlock>{"Gravity's work:\n  h = 4 sin 30° = 2 m\n  W_g = −mgh = −(10)(9.8)(2) = −196 J  (negative)\n\nApplied force at constant velocity:\n  Net force = 0 → F_applied = mg sin 30° = 49 N\n  W_applied = 49 × 4 = +196 J\n\nNet work = 0 → consistent with ΔKE = 0"}</MathBlock>
-            </Card>
+    // H1
+    { type: "mc", diff: "hard", pts: 5,
+      question: "A solid sphere (I = ⅖MR²) rolls from rest down a frictionless ramp of height h. Using energy conservation, which expression gives the final speed v_cm of the center of mass?",
+      choices: ["v = √(gh)", "v = √(1.25 gh)", "v = √(10gh/7)", "v = √(2gh)"],
+      correct: 2,
+      explain: "mgh = ½mv_cm² + ½(⅖mR²)(v_cm/R)² = ½mv_cm² + ⅕mv_cm² = (7/10)mv_cm². Cancel m: v_cm² = (10/7)gh → v = √(10gh/7) ≈ 1.195√(gh). A sliding block on a frictionless ramp gives √(2gh) — the sphere is slower because energy goes into rotation." },
 
-            <HintBox variant="comp">
-              <p><strong>Competition insight — Instantaneous power grows with speed:</strong> For a car accelerating with constant engine force F, power P = Fv increases linearly with speed. Real engines deliver constant <em>power</em> (not force), so force decreases as speed increases: F = P/v. At competition level, watch for problems that distinguish "constant force" from "constant power" — they lead to different acceleration profiles and very different energy analysis.</p>
-            </HintBox>
+    // H2 — corrected: τ = 0.080 N·m gives α = 4.0 rad/s², t = 20/4 = 5 s
+    { type: "int", diff: "hard", pts: 5,
+      question: "A hollow cylinder (thin-walled, I = MR²) with M = 2.0 kg and R = 0.10 m spins at ω₀ = 20 rad/s. A friction brake applies a torque of 0.080 N·m opposing rotation. How many seconds until the cylinder stops?",
+      answer: 5,
+      hint: "I = MR² = (2.0)(0.10)² = 0.020 kg·m². α = −τ/I = −0.080/0.020 = −4.0 rad/s². Time to stop: t = ω₀/|α| = 20/4.0 = 5 s." },
 
-            <Card>
-              <MCField
-                question="A motor lifts a 50 kg mass vertically 10 m at constant speed in 5 seconds. What is the motor's power output?"
-                choices={["490 W", "980 W", "245 W", "4900 W"]}
-                correct={1}
-                diff="easy"
-                pts={3}
-                explain="W = mgh = (50)(9.8)(10) = 4900 J. P = W/Δt = 4900/5 = 980 W. Note: constant speed means zero net work, so all power goes into gravitational PE."
-              />
-            </Card>
-          </div>)}
+    // H3
+    { type: "tf", diff: "hard", pts: 5,
+      statement: "An object in rotational equilibrium (Στ = 0) must have zero angular velocity.",
+      correct: false,
+      explain: "False. Rotational equilibrium means zero net torque, which implies zero angular acceleration (α = 0), not zero angular velocity. The object can spin at any constant ω — just as a car cruising at constant speed has zero net force but nonzero velocity." },
 
-          {part === 1 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <SummaryBox
-              intro="Kinetic energy is the energy of motion — it grows as the square of speed. The work-energy theorem connects forces (and the work they do) directly to changes in kinetic energy, bypassing acceleration entirely."
-              points={[
-                "Kinetic energy: KE = ½mv². Always non-negative; direction of motion doesn't matter.",
-                "Work-energy theorem: W_net = ΔKE = ½m(v_f² − v_i²). The net work on an object equals the change in its KE.",
-                "Doubling speed quadruples KE (v² dependence). This is why high-speed collisions are so dangerous.",
-                "The theorem is a consequence of Newton's 2nd law — not a new law, but often more useful when forces are complex."
-              ]}
-            />
+    // H4
+    { type: "int", diff: "hard", pts: 5,
+      question: "Disk A (I_A = 0.030 kg·m²) rotates at ω_A = 8.0 rad/s. Disk B (I_B = 0.020 kg·m²) is at rest. They are pressed together on the same axis and friction brings them to a common final ω. What is the final angular velocity in rad/s? Enter the answer × 10 as an integer (e.g., 48 for 4.8 rad/s).",
+      answer: 48,
+      hint: "Conservation of angular momentum: I_A·ω_A + I_B·0 = (I_A + I_B)·ω_f. (0.030)(8.0) = (0.050)ω_f. ω_f = 0.24/0.050 = 4.8 rad/s → enter 48." },
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Kinetic Energy</Label>
-              <MathBlock>{"KE = ½ m v²\n\nm = mass (kg)\nv = speed (m/s)   — speed, not velocity: KE ≥ 0\nKE = joules (J)\n\nComparison at same speed:\n  KE ∝ m   — heavier object has more KE\n\nComparison at same mass:\n  KE ∝ v²  — doubling speed → 4× KE\n             tripling speed → 9× KE"}</MathBlock>
-              {[
-                ["Always ≥ 0", "Depends on v² — speed, not direction"],
-                ["1 kg at 10 m/s", "KE = ½(1)(100) = 50 J"],
-                ["2 kg at 10 m/s", "KE = ½(2)(100) = 100 J — twice the mass, twice the KE"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
+    // H5 — corrected: τ = 1.0 N·m, θ = 4.0 rad → W = 4 J → ω = 4.0 rad/s
+    { type: "mc", diff: "hard", pts: 5,
+      question: "A torque τ = 1.0 N·m acts on a body initially at rest through an angular displacement θ = 4.0 rad. The moment of inertia is I = 0.50 kg·m². What is the final angular velocity?",
+      choices: ["2.0 rad/s", "4.0 rad/s", "6.0 rad/s", "8.0 rad/s"],
+      correct: 1,
+      explain: "Work done by torque: W = τθ = (1.0)(4.0) = 4.0 J. Work–energy theorem: W = ½Iω² − 0. 4.0 = ½(0.50)ω² = 0.25ω². ω² = 16. ω = 4.0 rad/s." },
+  ],
+};
 
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Work-Energy Theorem</Label>
-              <MathBlock>{"W_net = ΔKE = ½m(v_f² − v_i²)\n\nW_net = total work by ALL forces on the object\n\nApplication — block sliding to rest:\n  KE_i = ½(5)(10²) = 250 J\n  KE_f = 0\n  W_friction = ΔKE = −250 J\n  −f · d = −250 → d = 250/f\n\nNo need to find acceleration — energy is direct."}</MathBlock>
-              {[
-                ["W_net > 0", "Object speeds up (KE increases)"],
-                ["W_net = 0", "Object moves at constant speed (e.g., constant velocity)"],
-                ["W_net < 0", "Object slows down (KE decreases, energy removed by friction or opposing force)"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Worked Example — Friction Stopping Distance</Label>
-              <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.75, marginBottom: 14 }}>
-                A 5 kg block slides on a rough floor. Initial speed: 10 m/s. Friction force: 20 N. How far before stopping?
-              </p>
-              <MathBlock>{"W_net = ΔKE\n−f · d = KE_f − KE_i\n−20d = 0 − 250\nd = 12.5 m\n\nThe friction force did −250 J of work,\nexactly dissipating the initial kinetic energy."}</MathBlock>
-            </Card>
-
-            <HintBox variant="comp">
-              <p><strong>Competition shortcut — work-energy avoids kinematics:</strong> For non-constant or position-dependent forces, W = ∫F dx and the theorem W_net = ΔKE still holds. A particle subject to F(x) = 3x² from x = 1 m to x = 3 m undergoes work W = ∫₁³ 3x² dx = [x³]₁³ = 27 − 1 = 26 J. The corresponding ΔKE = 26 J immediately, without solving the differential equation F = ma. Olympiad problems exploit this constantly.</p>
-            </HintBox>
-
-            <Card>
-              <MCField
-                question="A 3 kg block starts from rest and is accelerated by a net force of 12 N over 2 m on a frictionless surface. What is its final kinetic energy?"
-                choices={["6 J", "12 J", "24 J", "36 J"]}
-                correct={2}
-                diff="medium"
-                pts={4}
-                explain="W_net = Fd = (12)(2) = 24 J. By the work-energy theorem, ΔKE = 24 J. Since KE_i = 0, KE_f = 24 J. No need to find acceleration or use kinematics."
-              />
-            </Card>
-          </div>)}
-
-          {part === 2 && (<div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <SummaryBox
-              intro="Potential energy is stored energy — gravitational PE due to height, elastic PE due to spring deformation. When only conservative forces act, the sum KE + PE is constant: energy conservation."
-              points={[
-                "Gravitational PE: PE_g = mgh. Reference height h = 0 is arbitrary — only differences in PE matter physically.",
-                "Elastic PE: PE_s = ½kx². Always non-negative; same energy whether spring is stretched or compressed by x.",
-                "Conservation of mechanical energy (no friction): KE + PE = constant. Gain in KE equals loss in PE, and vice versa.",
-                "With friction: E_initial = E_final + Q_friction. Mechanical energy decreases; the lost energy heats the surfaces."
-              ]}
-            />
-
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Gravitational Potential Energy</Label>
-              <MathBlock>{"PE_g = m · g · h\n\nm = mass (kg)\ng = 9.8 m/s²  (use 10 m/s² for competition arithmetic)\nh = height above reference level (m)\nPE_g = joules (J)\n\nKey: only Δh matters — choice of h = 0 is free.\n  PE at height 5 m above floor:\n    = mg(5)   [if floor is reference]\n    = mg(5−0) [if floor is reference]\n  Same physics either way."}</MathBlock>
-              {[
-                ["Δh > 0", "Object rises — PE increases, work done against gravity"],
-                ["Δh < 0", "Object falls — PE decreases, gravity does positive work"],
-                ["Reference", "h = 0 is arbitrary; only ΔPE = mgΔh enters the energy equation"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Elastic Potential Energy (Spring)</Label>
-              <MathBlock>{"PE_s = ½ k x²\n\nk = spring constant (N/m) — stiffer spring, larger k\nx = deformation from equilibrium (m)\n\nPE_s ≥ 0 always (x² ≥ 0)\n\nExample — spring launch:\n  k = 200 N/m, x = 0.1 m compressed\n  PE_s = ½(200)(0.01) = 1 J\n  Released onto 0.5 kg block (frictionless):\n  ½mv² = 1 J → v² = 4 → v = 2 m/s"}</MathBlock>
-              {[
-                ["k large", "Stiff spring — stores more energy for same deformation"],
-                ["PE_s = ½kx²", "Parabolic: doubling compression → 4× stored energy"],
-                ["Equilibrium", "At x = 0, PE_s = 0 — spring in natural length stores no energy"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <Card>
-              <Label style={{ display: "block", marginBottom: 14 }}>Conservation of Mechanical Energy</Label>
-              <MathBlock>{"Frictionless system (conservative forces only):\n\n  KE_i + PE_i = KE_f + PE_f\n  E_total = KE + PE_g + PE_s = constant\n\nWith friction (non-conservative):\n\n  E_i = E_f + Q_friction\n  Q_friction = f · d  (heat generated)\n\nRoller coaster example (h₁=10 m, h₂=8 m, g=9.8):\n  v_bottom: ½mv² = mgh₁ → v = √(2×9.8×10) = 14 m/s\n  v_at_8m: ½mv² = mg(h₁−h₂) → v = √(2×9.8×2) ≈ 6.3 m/s"}</MathBlock>
-              {[
-                ["Conservative forces", "Gravity, springs — path doesn't matter, only endpoints"],
-                ["Non-conservative", "Friction, air resistance — path-dependent; dissipate energy as heat"],
-                ["E_total = const", "The most powerful constraint in mechanics — often replaces F = ma entirely"]
-              ].map(([k, v]) => <InfoRow key={k} label={k} value={v} />)}
-            </Card>
-
-            <HintBox variant="comp">
-              <p><strong>Competition insight — coefficient of restitution:</strong> A ball dropped from height h₀ bouncing to height h₁ loses mechanical energy ΔE = mg(h₀ − h₁) to deformation, sound, and heat. The coefficient of restitution e = √(h₁/h₀) quantifies this: e = 1 is perfectly elastic; e = 0 is perfectly inelastic. Advanced problem setters use multi-bounce sequences: after n bounces, h_n = h₀ · e^{2n}. This combines conservation of energy, geometric sequences, and the physics of collisions in one problem.</p>
-            </HintBox>
-
-            <Card>
-              <MCField
-                question="A 2 kg box slides down a frictionless 30° incline from rest, descending a vertical height of 5 m. What is its speed at the bottom? (Use g = 10 m/s²)"
-                choices={["5 m/s", "7.1 m/s", "10 m/s", "20 m/s"]}
-                correct={2}
-                diff="medium"
-                pts={4}
-                explain="Energy conservation: mgh = ½mv² → v = √(2gh) = √(2 × 10 × 5) = √100 = 10 m/s. The incline angle is irrelevant — only the vertical height drop determines the final speed on a frictionless surface."
-              />
-            </Card>
-          </div>)}
-
-          <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
-            {part > 0 ? <button onClick={() => setPart(p => p - 1)} style={navBtn(false)}>← {PART_LABELS[part - 1]}</button> : <span />}
-            {part < 2 ? <button onClick={() => setPart(p => p + 1)} style={navBtn(true)}>{PART_LABELS[part + 1]} →</button> : <button onClick={() => setTab("practice")} style={navBtn(true)}>Practice →</button>}
-          </div>
-        </div>
-      )}
-
-      {tab === "practice" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <Card>
-          <Label style={{ display: "block", marginBottom: 6 }}>Problem Set · Energy</Label>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>6 problems · Easy → Medium · 22 pts total</p>
-        </Card>
-
-        <Card>
-          <MCField
-            question="A 2 kg book is lifted vertically 1.5 m at constant velocity. How much work is done against gravity?"
-            choices={["15 J", "29.4 J", "3 J", "0 J"]}
-            correct={1}
-            diff="easy"
-            pts={3}
-            explain="W = mgh = (2)(9.8)(1.5) = 29.4 J. At constant velocity, the lifting force exactly equals gravity, so all work goes into gravitational PE."
-          />
-        </Card>
-
-        <Card>
-          <INTField
-            question="A 4 kg block is pushed along a frictionless surface with a constant force of 10 N in the direction of motion. Over a distance of 3 m, how much work is done (in joules)?"
-            answer={30}
-            diff="easy"
-            pts={3}
-            hint="W = Fd = (10)(3) = 30 J. Force is parallel to displacement, so θ = 0° and cosθ = 1."
-          />
-        </Card>
-
-        <Card>
-          <MCField
-            question="A spring with spring constant 100 N/m is stretched 0.2 m. How much elastic potential energy is stored?"
-            choices={["2 J", "4 J", "20 J", "10 J"]}
-            correct={0}
-            diff="easy"
-            pts={3}
-            explain="PE_s = ½kx² = ½(100)(0.2²) = ½(100)(0.04) = 2 J. Note: compressing the same spring by 0.2 m stores identical energy."
-          />
-        </Card>
-
-        <Card>
-          <MCField
-            question="A 3 kg block starts from rest and is accelerated by a net force of 12 N over 2 m on a frictionless surface. What is its final kinetic energy?"
-            choices={["6 J", "12 J", "24 J", "36 J"]}
-            correct={2}
-            diff="medium"
-            pts={4}
-            explain="W_net = Fd = (12)(2) = 24 J. By the work-energy theorem, ΔKE = W_net = 24 J. Starting from rest, KE_f = 24 J."
-          />
-        </Card>
-
-        <Card>
-          <INTField
-            question="A ball of mass 0.5 kg is thrown upward with an initial speed of 20 m/s. Using energy conservation (no air resistance), at what height (in metres) will its speed be 10 m/s? (Use g = 10 m/s²)"
-            answer={15}
-            diff="medium"
-            pts={4}
-            hint="½mv_i² = ½mv_f² + mgh → h = (v_i² − v_f²)/(2g) = (400 − 100)/(20) = 300/20 = 15 m."
-          />
-        </Card>
-
-        <Card>
-          <MCField
-            question="A 2 kg box slides down a frictionless incline, descending a vertical height of 5 m. What is its speed at the bottom? (Use g = 10 m/s²)"
-            choices={["5 m/s", "7.1 m/s", "10 m/s", "20 m/s"]}
-            correct={2}
-            diff="medium"
-            pts={4}
-            explain="mgh = ½mv² → v = √(2gh) = √(2 × 10 × 5) = √100 = 10 m/s. The incline angle and path shape are irrelevant — only the vertical height drop matters for a frictionless surface."
-          />
-        </Card>
-      </div>)}
-
-      {tab === "reference" && (<div className="bk-fade" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <Card>
-          <Label style={{ display: "block", marginBottom: 14 }}>Work, Power & Kinetic Energy</Label>
-          <MathBlock>{"W = F · d · cosθ           work (J)\nP_avg = W / Δt             average power (W)\nP = F · v · cosφ           instantaneous power\nKE = ½mv²                  kinetic energy (J)\nW_net = ΔKE = ½m(v_f²−v_i²)   work-energy theorem"}</MathBlock>
-        </Card>
-        <Card>
-          <Label style={{ display: "block", marginBottom: 14 }}>Potential Energy & Conservation</Label>
-          <MathBlock>{"PE_g = mgh                 gravitational PE (J)\nPE_s = ½kx²               elastic (spring) PE (J)\n\nConservation (no friction):\n  KE_i + PE_i = KE_f + PE_f\n\nWith friction:\n  E_i = E_f + Q_friction\n  Q = f · d              heat dissipated\n\nInstantaneous power: P = Fv  (φ = 0)\nCoeff. of restitution: e = √(h_rebound / h_drop)"}</MathBlock>
-        </Card>
-      </div>)}
-
-      <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
-        <Mono style={{ fontSize: 9 }}>energy · work · power · conservation · block 7–9</Mono>
-        <div style={{ display: "flex", gap: 12 }}>
-          <a href="index.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>← Index</a>
-          <a href="highscores.html" style={{ fontFamily: F.mono, fontSize: 9, color: C.dim, textDecoration: "none" }}>Highscores →</a>
-        </div>
-      </div>
-    </div>
-  </>);
+function G10RotationPS01() {
+  return <ProbsetComposer config={CONFIG} />;
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<G10EnergyL01 />);
+ReactDOM.createRoot(document.getElementById('root')).render(<G10RotationPS01 />);
 </script>
 </body>
 </html>
