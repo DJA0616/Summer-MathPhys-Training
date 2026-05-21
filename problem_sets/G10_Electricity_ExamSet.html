@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel">
-const { createContext, useCallback, useContext, useEffect, useRef, useState } = React;
+const { createContext, createElement, Fragment, useCallback, useContext, useEffect, useRef, useState } = React;
 
 
 
@@ -71,6 +71,98 @@ const GLOBAL_CSS = `
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: ${C.accent}; cursor: pointer; box-shadow: 0 0 6px ${C.glow}; }
   input:focus, select:focus { outline: none; }
 `;
+
+// ═══════════════════════════════════════════════════════════════
+// MATH MARKUP — auto-render ^ and _ as <sup>/<sub>
+// ═══════════════════════════════════════════════════════════════
+// Supports: x^2, x^{abc}, x^(3/2), x^-2, q_0, q_{net}, r_(ij).
+// Single-char form: digit run with optional ±, or one letter.
+// Already-Unicode subs/sups (q₀, r², ε₀, 10⁻¹²) pass through untouched.
+
+const SUP_STYLE = { fontSize: "0.72em", verticalAlign: "0.45em", lineHeight: 0 };
+const SUB_STYLE = { fontSize: "0.72em", verticalAlign: "-0.25em", lineHeight: 0 };
+
+function parseMath(s) {
+  if (typeof s !== "string" || (s.indexOf("^") < 0 && s.indexOf("_") < 0)) return s;
+  const out = [];
+  let buf = "";
+  let i = 0;
+  const flush = () => { if (buf) { out.push(buf); buf = ""; } };
+  while (i < s.length) {
+    const ch = s[i];
+    if ((ch === "^" || ch === "_") && i + 1 < s.length) {
+      const nxt = s[i + 1];
+      let content = null;
+      let end = i;
+      if (nxt === "{") {
+        let j = i + 2, depth = 1;
+        while (j < s.length && depth > 0) {
+          if (s[j] === "{") depth++;
+          else if (s[j] === "}") depth--;
+          if (depth > 0) j++;
+        }
+        if (depth === 0) { content = s.slice(i + 2, j); end = j + 1; }
+      } else if (nxt === "(") {
+        let j = i + 2, depth = 1;
+        while (j < s.length && depth > 0) {
+          if (s[j] === "(") depth++;
+          else if (s[j] === ")") depth--;
+          if (depth > 0) j++;
+        }
+        if (depth === 0) { content = s.slice(i + 2, j); end = j + 1; }
+      } else if (/[0-9]/.test(nxt) || ((nxt === "-" || nxt === "+" || nxt === "−") && i + 2 < s.length && /[0-9]/.test(s[i + 2]))) {
+        let j = i + 1;
+        if (nxt === "-" || nxt === "+" || nxt === "−") j++;
+        while (j < s.length && /[0-9]/.test(s[j])) j++;
+        content = s.slice(i + 1, j); end = j;
+      } else if (/[a-zA-Z]/.test(nxt)) {
+        let j = i + 2;
+        while (j < s.length && /[a-zA-Z0-9]/.test(s[j])) j++;
+        content = s.slice(i + 1, j); end = j;
+      }
+      if (content !== null) {
+        flush();
+        out.push({ t: ch, c: content });
+        i = end;
+        continue;
+      }
+    }
+    buf += ch;
+    i++;
+  }
+  flush();
+  if (out.length === 1 && typeof out[0] === "string") return out[0];
+  return out.map((p, idx) => {
+    if (typeof p === "string") return p;
+    const inner = parseMath(p.c);
+    return p.t === "^"
+      ? React.createElement("sup", { key: idx, style: SUP_STYLE }, inner)
+      : React.createElement("sub", { key: idx, style: SUB_STYLE }, inner);
+  });
+}
+
+function walkMath(node) {
+  if (node == null || node === false || node === true) return node;
+  if (typeof node === "string") return parseMath(node);
+  if (typeof node === "number") return node;
+  if (Array.isArray(node)) {
+    return node.map((c, i) => {
+      if (typeof c === "string") {
+        const p = parseMath(c);
+        if (p === c) return c;
+        return React.createElement(React.Fragment, { key: i }, p);
+      }
+      if (React.isValidElement(c)) return walkMath(c);
+      return c;
+    });
+  }
+  if (React.isValidElement(node)) {
+    if (node.props && node.props.children !== undefined && node.type !== "sup" && node.type !== "sub") {
+      return React.cloneElement(node, {}, walkMath(node.props.children));
+    }
+  }
+  return node;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // GEO BACKGROUND
@@ -164,15 +256,15 @@ function MathBlock({ children, style = {} }) {
       borderRadius: DS.radius, padding: "12px 16px",
       color: C.subtle, letterSpacing: "0.03em", lineHeight: 2, whiteSpace: "pre",
       ...style,
-    }}>{children}</div>
+    }}>{walkMath(children)}</div>
   );
 }
 
 function InfoRow({ label, value, accent = false }) {
   return (
     <div style={{ display: "flex", gap: 16, padding: "9px 0", borderBottom: `1px solid ${C.border}`, alignItems: "baseline" }}>
-      <Mono style={{ minWidth: 160, color: C.dim, flexShrink: 0, fontSize: 11 }}>{label}</Mono>
-      <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{value}</span>
+      <Mono style={{ minWidth: 160, color: C.dim, flexShrink: 0, fontSize: 11 }}>{walkMath(label)}</Mono>
+      <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{walkMath(value)}</span>
     </div>
   );
 }
@@ -180,7 +272,7 @@ function InfoRow({ label, value, accent = false }) {
 function QuoteBlock({ text, author }) {
   return (
     <div style={{ padding: "14px 18px", borderLeft: `2px solid ${C.accent}55`, margin: "4px 0" }}>
-      <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic", lineHeight: 1.7, marginBottom: 6 }}>"{text}"</p>
+      <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic", lineHeight: 1.7, marginBottom: 6 }}>"{walkMath(text)}"</p>
       <Mono style={{ fontSize: 10 }}>— {author}</Mono>
     </div>
   );
@@ -194,7 +286,7 @@ function HintBox({ children, variant = "info" }) {
   return (
     <div style={{ padding: "12px 16px", background: bg, border: `1px solid ${borderCol}22`, borderLeft: `2px solid ${borderCol}`, borderRadius: DS.radius }}>
       <Label style={{ color: labelColor, display: "block", marginBottom: 8 }}>{labelText}</Label>
-      <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{children}</div>
+      <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{walkMath(children)}</div>
     </div>
   );
 }
@@ -203,13 +295,13 @@ function SummaryBox({ intro, points }) {
   return (
     <div style={{ padding: "16px 18px", background: C.elevated, border: `1px solid ${C.accent}33`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
       <Label style={{ display: "block", marginBottom: 10, color: C.accent }}>Summary</Label>
-      {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{intro}</p>}
+      {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{walkMath(intro)}</p>}
       {points && (
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {points.map((p, i) => (
             <div key={i} style={{ display: "flex", gap: 10 }}>
               <Mono style={{ color: C.accent, minWidth: 14, fontSize: 11, flexShrink: 0 }}>{i + 1}.</Mono>
-              <span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{p}</span>
+              <span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{walkMath(p)}</span>
             </div>
           ))}
         </div>
@@ -234,7 +326,7 @@ function Paragraph({ children, animateIndex = 0, style = {} }) {
         ...style,
       }}
     >
-      {children}
+      {walkMath(children)}
     </p>
   );
 }
@@ -245,10 +337,10 @@ function SectionHeader({ title, subtitle, animateIndex = 0 }) {
     <div className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms`, marginTop: 8, marginBottom: 12 }}>
       <Rule accent />
       <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: subtitle ? 6 : 0 }}>
-        <h2 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 500, color: C.heading, letterSpacing: "-0.01em" }}>{title}</h2>
+        <h2 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 500, color: C.heading, letterSpacing: "-0.01em" }}>{walkMath(title)}</h2>
         <Tag accent>{title}</Tag>
       </div>
-      {subtitle && <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>{subtitle}</p>}
+      {subtitle && <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>{walkMath(subtitle)}</p>}
     </div>
   );
 }
@@ -313,12 +405,12 @@ function Equation({ display, inline = false, animateIndex = 0 }) {
         fontFamily: F.mono, fontSize: 13, color: C.accent,
         background: C.bg, padding: "2px 6px", borderRadius: 3,
         border: `1px solid ${C.border}`,
-      }}>{display}</span>
+      }}>{walkMath(display)}</span>
     );
   }
   return (
     <MathBlock>
-      <span className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>{display}</span>
+      <span className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>{walkMath(display)}</span>
     </MathBlock>
   );
 }
@@ -343,7 +435,7 @@ function Hint({ children, revealLabel = "Show hint", animateIndex = 0 }) {
         </button>
       ) : (
         <div style={{ padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}77`, borderRadius: DS.radius }}>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{children}</p>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{walkMath(children)}</p>
         </div>
       )}
     </div>
@@ -360,7 +452,7 @@ function Example({ label = "Example", children, animateIndex = 0 }) {
       border: `1px solid ${C.border}`, borderRadius: DS.radius,
     }}>
       <Label style={{ display: "block", marginBottom: 8, color: C.accentAlt }}>{label}</Label>
-      <div style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.7 }}>{children}</div>
+      <div style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.7 }}>{walkMath(children)}</div>
     </div>
   );
 }
@@ -389,7 +481,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
         </div>
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{walkMath(question)}</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         {choices.map((ch, i) => {
           const L = ["A", "B", "C", "D"][i];
@@ -409,7 +501,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
               }}
             >
               <Mono style={{ fontSize: 10, color: on ? C.accent : C.dim, minWidth: 14 }}>{L}</Mono>
-              <span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{ch}</span>
+              <span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{walkMath(ch)}</span>
               {ok && <Mono style={{ fontSize: 9, color: C.accentAlt }}>✓</Mono>}
               {bad && <Mono style={{ fontSize: 9, color: C.err }}>✗</Mono>}
             </div>
@@ -440,7 +532,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
       )}
       {showExplain && explain && (
         <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{explain}</p>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{walkMath(explain)}</p>
         </div>
       )}
     </div>
@@ -462,7 +554,7 @@ function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
       <p style={{ fontFamily: F.serif, fontSize: 14, fontStyle: "italic", color: C.body, lineHeight: 1.65, marginBottom: 16, paddingLeft: 12, borderLeft: `2px solid ${C.accent}44` }}>
-        "{statement}"
+        "{walkMath(statement)}"
       </p>
       <div style={{ display: "flex", gap: 10 }}>
         {[true, false].map(val => {
@@ -554,7 +646,7 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
         </div>
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{question}</p>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{walkMath(question)}</p>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <input
           type="text" inputMode="numeric" pattern="[0-9]*"
@@ -604,7 +696,7 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
       )}
       {showHint && hint && (
         <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{hint}</p>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{walkMath(hint)}</p>
         </div>
       )}
     </div>
@@ -763,7 +855,7 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
 
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{walkMath(question)}</p>
 
       <div style={{
         fontFamily: F.mono, fontSize: 15, fontWeight: 300,
@@ -778,7 +870,7 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
             const slotId = Object.keys(slots).find(k => slots[k] === null && texts[k] === "") ?? "0";
             return <Blank key={i} slotId={slotId} />;
           }
-          return <span key={i}>{part}</span>;
+          return <span key={i}>{walkMath(part)}</span>;
         })}
       </div>
 
@@ -837,7 +929,7 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
         </div>
       )}
 
-      {checked && isCorrect && correctDisplay && <Mono style={{ display: "block", marginTop: 10, color: C.accentAlt, fontSize: 10, letterSpacing: "0.1em" }}>✓ {correctDisplay}</Mono>}
+      {checked && isCorrect && correctDisplay && <Mono style={{ display: "block", marginTop: 10, color: C.accentAlt, fontSize: 10, letterSpacing: "0.1em" }}>✓ {walkMath(correctDisplay)}</Mono>}
       {checked && !isCorrect && <Mono style={{ display: "block", marginTop: 10, color: C.err, fontSize: 10, letterSpacing: "0.1em" }}>✗ review your answer</Mono>}
     </div>
   );
@@ -1241,8 +1333,8 @@ function HighscoresPage({ navLinks }) {
   });
 
   const defaultNav = [
-    { href: "../index.html", label: "← Index" },
-    { href: "../highscores.html", label: "Highscores" },
+    { href: "index.html", label: "← Index" },
+    { href: "highscores.html", label: "Highscores" },
   ];
 
   const links = navLinks || defaultNav;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<base href="../">
 <title>Highscores</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,13 +20,14 @@
 </head>
 <body>
 <div id="root"></div>
+
 <script src="project-template-files/geometry-bg.js?v=2"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel">
-const { createContext, useCallback, useContext, useEffect, useRef, useState } = React;
+const { createContext, createElement, Fragment, useCallback, useContext, useEffect, useRef, useState } = React;
 
 
 
@@ -72,12 +73,105 @@ const GLOBAL_CSS = `
 `;
 
 // ═══════════════════════════════════════════════════════════════
+// MATH MARKUP — auto-render ^ and _ as <sup>/<sub>
+// ═══════════════════════════════════════════════════════════════
+// Supports: x^2, x^{abc}, x^(3/2), x^-2, q_0, q_{net}, r_(ij).
+// Single-char form: digit run with optional ±, or one letter.
+// Already-Unicode subs/sups (q₀, r², ε₀, 10⁻¹²) pass through untouched.
+
+const SUP_STYLE = { fontSize: "0.72em", verticalAlign: "0.45em", lineHeight: 0 };
+const SUB_STYLE = { fontSize: "0.72em", verticalAlign: "-0.25em", lineHeight: 0 };
+
+function parseMath(s) {
+  if (typeof s !== "string" || (s.indexOf("^") < 0 && s.indexOf("_") < 0)) return s;
+  const out = [];
+  let buf = "";
+  let i = 0;
+  const flush = () => { if (buf) { out.push(buf); buf = ""; } };
+  while (i < s.length) {
+    const ch = s[i];
+    if ((ch === "^" || ch === "_") && i + 1 < s.length) {
+      const nxt = s[i + 1];
+      let content = null;
+      let end = i;
+      if (nxt === "{") {
+        let j = i + 2, depth = 1;
+        while (j < s.length && depth > 0) {
+          if (s[j] === "{") depth++;
+          else if (s[j] === "}") depth--;
+          if (depth > 0) j++;
+        }
+        if (depth === 0) { content = s.slice(i + 2, j); end = j + 1; }
+      } else if (nxt === "(") {
+        let j = i + 2, depth = 1;
+        while (j < s.length && depth > 0) {
+          if (s[j] === "(") depth++;
+          else if (s[j] === ")") depth--;
+          if (depth > 0) j++;
+        }
+        if (depth === 0) { content = s.slice(i + 2, j); end = j + 1; }
+      } else if (/[0-9]/.test(nxt) || ((nxt === "-" || nxt === "+" || nxt === "−") && i + 2 < s.length && /[0-9]/.test(s[i + 2]))) {
+        let j = i + 1;
+        if (nxt === "-" || nxt === "+" || nxt === "−") j++;
+        while (j < s.length && /[0-9]/.test(s[j])) j++;
+        content = s.slice(i + 1, j); end = j;
+      } else if (/[a-zA-Z]/.test(nxt)) {
+        let j = i + 2;
+        while (j < s.length && /[a-zA-Z0-9]/.test(s[j])) j++;
+        content = s.slice(i + 1, j); end = j;
+      }
+      if (content !== null) {
+        flush();
+        out.push({ t: ch, c: content });
+        i = end;
+        continue;
+      }
+    }
+    buf += ch;
+    i++;
+  }
+  flush();
+  if (out.length === 1 && typeof out[0] === "string") return out[0];
+  return out.map((p, idx) => {
+    if (typeof p === "string") return p;
+    const inner = parseMath(p.c);
+    return p.t === "^"
+      ? React.createElement("sup", { key: idx, style: SUP_STYLE }, inner)
+      : React.createElement("sub", { key: idx, style: SUB_STYLE }, inner);
+  });
+}
+
+function walkMath(node) {
+  if (node == null || node === false || node === true) return node;
+  if (typeof node === "string") return parseMath(node);
+  if (typeof node === "number") return node;
+  if (Array.isArray(node)) {
+    return node.map((c, i) => {
+      if (typeof c === "string") {
+        const p = parseMath(c);
+        if (p === c) return c;
+        return React.createElement(React.Fragment, { key: i }, p);
+      }
+      if (React.isValidElement(c)) return walkMath(c);
+      return c;
+    });
+  }
+  if (React.isValidElement(node)) {
+    if (node.props && node.props.children !== undefined && node.type !== "sup" && node.type !== "sub") {
+      return React.cloneElement(node, {}, walkMath(node.props.children));
+    }
+  }
+  return node;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // GEO BACKGROUND
 // ═══════════════════════════════════════════════════════════════
 
 function Geo() {
+  if (typeof window !== "undefined" && window.__geoBgInstance) return null;
   return (
-    <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} xmlns="http://www.w3.org/2000/svg">
+    <svg className="geo-static" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="bk-g1" cx="85%" cy="5%" r="35%">
           <stop offset="0%" stopColor="#7eb8d4" stopOpacity="0.05" />
@@ -162,15 +256,15 @@ function MathBlock({ children, style = {} }) {
       borderRadius: DS.radius, padding: "12px 16px",
       color: C.subtle, letterSpacing: "0.03em", lineHeight: 2, whiteSpace: "pre",
       ...style,
-    }}>{children}</div>
+    }}>{walkMath(children)}</div>
   );
 }
 
 function InfoRow({ label, value, accent = false }) {
   return (
     <div style={{ display: "flex", gap: 16, padding: "9px 0", borderBottom: `1px solid ${C.border}`, alignItems: "baseline" }}>
-      <Mono style={{ minWidth: 160, color: C.dim, flexShrink: 0, fontSize: 11 }}>{label}</Mono>
-      <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{value}</span>
+      <Mono style={{ minWidth: 160, color: C.dim, flexShrink: 0, fontSize: 11 }}>{walkMath(label)}</Mono>
+      <span style={{ fontFamily: F.serif, fontSize: 14, color: accent ? C.accent : C.body, lineHeight: 1.5 }}>{walkMath(value)}</span>
     </div>
   );
 }
@@ -178,7 +272,7 @@ function InfoRow({ label, value, accent = false }) {
 function QuoteBlock({ text, author }) {
   return (
     <div style={{ padding: "14px 18px", borderLeft: `2px solid ${C.accent}55`, margin: "4px 0" }}>
-      <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic", lineHeight: 1.7, marginBottom: 6 }}>"{text}"</p>
+      <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic", lineHeight: 1.7, marginBottom: 6 }}>"{walkMath(text)}"</p>
       <Mono style={{ fontSize: 10 }}>— {author}</Mono>
     </div>
   );
@@ -192,7 +286,7 @@ function HintBox({ children, variant = "info" }) {
   return (
     <div style={{ padding: "12px 16px", background: bg, border: `1px solid ${borderCol}22`, borderLeft: `2px solid ${borderCol}`, borderRadius: DS.radius }}>
       <Label style={{ color: labelColor, display: "block", marginBottom: 8 }}>{labelText}</Label>
-      <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{children}</div>
+      <div style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.7 }}>{walkMath(children)}</div>
     </div>
   );
 }
@@ -201,13 +295,13 @@ function SummaryBox({ intro, points }) {
   return (
     <div style={{ padding: "16px 18px", background: C.elevated, border: `1px solid ${C.accent}33`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
       <Label style={{ display: "block", marginBottom: 10, color: C.accent }}>Summary</Label>
-      {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{intro}</p>}
+      {intro && <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: points ? 12 : 0 }}>{walkMath(intro)}</p>}
       {points && (
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {points.map((p, i) => (
             <div key={i} style={{ display: "flex", gap: 10 }}>
               <Mono style={{ color: C.accent, minWidth: 14, fontSize: 11, flexShrink: 0 }}>{i + 1}.</Mono>
-              <span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{p}</span>
+              <span style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{walkMath(p)}</span>
             </div>
           ))}
         </div>
@@ -232,7 +326,7 @@ function Paragraph({ children, animateIndex = 0, style = {} }) {
         ...style,
       }}
     >
-      {children}
+      {walkMath(children)}
     </p>
   );
 }
@@ -243,10 +337,10 @@ function SectionHeader({ title, subtitle, animateIndex = 0 }) {
     <div className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms`, marginTop: 8, marginBottom: 12 }}>
       <Rule accent />
       <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: subtitle ? 6 : 0 }}>
-        <h2 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 500, color: C.heading, letterSpacing: "-0.01em" }}>{title}</h2>
+        <h2 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 500, color: C.heading, letterSpacing: "-0.01em" }}>{walkMath(title)}</h2>
         <Tag accent>{title}</Tag>
       </div>
-      {subtitle && <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>{subtitle}</p>}
+      {subtitle && <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic" }}>{walkMath(subtitle)}</p>}
     </div>
   );
 }
@@ -311,12 +405,12 @@ function Equation({ display, inline = false, animateIndex = 0 }) {
         fontFamily: F.mono, fontSize: 13, color: C.accent,
         background: C.bg, padding: "2px 6px", borderRadius: 3,
         border: `1px solid ${C.border}`,
-      }}>{display}</span>
+      }}>{walkMath(display)}</span>
     );
   }
   return (
     <MathBlock>
-      <span className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>{display}</span>
+      <span className="bk-fade" style={{ animationDelay: `${animateIndex * 60}ms` }}>{walkMath(display)}</span>
     </MathBlock>
   );
 }
@@ -341,7 +435,7 @@ function Hint({ children, revealLabel = "Show hint", animateIndex = 0 }) {
         </button>
       ) : (
         <div style={{ padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}77`, borderRadius: DS.radius }}>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{children}</p>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{walkMath(children)}</p>
         </div>
       )}
     </div>
@@ -358,7 +452,7 @@ function Example({ label = "Example", children, animateIndex = 0 }) {
       border: `1px solid ${C.border}`, borderRadius: DS.radius,
     }}>
       <Label style={{ display: "block", marginBottom: 8, color: C.accentAlt }}>{label}</Label>
-      <div style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.7 }}>{children}</div>
+      <div style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.7 }}>{walkMath(children)}</div>
     </div>
   );
 }
@@ -387,7 +481,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
         </div>
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{walkMath(question)}</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         {choices.map((ch, i) => {
           const L = ["A", "B", "C", "D"][i];
@@ -407,7 +501,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
               }}
             >
               <Mono style={{ fontSize: 10, color: on ? C.accent : C.dim, minWidth: 14 }}>{L}</Mono>
-              <span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{ch}</span>
+              <span style={{ fontFamily: F.serif, fontSize: 14, color: ok ? C.accentAlt : bad ? C.err : on ? C.accent : C.body, flex: 1, lineHeight: 1.5 }}>{walkMath(ch)}</span>
               {ok && <Mono style={{ fontSize: 9, color: C.accentAlt }}>✓</Mono>}
               {bad && <Mono style={{ fontSize: 9, color: C.err }}>✗</Mono>}
             </div>
@@ -438,7 +532,7 @@ function MCField({ question, choices, correct, pts = 3, diff = 1, explain, anima
       )}
       {showExplain && explain && (
         <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{explain}</p>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{walkMath(explain)}</p>
         </div>
       )}
     </div>
@@ -460,7 +554,7 @@ function TFField({ statement, correct = true, pts = 3, diff = 1, animateIndex = 
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
       <p style={{ fontFamily: F.serif, fontSize: 14, fontStyle: "italic", color: C.body, lineHeight: 1.65, marginBottom: 16, paddingLeft: 12, borderLeft: `2px solid ${C.accent}44` }}>
-        "{statement}"
+        "{walkMath(statement)}"
       </p>
       <div style={{ display: "flex", gap: 10 }}>
         {[true, false].map(val => {
@@ -552,7 +646,7 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
         </div>
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{question}</p>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 16 }}>{walkMath(question)}</p>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <input
           type="text" inputMode="numeric" pattern="[0-9]*"
@@ -602,7 +696,7 @@ function INTField({ question, answer, pts = 4, diff = 2, hint, animateIndex = 0,
       )}
       {showHint && hint && (
         <div style={{ marginTop: 10, padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderLeft: `2px solid ${C.accent}88`, borderRadius: DS.radius }}>
-          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{hint}</p>
+          <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, lineHeight: 1.65 }}>{walkMath(hint)}</p>
         </div>
       )}
     </div>
@@ -761,7 +855,7 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
         <Mono style={{ fontSize: 10 }}>{pts} pts</Mono>
       </div>
 
-      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{question}</p>
+      <p style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.65, marginBottom: 14 }}>{walkMath(question)}</p>
 
       <div style={{
         fontFamily: F.mono, fontSize: 15, fontWeight: 300,
@@ -776,7 +870,7 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
             const slotId = Object.keys(slots).find(k => slots[k] === null && texts[k] === "") ?? "0";
             return <Blank key={i} slotId={slotId} />;
           }
-          return <span key={i}>{part}</span>;
+          return <span key={i}>{walkMath(part)}</span>;
         })}
       </div>
 
@@ -835,7 +929,7 @@ function FIEField({ question, equation, cards, slotCount = 2, correct = () => fa
         </div>
       )}
 
-      {checked && isCorrect && correctDisplay && <Mono style={{ display: "block", marginTop: 10, color: C.accentAlt, fontSize: 10, letterSpacing: "0.1em" }}>✓ {correctDisplay}</Mono>}
+      {checked && isCorrect && correctDisplay && <Mono style={{ display: "block", marginTop: 10, color: C.accentAlt, fontSize: 10, letterSpacing: "0.1em" }}>✓ {walkMath(correctDisplay)}</Mono>}
       {checked && !isCorrect && <Mono style={{ display: "block", marginTop: 10, color: C.err, fontSize: 10, letterSpacing: "0.1em" }}>✗ review your answer</Mono>}
     </div>
   );
@@ -1239,8 +1333,8 @@ function HighscoresPage({ navLinks }) {
   });
 
   const defaultNav = [
-    { href: "../index.html", label: "← Index" },
-    { href: "../highscores.html", label: "Highscores" },
+    { href: "index.html", label: "← Index" },
+    { href: "highscores.html", label: "Highscores" },
   ];
 
   const links = navLinks || defaultNav;
@@ -1650,6 +1744,193 @@ function ProbsetComposer({ config, storageKey }) {
             </div>
           </div>
         )}
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SYLLABUS BLOCKS
+// ═══════════════════════════════════════════════════════════════
+
+// --- SubTabs ---
+// In-card tab switcher. tabs = [{ label, content }]
+function SubTabs({ tabs = [] }) {
+  const [active, setActive] = useState(0);
+  if (!tabs.length) return null;
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 2, borderBottom: `1px solid ${C.border}`, marginBottom: 16 }}>
+        {tabs.map((t, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            style={{
+              fontFamily: F.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
+              padding: "7px 13px", background: "transparent", cursor: "pointer",
+              border: "none", borderBottom: `2px solid ${i === active ? C.accent : "transparent"}`,
+              color: i === active ? C.accent : C.dim, marginBottom: -1, transition: "color 0.2s",
+            }}
+            onMouseEnter={e => { if (i !== active) e.target.style.color = C.subtle; }}
+            onMouseLeave={e => { if (i !== active) e.target.style.color = C.dim; }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div className="bk-fade-fast" key={active}>{tabs[active].content}</div>
+    </div>
+  );
+}
+
+// --- ReferenceList ---
+// groups = [{ category, items: [{ title, source, note }] }]
+function ReferenceList({ groups = [] }) {
+  if (!groups.length) {
+    return <Mono style={{ fontSize: 11, color: C.dim }}>References pending compilation.</Mono>;
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {groups.map((g, gi) => (
+        <div key={gi}>
+          <Label style={{ color: C.accentAlt, display: "block", marginBottom: 9 }}>{g.category}</Label>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {(g.items || []).map((it, ii) => (
+              <div key={ii} style={{ paddingLeft: 12, borderLeft: `1px solid ${C.border}` }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: F.serif, fontSize: 14, color: C.heading }}>{it.title}</span>
+                  {it.source && <Mono style={{ fontSize: 10, color: C.dim }}>{it.source}</Mono>}
+                </div>
+                {it.note && (
+                  <p style={{ fontFamily: F.serif, fontSize: 13, color: C.dim, fontStyle: "italic", lineHeight: 1.55, marginTop: 2 }}>
+                    {it.note}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// --- SyllabusPart ---
+// One major topic: title + linked materials + Curriculum/References subtabs.
+// links = [{ label, href, kind: "guide"|"probset"|"quiz" }]
+function SyllabusPart({ index, title, topics = [], references = [], links = [], animateIndex = 0 }) {
+  const curriculum = (
+    <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 7 }}>
+      {topics.map((t, i) => (
+        <li key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
+          <span style={{ width: 4, height: 4, borderRadius: "50%", background: C.accent, flexShrink: 0, marginTop: 9, boxShadow: `0 0 4px ${C.glowStr}` }} />
+          <span style={{ fontFamily: F.serif, fontSize: 14, color: C.body, lineHeight: 1.6 }}>{t}</span>
+        </li>
+      ))}
+    </ul>
+  );
+  const linkColor = (kind) => kind === "guide" ? C.accentAlt : kind === "quiz" ? C.err : C.accent;
+  return (
+    <Card style={{ animationDelay: `${animateIndex * 50}ms` }}>
+      <div className="bk-fade" style={{ animationDelay: `${animateIndex * 50}ms` }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: links.length ? 10 : 14 }}>
+          {index != null && <Mono style={{ fontSize: 11, color: C.accent }}>{String(index).padStart(2, "0")}</Mono>}
+          <h2 style={{ fontFamily: F.serif, fontSize: 19, fontWeight: 500, color: C.heading, letterSpacing: "-0.01em" }}>{title}</h2>
+        </div>
+        {links.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 }}>
+            {links.map((l, i) => {
+              const col = linkColor(l.kind);
+              return (
+                <a key={i} href={l.href} style={{
+                  fontFamily: F.mono, fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase",
+                  padding: "4px 9px", borderRadius: DS.radius, textDecoration: "none",
+                  border: `1px solid ${col}44`, color: col, transition: "all 0.2s",
+                }}
+                  onMouseEnter={e => { e.target.style.background = col + "14"; e.target.style.borderColor = col + "88"; }}
+                  onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = col + "44"; }}
+                >{l.label}</a>
+              );
+            })}
+          </div>
+        )}
+        <SubTabs tabs={[
+          { label: "Curriculum", content: curriculum },
+          { label: "References", content: <ReferenceList groups={references} /> },
+        ]} />
+      </div>
+    </Card>
+  );
+}
+
+// --- SyllabusComposer ---
+// Renders a full syllabus page from a CONFIG: { meta, parts }
+function SyllabusComposer({ config }) {
+  const { meta, parts = [] } = config;
+  const navLink = {
+    fontFamily: F.mono, fontSize: 10, letterSpacing: "0.1em",
+    color: C.dim, textDecoration: "none", padding: "3px 0",
+    borderBottom: "1px solid transparent", transition: "all 0.2s",
+  };
+  return (
+    <>
+      <style>{GLOBAL_CSS}</style>
+      <Geo />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "44px 20px 80px" }}>
+
+        {/* Navigation */}
+        <div className="bk-fade" style={{
+          animationDelay: "0ms", marginBottom: 28,
+          display: "flex", alignItems: "center", gap: 16,
+          padding: "8px 0", borderBottom: `1px solid ${C.border}`,
+        }}>
+          <a href="index.html" style={navLink}
+            onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
+            onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
+          >&larr; Index</a>
+          {(meta.navLinks || []).map((l, i) => (
+            <span key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <span style={{ color: C.muted, fontSize: 10 }}>|</span>
+              <a href={l.href} style={navLink}
+                onMouseEnter={e => { e.target.style.color = C.accent; e.target.style.borderBottomColor = C.accent + "55"; }}
+                onMouseLeave={e => { e.target.style.color = C.dim; e.target.style.borderBottomColor = "transparent"; }}
+              >{l.label}</a>
+            </span>
+          ))}
+          <Mono style={{ fontSize: 9, color: C.dim, marginLeft: "auto" }}>{parts.length} topics</Mono>
+        </div>
+
+        {/* Header */}
+        <div className="bk-fade" style={{ animationDelay: "0ms", marginBottom: 40 }}>
+          <Label style={{ display: "block", marginBottom: 10 }}>{meta.kicker ?? meta.title}</Label>
+          <h1 style={{
+            fontFamily: F.serif, fontSize: "clamp(26px,4vw,42px)", fontWeight: 500,
+            color: C.heading, letterSpacing: "-0.02em", lineHeight: 1.2,
+            marginBottom: 10, textShadow: `0 0 24px ${C.glowStr}, 0 0 48px ${C.glow}`,
+          }}>
+            {meta.title.includes("<em>") || meta.title.includes("<br")
+              ? <span dangerouslySetInnerHTML={{ __html: meta.title }} />
+              : meta.title}
+          </h1>
+          {meta.subtitle && (
+            <p style={{ fontFamily: F.serif, fontSize: 15, color: C.dim, fontStyle: "italic", maxWidth: 560 }}>
+              {meta.subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* Parts */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {parts.map((p, i) => (
+            <SyllabusPart key={i} index={i + 1} title={p.title} topics={p.topics} references={p.references} links={p.links} animateIndex={i} />
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ marginTop: 56, borderTop: `1px solid ${C.border}`, paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
+          <Mono style={{ fontSize: 9 }}>{meta.kicker ?? "syllabus"} · block-kit</Mono>
+          <Mono style={{ fontSize: 9, color: C.dim }}>{parts.length} topics</Mono>
+        </div>
       </div>
     </>
   );
